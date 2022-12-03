@@ -2,9 +2,110 @@ use std::{fs};
 
 fn main() {
     //day_1();
-    day_2();
+    //day_2();
+    day_3();
 }
 
+fn day_3() {
+    let input = read_input("3/input");
+    let lines = input.split("\n");
+
+    if lines.to_owned().collect::<Vec<_>>().len() % 3 != 0 {
+        panic!("The number of lines need to be divisible by 3");
+    }
+
+    struct Rucksack {
+        line: String,
+        common_item: char
+    }
+
+    let mut rucksacks: Vec<Rucksack> = Vec::new();
+
+    for line in lines {
+        let line_length = line.len();
+        if line_length % 2 != 0 {
+            panic!("Unexpected line length: {line_length}");
+        }
+
+        let half_length = line_length / 2;
+
+        let comp1 = &line[0..half_length];
+        let comp2 = &line[half_length..line.len()];
+
+        let mut common_char: Option<char> = None;
+        for c1c in comp1.chars() {
+            if comp2.contains(c1c) {
+                common_char = Some(c1c);
+                break;
+            }
+        }
+
+        if common_char == None {
+            panic!("No common chars found");
+        }
+
+        let rucksack = Rucksack {
+            line: line.to_string(),
+            common_item: common_char.unwrap()
+        };
+
+        //println!("comp1: {}, comp2: {}, common: {}", rucksack.compartment_1, rucksack.compartment_2, rucksack.common_item);
+        rucksacks.push(rucksack);
+    }
+
+    let mut sum_of_priorities_part_1 = 0;
+    for rucksack in &rucksacks {
+        let priority = match rucksack.common_item {
+            c @ 'a'..='z' => (c as u32) - 96, // ASCII a = 97, a-z 1-26
+            c @ 'A'..='Z' => (c as u32) - 38, // ASCII A = 65, A-Z 27-52
+            _ => panic!("Unexpected character")
+        };
+
+        //println!("Priority for {} (ASCII {}):\t{}", rucksack.common_item, rucksack.common_item as u8, priority);
+
+        sum_of_priorities_part_1 += priority;
+    }
+
+    println!("Part 1: sum of priorities: {}", sum_of_priorities_part_1);
+
+    let mut sum_of_priorities_part_2 = 0;
+    let mut i = 0;
+
+    loop {
+        let elf_1 = rucksacks.get(i).unwrap();
+        let elf_2 = rucksacks.get(i + 1).unwrap();
+        let elf_3 = rucksacks.get(i + 2).unwrap();
+
+        let mut common_char: Option<char> = None;
+        for c1c in elf_1.line.chars() {
+            if elf_2.line.contains(c1c) && elf_3.line.contains(c1c) {
+                common_char = Some(c1c);
+                break;
+            }
+        }
+
+        if common_char == None {
+            panic!("No common chars found");
+        }
+
+        let priority = match common_char.unwrap() {
+            c @ 'a'..='z' => (c as u32) - 96, // ASCII a = 97, a-z 1-26
+            c @ 'A'..='Z' => (c as u32) - 38, // ASCII A = 65, A-Z 27-52
+            _ => panic!("Unexpected character")
+        };
+
+        sum_of_priorities_part_2 += priority;
+        i += 3;
+
+        if i >= rucksacks.len() {
+            break;
+        }
+    }
+
+    println!("Part 2: sum of priorities: {}", sum_of_priorities_part_2);
+}
+
+#[allow(dead_code)]
 fn day_2() {
     let input = read_input("2/input");
     let lines = input.split("\n");
