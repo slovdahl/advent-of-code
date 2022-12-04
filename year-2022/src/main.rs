@@ -1,11 +1,112 @@
-use std::{fs};
+use std::{fs, ops::Range};
 
 fn main() {
     //day_1();
     //day_2();
-    day_3();
+    //day_3();
+    day_4();
 }
 
+fn day_4() {
+    let input = read_input("4/input");
+    let lines = input.split("\n");
+
+    struct RawPairAssignment {
+        pair1: String,
+        pair2: String
+    }
+
+    let mut raw_pair_assignments: Vec<RawPairAssignment> = Vec::new();
+
+    for line in lines {
+        let parts = line.split_once(",");
+        let (pair1_assignment, pair2_assignment) = parts.unwrap();
+
+        let pair_assignment = RawPairAssignment {
+            pair1: pair1_assignment.to_string(),
+            pair2: pair2_assignment.to_string()
+        };
+
+        raw_pair_assignments.push(pair_assignment);
+    }
+
+    struct Assignment {
+        lower_bound: i32,
+        upper_bound: i32,
+        range: Range<i32>
+    }
+
+    struct PairAssignment {
+        pair1: Assignment,
+        pair2: Assignment
+    }
+
+    let mut count_of_pairs_with_fully_overlapped_assignments = 0;
+    let mut count_of_pairs_with_partially_overlapped_assignments = 0;
+
+    for raw_pair_assignment in &raw_pair_assignments {
+        let pair1_range = split_range_input(&raw_pair_assignment.pair1);
+        let pair2_range = split_range_input(&raw_pair_assignment.pair2);
+
+        let pair1_assignment = Assignment {
+            lower_bound: pair1_range.0,
+            upper_bound: pair1_range.1,
+            range: pair1_range.0..pair1_range.1
+        };
+
+        let pair2_assignment = Assignment {
+            lower_bound: pair2_range.0,
+            upper_bound: pair2_range.1,
+            range: pair2_range.0..pair2_range.1
+        };
+
+        if &pair1_assignment.lower_bound >= &pair2_assignment.lower_bound &&
+                &pair1_assignment.upper_bound <= &pair2_assignment.upper_bound {
+
+            count_of_pairs_with_fully_overlapped_assignments += 1;
+            count_of_pairs_with_partially_overlapped_assignments += 1;
+        }
+        else if &pair2_assignment.lower_bound >= &pair1_assignment.lower_bound &&
+                &pair2_assignment.upper_bound <= &pair1_assignment.upper_bound {
+
+            count_of_pairs_with_fully_overlapped_assignments += 1;
+            count_of_pairs_with_partially_overlapped_assignments += 1;
+        }
+        else if (
+                    &pair1_assignment.lower_bound <= &pair2_assignment.upper_bound &&
+                    &pair1_assignment.lower_bound >= &pair2_assignment.lower_bound
+                ) || (
+                    &pair2_assignment.lower_bound <= &pair1_assignment.upper_bound &&
+                    &pair2_assignment.lower_bound >= &pair1_assignment.lower_bound
+                ) || (
+                    &pair1_assignment.upper_bound >= &pair2_assignment.lower_bound &&
+                    &pair1_assignment.upper_bound <= &pair2_assignment.upper_bound
+                ) || (
+                    &pair2_assignment.upper_bound >= &pair1_assignment.lower_bound &&
+                    &pair2_assignment.upper_bound <= &pair1_assignment.upper_bound
+                ) {
+
+            count_of_pairs_with_partially_overlapped_assignments += 1;
+        }
+    }
+
+    println!("Pairs with fully overlapping assignments: {}", count_of_pairs_with_fully_overlapped_assignments);
+    println!("Pairs with partially overlapping assignments: {}", count_of_pairs_with_partially_overlapped_assignments);
+
+    fn split_range_input(input: &String) -> (i32, i32) {
+        let split_input = input.split_once("-");
+
+        let lower_bound: i32 = split_input.unwrap().0.parse()
+            .expect("Expected an integer");
+
+        let upper_bound: i32 = split_input.unwrap().1.parse()
+            .expect("Expected an integer");
+
+        (lower_bound, upper_bound)
+    }
+}
+
+#[allow(dead_code)]
 fn day_3() {
     let input = read_input("3/input");
     let lines = input.split("\n");
@@ -242,15 +343,15 @@ fn day_2() {
     println!("Part 2, Your score: {part_2_player_2_score}");
 
     fn choice_to_score(choice: &Choice) -> i32 {
-        return match choice {
+        match choice {
             Choice::Rock => 1,
             Choice::Paper => 2,
             Choice::Scissors => 3
-        };
+        }
     }
 
     fn is_first_winner(choice1: &Choice, choice2: &Choice) -> bool {
-        return match choice1 {
+        match choice1 {
             Choice::Rock => match choice2 {
                 Choice::Scissors => true,
                 _ => false
@@ -263,7 +364,7 @@ fn day_2() {
                 Choice::Paper => true,
                 _ => false
             }
-        };
+        }
     }
 }
 
@@ -302,6 +403,6 @@ fn day_1() {
 }
 
 fn read_input(path: &str) -> String {
-    return fs::read_to_string(&path)
-        .expect("Should have been able to read the file");
+    fs::read_to_string(&path)
+        .expect("Should have been able to read the file")
 }
