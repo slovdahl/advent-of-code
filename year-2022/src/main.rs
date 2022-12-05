@@ -1,12 +1,148 @@
-use std::{fs, ops::Range};
+use std::{fs, ops::Range, collections::{BTreeMap}};
 
 fn main() {
     //day_1();
     //day_2();
     //day_3();
-    day_4();
+    //day_4();
+    day_5();
 }
 
+fn day_5() {
+    let input = read_input("5/input");
+    let lines = input.split("\n");
+
+    let mut input_stacks: Vec<String> = Vec::new();
+    let mut input_commands: Vec<String> = Vec::new();
+    let mut original_stacks: BTreeMap<i32, Vec<String>> = BTreeMap::new();
+
+    let mut all_stacks_read = false;
+
+    for line in lines {
+        if line.is_empty() && !all_stacks_read {
+            all_stacks_read = true;
+        }
+        else if !all_stacks_read {
+            input_stacks.push(line.to_string());
+        }
+        else {
+            input_commands.push(line.to_string());
+        }
+    }
+
+    if input_stacks.is_empty() || input_commands.is_empty() {
+        panic!("Empty input stacks or commands");
+    }
+
+    let input_line_with_stacks = input_stacks.pop().unwrap();
+
+    for s in input_line_with_stacks.split_whitespace() {
+        original_stacks.insert(
+            s.parse().expect("Expected integer"),
+            Vec::new()
+        );
+    }
+
+    for line_with_stack_content in input_stacks.iter().rev() {
+        let mut i = 0;
+
+        loop {
+            let mut j = i + 4;
+            let mut last_entry = false;
+
+            while j >= line_with_stack_content.len() {
+                j -= 1;
+                last_entry = true;
+            }
+
+            let stack_entry = line_with_stack_content[i..j].trim().to_string();
+
+            if !stack_entry.is_empty() {
+                let stack_id: i32 = ((i / 4) + 1).try_into().unwrap();
+
+                let stack_for_id: &mut Vec<String> = original_stacks.get_mut(&stack_id)
+                    .expect("a stack");
+
+                stack_for_id.push(stack_entry[1..2].to_string());
+            }
+
+            if last_entry || j >= line_with_stack_content.len() - 1 || i >= j {
+                break;
+            }
+
+            i += 4;
+        }
+    }
+
+    let mut stacks_part_1: BTreeMap<i32, Vec<String>> = original_stacks.clone();
+
+    for command in &input_commands {
+        let command_elements: Vec<&str> = command
+            .split_whitespace()
+            .collect();
+
+        assert!(command_elements.len() == 6);
+
+        let number_of_moves: i32 = command_elements.get(1).unwrap().parse::<i32>()
+            .expect("Expected an integer");
+
+        let from: i32 = command_elements.get(3).unwrap().parse().expect("Expected an integer");
+        let to: i32 = command_elements.get(5).unwrap().parse().expect("Expected an integer");
+
+        for _ in 0..number_of_moves {
+            let from_stack = stacks_part_1.get_mut(&from).unwrap();
+            let element = from_stack.pop().unwrap();
+
+            let to_stack = stacks_part_1.get_mut(&to).unwrap();
+            to_stack.push(element);
+        }
+    }
+
+    println!("\nPart 1 result: ");
+
+    for (_, stack) in &stacks_part_1 {
+        print!("{}", stack.last().expect("Expected at least one element"));
+    }
+    println!("");
+
+    let mut stacks_part_2: BTreeMap<i32, Vec<String>> = original_stacks.clone();
+
+    for command in &input_commands {
+        let command_elements: Vec<&str> = command
+            .split_whitespace()
+            .collect();
+
+        assert!(command_elements.len() == 6);
+
+        let number_of_moves: i32 = command_elements.get(1).unwrap().parse::<i32>()
+            .expect("Expected an integer");
+
+        let from: i32 = command_elements.get(3).unwrap().parse().expect("Expected an integer");
+        let to: i32 = command_elements.get(5).unwrap().parse().expect("Expected an integer");
+
+        let from_stack = stacks_part_2.get_mut(&from).unwrap();
+        let mut temp_stack: Vec<String> = Vec::new();
+
+        for _ in 0..number_of_moves {
+            temp_stack.push(from_stack.pop().unwrap());
+        }
+
+        let to_stack = stacks_part_2.get_mut(&to).unwrap();
+
+        while !temp_stack.is_empty() {
+            to_stack.push(temp_stack.pop().expect("Expected an element"));
+        }
+    }
+
+    println!("\nPart 2 result: ");
+
+    for (_, stack) in &stacks_part_2 {
+        print!("{}", stack.last().expect("Expected at least one element"));
+    }
+    println!("");
+}
+
+#[allow(dead_code)]
 fn day_4() {
     let input = read_input("4/input");
     let lines = input.split("\n");
