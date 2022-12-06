@@ -1,13 +1,61 @@
-use std::{fs, ops::Range, collections::{BTreeMap}};
+use std::{fs, ops::Range, collections::{BTreeMap, HashSet}};
 
 fn main() {
     //day_1();
     //day_2();
     //day_3();
     //day_4();
-    day_5();
+    //day_5();
+    day_6();
 }
 
+fn day_6() {
+    let original_input = read_input("6/input");
+    let input_part_1 = original_input.clone();
+    let input_part_2 = original_input.clone();
+
+    assert!(input_part_1.len() > 4);
+    assert!(input_part_2.len() > 14);
+
+    let mut i = 0;
+    let mut current_needle;
+
+    while i + 4 < input_part_1.len() {
+        current_needle = input_part_1[i..i+4].to_string();
+        let mut seen_chars: HashSet<char> = HashSet::new();
+        for c in current_needle.chars() {
+            seen_chars.insert(c);
+        }
+
+        if seen_chars.len() == 4 {
+            println!("Part 1: {}", i + 4);
+            break;
+        }
+
+        i += 1;
+    }
+
+    let mut j = 0;
+    let mut current_needle;
+
+    while j + 14 < input_part_1.len() {
+        current_needle = input_part_1[j..(j + 14)].to_string();
+        let mut seen_chars: HashSet<char> = HashSet::new();
+        for c in current_needle.chars() {
+            seen_chars.insert(c);
+        }
+
+        if seen_chars.len() == 14 {
+            println!("Part 2: {}", j + 14);
+            break;
+        }
+
+        j += 1;
+    }
+
+}
+
+#[allow(dead_code)]
 fn day_5() {
     let input = read_input("5/input");
     let lines = input.split("\n");
