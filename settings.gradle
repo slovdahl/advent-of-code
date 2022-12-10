@@ -3,3 +3,10 @@ rootProject.name = 'advent-of-code'
 include(
     'year-2022'
 )
+
+dependencyResolutionManagement {
+    repositories {
+        mavenCentral()
+    }
+}
+

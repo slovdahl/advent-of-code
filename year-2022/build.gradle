@@ -3,11 +3,16 @@ plugins {
     id 'application'
 }
 
-application {
-    mainClass = 'eu.lovdahl.advent.of.code.App'
-}
-
 sourceSets {
     main.java.srcDirs = ['java/src']
     main.resources.srcDirs = ['java/resources']
 }
+
+dependencies {
+    implementation 'org.jetbrains:annotations:23.1.0'
+}
+
+application {
+    mainClass = 'eu.lovdahl.advent.of.code.App'
+}
+
