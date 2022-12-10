@@ -6,11 +6,129 @@ fn main() {
     //day_3();
     //day_4();
     //day_5();
-    day_6();
+    //day_6();
+    day_7();
 }
 
+#[allow(dead_code)]
+#[allow(unused_variables)]
+fn day_7() {
+    let input = read_input("../7/input");
+
+    struct DirectoryEntry<'a> {
+        name: String,
+        directories: &'a mut Vec<&'a mut DirectoryEntry<'a>>,
+        files: Vec<FileEntry>
+    }
+
+    impl<'a> DirectoryEntry<'a> {
+        fn add_directory(&mut self, dir: &'a mut DirectoryEntry<'a>) {
+            self.directories.push(dir);
+        }
+
+        fn find_directory(&self, name: &str) -> Option<&'a mut DirectoryEntry<'a>> {
+            for directory in self.directories.iter() {
+                if &directory.name == &String::from(name) {
+                    // TODO: fix
+                    //return Some(directory);
+                }
+            }
+
+            None
+        }
+    }
+
+    struct FileEntry {
+        name: String,
+        size: u32
+    }
+
+    let mut root = DirectoryEntry {
+        name: String::from("/"),
+        directories: &mut Vec::new(),
+        files: Vec::new()
+    };
+
+    let mut lines = input.lines();
+    let first_line = lines.next().unwrap();
+
+    assert!(first_line == "$ cd /");
+    let current_dir: &mut DirectoryEntry = &mut root;
+
+    for line in lines {
+        if line.starts_with("$ ") {
+            if line == "$ ls" {
+                continue;
+            }
+            else if line == "$ cd .." {
+                // TODO: handle
+            }
+            else if line.starts_with("$ cd ") {
+                let (_, target_directory_name) = line.split_once("$ cd ")
+                    .expect("Expected a directory name");
+
+                /*
+                current_dir = current_dir.find_directory(target_directory_name)
+                    .expect("A directory to be found");
+                */
+
+                /*
+                let mut found_directory = false;
+                for mut directory in current_dir.directories.iter() {
+                    if directory.name == String::from(target_directory_name) {
+                        current_dir = &mut directory;
+                        found_directory = true;
+                        break;
+                    }
+                }
+
+                assert!(found_directory, "Expected directory '{}' to exist", target_directory_name);
+                */
+            }
+        }
+        else if line.starts_with("dir ") {
+            let (_, dir_name) = line.split_once(" ")
+                .expect("Expected directory name");
+
+            //println!("Adding dir {}", &dir_name);
+
+            /*
+            let new_directory_directories: &mut Vec<&mut DirectoryEntry> = &mut Vec::new();
+            let new_directory_files: Vec<FileEntry> = Vec::new();
+
+            let new_directory = DirectoryEntry {
+                name: String::from(dir_name),
+                directories: new_directory_directories,
+                files: new_directory_files
+            };
+
+            current_dir.add_directory(&mut new_directory);
+            */
+        }
+        else {
+            let file_parts = line.split_once(" ")
+                .expect("Expected file size and name");
+
+            let file_size: u32 = file_parts.0.parse()
+                .expect("Expected an integer");
+
+            let file_name = file_parts.1;
+
+            //println!("Adding file {}", &file_name);
+
+            let new_file = FileEntry {
+                name: String::from(file_name),
+                size: file_size
+            };
+
+            current_dir.files.push(new_file);
+        }
+    }
+}
+
+#[allow(dead_code)]
 fn day_6() {
-    let original_input = read_input("6/input");
+    let original_input = read_input("../6/input");
     let input_part_1 = original_input.clone();
     let input_part_2 = original_input.clone();
 
@@ -57,7 +175,7 @@ fn day_6() {
 
 #[allow(dead_code)]
 fn day_5() {
-    let input = read_input("5/input");
+    let input = read_input("../5/input");
     let lines = input.split("\n");
 
     let mut input_stacks: Vec<String> = Vec::new();
@@ -192,7 +310,7 @@ fn day_5() {
 
 #[allow(dead_code)]
 fn day_4() {
-    let input = read_input("4/input");
+    let input = read_input("../4/input");
     let lines = input.split("\n");
 
     struct RawPairAssignment {
@@ -292,7 +410,7 @@ fn day_4() {
 
 #[allow(dead_code)]
 fn day_3() {
-    let input = read_input("3/input");
+    let input = read_input("../3/input");
     let lines = input.split("\n");
 
     if lines.to_owned().collect::<Vec<_>>().len() % 3 != 0 {
@@ -392,7 +510,7 @@ fn day_3() {
 
 #[allow(dead_code)]
 fn day_2() {
-    let input = read_input("2/input");
+    let input = read_input("../2/input");
     let lines = input.split("\n");
 
     enum Choice {
@@ -555,7 +673,7 @@ fn day_2() {
 
 #[allow(dead_code)]
 fn day_1() {
-    let input = read_input("1/input");
+    let input = read_input("../1/input");
 
     let elves = input.split("\n\n");
 
