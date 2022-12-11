@@ -5,6 +5,6 @@ import java.io.IOException;
 public class App {
 
     public static void main( String[] args ) throws IOException {
-        Day8.run();
+        Day9.run();
     }
 }
