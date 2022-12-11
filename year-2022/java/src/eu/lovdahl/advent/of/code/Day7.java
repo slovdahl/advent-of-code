@@ -1,14 +1,12 @@
 package eu.lovdahl.advent.of.code;
 
 import java.io.IOException;
-import java.sql.Array;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -17,7 +15,7 @@ import org.jetbrains.annotations.Nullable;
 public class Day7 {
 
     public static void run() throws IOException {
-        List<String> input = Common.readInputLines( 7 );
+        List<String> input = Common.readInputLinesForDay( 7 );
 
         DirectoryEntry root = new DirectoryEntry(
                 "root",

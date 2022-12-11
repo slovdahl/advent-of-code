@@ -7,7 +7,13 @@ import java.util.List;
 
 public class Common {
 
-    public static List<String> readInputLines( int day ) throws IOException {
-        return Files.readAllLines( Path.of( "year-2022/" + day + "/input" ) );
+    public static List<String> readInputLinesForDay( int day ) throws IOException {
+        Path path = Path.of( "year-2022/" + day + "/input" );
+
+        if ( !path.toFile().exists() ) {
+            path = Path.of( day + "/input" );
+        }
+
+        return Files.readAllLines( path );
     }
 }
