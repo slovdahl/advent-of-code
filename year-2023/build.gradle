@@ -1,0 +1,25 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+sourceSets {
+    main.java.srcDirs = ['java/src']
+    main.resources.srcDirs = ['java/resources']
+}
+
+dependencies {
+    implementation 'org.jetbrains:annotations:24.1.0'
+}
+
+application {
+    mainClass = 'eu.lovdahl.advent.of.code.App'
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.compilerArgs += "--enable-preview"
+}
+
+tasks.withType(JavaExec).configureEach {
+    jvmArgs += "--enable-preview"
+}
