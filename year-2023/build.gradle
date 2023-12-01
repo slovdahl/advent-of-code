@@ -13,7 +13,7 @@ dependencies {
 }
 
 application {
-    mainClass = 'eu.lovdahl.advent.of.code.App'
+    mainClass = 'eu.lovdahl.advent.of.code.Day1'
 }
 
 tasks.withType(JavaCompile).configureEach {
