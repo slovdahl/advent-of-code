@@ -90,9 +90,6 @@ class Day2 {
     record Game(int id, List<Play> plays, String rawPlayInput) {
     }
 
-    record GameWithSinglePlay(int id, Play play) {
-    }
-
     record Play(int red, int blue, int green) {
     }
 }
