@@ -11,9 +11,6 @@ import static eu.lovdahl.advent.of.code.Day3.RowNumberWithGearIndex.from;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toMap;
 
-/**
- *
- */
 @SuppressWarnings("UseOfSystemOutOrSystemErr")
 class Day3 {
 
