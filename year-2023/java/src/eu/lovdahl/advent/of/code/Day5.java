@@ -2,10 +2,9 @@ package eu.lovdahl.advent.of.code;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.function.Function;
+import java.util.function.LongUnaryOperator;
+import java.util.stream.LongStream;
 
 import static eu.lovdahl.advent.of.code.Common.longs;
 import static eu.lovdahl.advent.of.code.Common.readInputLinesForDay;
@@ -16,6 +15,7 @@ class Day5 {
 
     public static void main(String[] args) throws IOException {
         part1();
+        part2();
     }
 
     /**
@@ -140,7 +140,7 @@ class Day5 {
     public static void part1() throws IOException {
         var input = readInputLinesForDay(5).collect(toList());
 
-        Set<Long> initialSeeds = new HashSet<>(longs(input.removeFirst().replace("seeds: ", "")));
+        LongStream initialSeeds = longs(input.removeFirst().replace("seeds: ", "")).stream().mapToLong(v -> v);
         input.removeFirst();
 
         List<String> seedToSoilInput = new ArrayList<>();
@@ -192,7 +192,8 @@ class Day5 {
         Mapper temperatureToHumidity = linesToMapper(temperatureToHumidityInput);
         Mapper humidityToLocation = linesToMapper(humidityToLocationInput);
 
-        var result = initialSeeds.stream()
+        var result = initialSeeds
+                .parallel()
                 .map(seedToSoil)
                 .map(soilToFertilizer)
                 .map(fertilizerToWater)
@@ -200,10 +201,116 @@ class Day5 {
                 .map(lightToTemperature)
                 .map(temperatureToHumidity)
                 .map(humidityToLocation)
-                .mapToLong(v -> v)
                 .min();
 
         System.out.println("Part 1: " + result.getAsLong());
+    }
+
+    /**
+     * Everyone will starve if you only plant such a small number of seeds. Re-reading the almanac,
+     * it looks like the seeds: line actually describes ranges of seed numbers.
+     *
+     * The values on the initial seeds: line come in pairs. Within each pair, the first value is
+     * the start of the range and the second value is the length of the range. So, in the first
+     * line of the example above:
+     *
+     * seeds: 79 14 55 13
+     *
+     * This line describes two ranges of seed numbers to be planted in the garden. The first range
+     * starts with seed number 79 and contains 14 values: 79, 80, ..., 91, 92. The second range
+     * starts with seed number 55 and contains 13 values: 55, 56, ..., 66, 67.
+     *
+     * Now, rather than considering four seed numbers, you need to consider a total of 27 seed
+     * numbers.
+     *
+     * In the above example, the lowest location number can be obtained from seed number 82, which
+     * corresponds to soil 84, fertilizer 84, water 84, light 77, temperature 45, humidity 46, and
+     * location 46. So, the lowest location number is 46.
+     *
+     * Consider all of the initial seed numbers listed in the ranges on the first line of the
+     * almanac. What is the lowest location number that corresponds to any of the initial seed
+     * numbers?
+     *
+     * Your puzzle answer was 2254686.
+     */
+    public static void part2() throws IOException {
+        var input = readInputLinesForDay(5).collect(toList());
+
+        List<Long> seedRanges = longs(input.removeFirst().replace("seeds: ", ""));
+        input.removeFirst();
+
+        LongStream initialSeeds = LongStream.of();
+        for (int i = 0; i < seedRanges.size(); i += 2) {
+            Long start = seedRanges.get(i);
+            Long length = seedRanges.get(i + 1);
+
+            initialSeeds = LongStream.concat(
+                    initialSeeds,
+                    LongStream.range(start, start + length)
+            );
+        }
+
+        List<String> seedToSoilInput = new ArrayList<>();
+        List<String> soilToFertilizerInput = new ArrayList<>();
+        List<String> fertilizerToWaterInput = new ArrayList<>();
+        List<String> waterToLightInput = new ArrayList<>();
+        List<String> lightToTemperatureInput = new ArrayList<>();
+        List<String> temperatureToHumidityInput = new ArrayList<>();
+        List<String> humidityToLocationInput = new ArrayList<>();
+
+        List<String> currentInput = null;
+
+        for (String currentLine : input) {
+            if (currentLine.isEmpty()) {
+                continue;
+            }
+
+            if (currentLine.startsWith("seed-to-soil")) {
+                currentInput = seedToSoilInput;
+                continue;
+            } else if (currentLine.startsWith("soil-to-fertilizer")) {
+                currentInput = soilToFertilizerInput;
+                continue;
+            } else if (currentLine.startsWith("fertilizer-to-water")) {
+                currentInput = fertilizerToWaterInput;
+                continue;
+            } else if (currentLine.startsWith("water-to-light")) {
+                currentInput = waterToLightInput;
+                continue;
+            } else if (currentLine.startsWith("light-to-temperature")) {
+                currentInput = lightToTemperatureInput;
+                continue;
+            } else if (currentLine.startsWith("temperature-to-humidity")) {
+                currentInput = temperatureToHumidityInput;
+                continue;
+            } else if (currentLine.startsWith("humidity-to-location")) {
+                currentInput = humidityToLocationInput;
+                continue;
+            }
+
+            currentInput.add(currentLine);
+        }
+
+        Mapper seedToSoil = linesToMapper(seedToSoilInput);
+        Mapper soilToFertilizer = linesToMapper(soilToFertilizerInput);
+        Mapper fertilizerToWater = linesToMapper(fertilizerToWaterInput);
+        Mapper waterToLight = linesToMapper(waterToLightInput);
+        Mapper lightToTemperature = linesToMapper(lightToTemperatureInput);
+        Mapper temperatureToHumidity = linesToMapper(temperatureToHumidityInput);
+        Mapper humidityToLocation = linesToMapper(humidityToLocationInput);
+
+        var result = initialSeeds
+                .parallel()
+                .map(seedToSoil)
+                .map(soilToFertilizer)
+                .map(fertilizerToWater)
+                .map(waterToLight)
+                .map(lightToTemperature)
+                .map(temperatureToHumidity)
+                .map(humidityToLocation)
+                .min();
+
+        System.out.println("Part 2: " + result.getAsLong());
     }
 
     private static Mapper linesToMapper(List<String> lines) {
@@ -226,10 +333,10 @@ class Day5 {
         return new Mapper(ranges);
     }
 
-    private record Mapper(List<Range> ranges) implements Function<Long, Long> {
+    private record Mapper(List<Range> ranges) implements LongUnaryOperator {
 
         @Override
-        public Long apply(Long input) {
+        public long applyAsLong(long input) {
             for (Range range : ranges) {
                 if (range.contains(input)) {
                     return range.map(input);
