@@ -1,4 +1,4 @@
-package eu.lovdahl.advent.of.code;
+package year2023;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -12,7 +12,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static eu.lovdahl.advent.of.code.Common.readInputLinesForDay;
+import static year2023.Common.readInputLinesForDay;
 
 @SuppressWarnings("UseOfSystemOutOrSystemErr")
 class Day4 {

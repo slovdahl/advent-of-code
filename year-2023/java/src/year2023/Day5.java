@@ -1,4 +1,4 @@
-package eu.lovdahl.advent.of.code;
+package year2023;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.function.LongUnaryOperator;
 import java.util.stream.LongStream;
 
-import static eu.lovdahl.advent.of.code.Common.longs;
-import static eu.lovdahl.advent.of.code.Common.readInputLinesForDay;
+import static year2023.Common.longs;
+import static year2023.Common.readInputLinesForDay;
 import static java.util.stream.Collectors.toList;
 
 @SuppressWarnings("UseOfSystemOutOrSystemErr")

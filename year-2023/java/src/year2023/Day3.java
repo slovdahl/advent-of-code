@@ -1,4 +1,4 @@
-package eu.lovdahl.advent.of.code;
+package year2023;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -6,8 +6,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import static eu.lovdahl.advent.of.code.Common.readInputLinesForDay;
-import static eu.lovdahl.advent.of.code.Day3.RowNumberWithGearIndex.from;
+import static year2023.Common.readInputLinesForDay;
+import static year2023.Day3.RowNumberWithGearIndex.from;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toMap;
 

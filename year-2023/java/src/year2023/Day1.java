@@ -1,10 +1,10 @@
-package eu.lovdahl.advent.of.code;
+package year2023;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static eu.lovdahl.advent.of.code.Common.readInputLinesForDay;
+import static year2023.Common.readInputLinesForDay;
 
 @SuppressWarnings("UseOfSystemOutOrSystemErr")
 class Day1 {
