@@ -15,11 +15,3 @@ dependencies {
 application {
     mainClass = 'eu.lovdahl.advent.of.code.Day1'
 }
-
-tasks.withType(JavaCompile).configureEach {
-    options.compilerArgs += "--enable-preview"
-}
-
-tasks.withType(JavaExec).configureEach {
-    jvmArgs += "--enable-preview"
-}

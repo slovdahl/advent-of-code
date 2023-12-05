@@ -80,7 +80,7 @@ class Day4 {
                 ))
                 .mapToInt(cardData -> cardData.ownNumbers.stream()
                         .filter(cardData.winningNumbers::contains)
-                        .reduce(0, (previous, _) -> {
+                        .reduce(0, (previous, ignored) -> {
                             if (previous == 0) {
                                 return 1;
                             } else {
