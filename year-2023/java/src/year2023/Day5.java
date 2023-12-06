@@ -1,5 +1,8 @@
 package year2023;
 
+import com.google.common.hash.BloomFilter;
+import com.google.common.hash.Funnels;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -8,6 +11,8 @@ import java.util.stream.LongStream;
 
 import static java.util.stream.Collectors.toList;
 import static year2023.Common.longs;
+import static year2023.Common.printTime1;
+import static year2023.Common.printTime2;
 import static year2023.Common.readInputLinesForDay;
 import static year2023.Common.result;
 import static year2023.Common.startPart1;
@@ -319,6 +324,7 @@ class Day5 {
 
     private static Mapper linesToMapper(List<String> lines) {
         List<Range> ranges = new ArrayList<>();
+        long maxFrom = 0;
         for (String line : lines) {
             List<Long> currentLineLongs = longs(line);
             long from = currentLineLongs.get(1);
@@ -332,18 +338,35 @@ class Day5 {
                             to - from
                     )
             );
+
+            maxFrom = Math.max(maxFrom, from + length);
         }
 
-        return new Mapper(ranges);
+        BloomFilter<Long> bloomFilter = BloomFilter.create(
+                Funnels.longFunnel(),
+                maxFrom
+        );
+
+        for (Range range : ranges) {
+            LongStream.range(range.start, range.end + 1)
+                    .parallel()
+                    .forEach(bloomFilter::put);
+        }
+
+        printTime2("linesToMapper");
+
+        return new Mapper(ranges, bloomFilter);
     }
 
-    private record Mapper(List<Range> ranges) implements LongUnaryOperator {
+    record Mapper(List<Range> ranges, BloomFilter<Long> bloomFilter) implements LongUnaryOperator {
 
         @Override
         public long applyAsLong(long input) {
-            for (Range range : ranges) {
-                if (range.contains(input)) {
-                    return range.map(input);
+            if (bloomFilter.mightContain(input)) {
+                for (Range range : ranges) {
+                    if (range.contains(input)) {
+                        return range.map(input);
+                    }
                 }
             }
 
