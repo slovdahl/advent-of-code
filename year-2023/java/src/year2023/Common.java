@@ -48,6 +48,16 @@ public class Common {
     }
 
     @SuppressWarnings("UseOfSystemOutOrSystemErr")
+    public static void printTime1(String mark) {
+        System.out.printf("Elapsed time %s: %s%n", mark, PART1_TIMING.get());
+    }
+
+    @SuppressWarnings("UseOfSystemOutOrSystemErr")
+    public static void printTime2(String mark) {
+        System.out.printf("Elapsed time %s: %s%n", mark, PART2_TIMING.get());
+    }
+
+    @SuppressWarnings("UseOfSystemOutOrSystemErr")
     public static void result(int part, Object result) {
         Stopwatch stopwatch = switch (part) {
             case 1 -> PART1_TIMING.get().stop();

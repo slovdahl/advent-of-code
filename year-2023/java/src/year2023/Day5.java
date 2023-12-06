@@ -1,8 +1,11 @@
 package year2023;
 
+import com.google.common.collect.Range;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 import java.util.function.LongUnaryOperator;
 import java.util.stream.LongStream;
 
@@ -243,15 +246,12 @@ class Day5 {
         List<Long> seedRanges = longs(input.removeFirst().replace("seeds: ", ""));
         input.removeFirst();
 
-        LongStream initialSeeds = LongStream.of();
+        List<Range<Long>> initialSeedRanges = new ArrayList<>();
         for (int i = 0; i < seedRanges.size(); i += 2) {
             long start = seedRanges.get(i);
             long length = seedRanges.get(i + 1);
 
-            initialSeeds = LongStream.concat(
-                    initialSeeds,
-                    LongStream.range(start, start + length)
-            );
+            initialSeedRanges.add(Range.closed(start, start + length));
         }
 
         List<String> seedToSoilInput = new ArrayList<>();
@@ -295,30 +295,38 @@ class Day5 {
             currentInput.add(currentLine);
         }
 
-        Mapper seedToSoil = linesToMapper(seedToSoilInput);
-        Mapper soilToFertilizer = linesToMapper(soilToFertilizerInput);
-        Mapper fertilizerToWater = linesToMapper(fertilizerToWaterInput);
-        Mapper waterToLight = linesToMapper(waterToLightInput);
-        Mapper lightToTemperature = linesToMapper(lightToTemperatureInput);
-        Mapper temperatureToHumidity = linesToMapper(temperatureToHumidityInput);
-        Mapper humidityToLocation = linesToMapper(humidityToLocationInput);
+        RangeMapper seedToSoil = linesToRangeMapper(seedToSoilInput);
+        RangeMapper soilToFertilizer = linesToRangeMapper(soilToFertilizerInput);
+        RangeMapper fertilizerToWater = linesToRangeMapper(fertilizerToWaterInput);
+        RangeMapper waterToLight = linesToRangeMapper(waterToLightInput);
+        RangeMapper lightToTemperature = linesToRangeMapper(lightToTemperatureInput);
+        RangeMapper temperatureToHumidity = linesToRangeMapper(temperatureToHumidityInput);
+        RangeMapper humidityToLocation = linesToRangeMapper(humidityToLocationInput);
 
-        var result = initialSeeds
+        var result = initialSeedRanges.stream()
                 .parallel()
                 .map(seedToSoil)
+                .flatMap(List::stream)
                 .map(soilToFertilizer)
+                .flatMap(List::stream)
                 .map(fertilizerToWater)
+                .flatMap(List::stream)
                 .map(waterToLight)
+                .flatMap(List::stream)
                 .map(lightToTemperature)
+                .flatMap(List::stream)
                 .map(temperatureToHumidity)
+                .flatMap(List::stream)
                 .map(humidityToLocation)
+                .flatMap(List::stream)
+                .mapToLong(Range::lowerEndpoint)
                 .min();
 
         result(2, result.getAsLong());
     }
 
     private static Mapper linesToMapper(List<String> lines) {
-        List<Range> ranges = new ArrayList<>();
+        List<RangeAndDiff> ranges = new ArrayList<>();
         for (String line : lines) {
             List<Long> currentLineLongs = longs(line);
             long from = currentLineLongs.get(1);
@@ -326,7 +334,7 @@ class Day5 {
             long length = currentLineLongs.get(2);
 
             ranges.add(
-                    new Range(
+                    new RangeAndDiff(
                             from,
                             from + length - 1,
                             to - from
@@ -337,11 +345,32 @@ class Day5 {
         return new Mapper(ranges);
     }
 
-    private record Mapper(List<Range> ranges) implements LongUnaryOperator {
+
+    private static RangeMapper linesToRangeMapper(List<String> lines) {
+        List<RangeAndDiff> ranges = new ArrayList<>();
+        for (String line : lines) {
+            List<Long> currentLineLongs = longs(line);
+            long from = currentLineLongs.get(1);
+            long to = currentLineLongs.get(0);
+            long length = currentLineLongs.get(2);
+
+            ranges.add(
+                    new RangeAndDiff(
+                            from,
+                            from + length - 1,
+                            to - from
+                    )
+            );
+        }
+
+        return new RangeMapper(ranges);
+    }
+
+    private record Mapper(List<RangeAndDiff> ranges) implements LongUnaryOperator {
 
         @Override
         public long applyAsLong(long input) {
-            for (Range range : ranges) {
+            for (RangeAndDiff range : ranges) {
                 if (range.contains(input)) {
                     return range.map(input);
                 }
@@ -351,7 +380,37 @@ class Day5 {
         }
     }
 
-    record Range(long start, long end, long diff) {
+    private record RangeMapper(List<RangeAndDiff> ranges) implements Function<Range<Long>, List<Range<Long>>> {
+
+        @Override
+        public List<Range<Long>> apply(Range<Long> input) {
+            List<Range<Long>> result = new ArrayList<>();
+
+            Range<Long> remainder = input;
+
+            for (RangeAndDiff range : ranges) {
+                if (range.contains(input.lowerEndpoint()) && range.contains(input.upperEndpoint())) {
+                    result.add(Range.closed(input.lowerEndpoint() + range.diff, input.upperEndpoint() + range.diff));
+                    remainder = Range.openClosed(0L, 0L);
+                    break;
+                } else if (range.contains(input.lowerEndpoint())) {
+                    result.add(Range.closed(input.lowerEndpoint() + range.diff, range.end + range.diff));
+                    remainder = Range.closed(range.end + 1, input.upperEndpoint());
+                } else if (range.contains(input.upperEndpoint())) {
+                    result.add(Range.closed(range.start + range.diff, input.upperEndpoint() + range.diff));
+                    remainder = Range.closed(input.lowerEndpoint(), range.start - 1);
+                }
+            }
+
+            if (!remainder.isEmpty()) {
+                result.add(remainder);
+            }
+
+            return result;
+        }
+    }
+
+    record RangeAndDiff(long start, long end, long diff) {
         boolean contains(long input) {
             return input >= start && input <= end;
         }
