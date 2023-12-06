@@ -6,11 +6,13 @@ import java.util.List;
 import java.util.function.LongUnaryOperator;
 import java.util.stream.LongStream;
 
+import static java.util.stream.Collectors.toList;
 import static year2023.Common.longs;
 import static year2023.Common.readInputLinesForDay;
-import static java.util.stream.Collectors.toList;
+import static year2023.Common.result;
+import static year2023.Common.startPart1;
+import static year2023.Common.startPart2;
 
-@SuppressWarnings("UseOfSystemOutOrSystemErr")
 class Day5 {
 
     public static void main(String[] args) throws IOException {
@@ -138,6 +140,7 @@ class Day5 {
      * Your puzzle answer was 199602917.
      */
     public static void part1() throws IOException {
+        startPart1();
         var input = readInputLinesForDay(5).collect(toList());
 
         LongStream initialSeeds = longs(input.removeFirst().replace("seeds: ", "")).stream().mapToLong(v -> v);
@@ -203,7 +206,7 @@ class Day5 {
                 .map(humidityToLocation)
                 .min();
 
-        System.out.println("Part 1: " + result.getAsLong());
+        result(1, result.getAsLong());
     }
 
     /**
@@ -234,6 +237,7 @@ class Day5 {
      * Your puzzle answer was 2254686.
      */
     public static void part2() throws IOException {
+        startPart2();
         var input = readInputLinesForDay(5).collect(toList());
 
         List<Long> seedRanges = longs(input.removeFirst().replace("seeds: ", ""));
@@ -241,8 +245,8 @@ class Day5 {
 
         LongStream initialSeeds = LongStream.of();
         for (int i = 0; i < seedRanges.size(); i += 2) {
-            Long start = seedRanges.get(i);
-            Long length = seedRanges.get(i + 1);
+            long start = seedRanges.get(i);
+            long length = seedRanges.get(i + 1);
 
             initialSeeds = LongStream.concat(
                     initialSeeds,
@@ -310,16 +314,16 @@ class Day5 {
                 .map(humidityToLocation)
                 .min();
 
-        System.out.println("Part 2: " + result.getAsLong());
+        result(2, result.getAsLong());
     }
 
     private static Mapper linesToMapper(List<String> lines) {
         List<Range> ranges = new ArrayList<>();
         for (String line : lines) {
             List<Long> currentLineLongs = longs(line);
-            Long from = currentLineLongs.get(1);
-            Long to = currentLineLongs.get(0);
-            Long length = currentLineLongs.get(2);
+            long from = currentLineLongs.get(1);
+            long to = currentLineLongs.get(0);
+            long length = currentLineLongs.get(2);
 
             ranges.add(
                     new Range(

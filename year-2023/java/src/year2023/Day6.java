@@ -9,6 +9,9 @@ import java.util.Map;
 import static year2023.Common.ints;
 import static year2023.Common.longs;
 import static year2023.Common.readInputLinesForDay;
+import static year2023.Common.result;
+import static year2023.Common.startPart1;
+import static year2023.Common.startPart2;
 
 @SuppressWarnings("UseOfSystemOutOrSystemErr")
 class Day6 {
@@ -82,6 +85,7 @@ class Day6 {
      * Your puzzle answer was 1195150.
      */
     public static void part1() throws IOException {
+        startPart1();
         var input = readInputLinesForDay(6);
 
         List<String> inputWithoutPrefix = input
@@ -123,7 +127,7 @@ class Day6 {
                 .reduce((v1, v2) -> v1 * v2)
                 .orElseThrow();
 
-        System.out.println("Part 1: " + result);
+        result(1, result);
     }
 
     /**
@@ -151,6 +155,7 @@ class Day6 {
      * Your puzzle answer was 42550411.
      */
     public static void part2() throws IOException {
+        startPart2();
         var input = readInputLinesForDay(6);
 
         List<String> inputWithoutPrefix = input
@@ -178,7 +183,7 @@ class Day6 {
             }
         }
 
-        System.out.println("Part 2: " + winCount);
+        result(2, winCount);
     }
 
     record Race(long time, long distanceRecord) {

@@ -5,8 +5,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static year2023.Common.readInputLinesForDay;
+import static year2023.Common.result;
+import static year2023.Common.startPart1;
+import static year2023.Common.startPart2;
 
-@SuppressWarnings("UseOfSystemOutOrSystemErr")
 class Day1 {
 
     public static void main(String[] args) throws IOException {
@@ -15,6 +17,7 @@ class Day1 {
     }
 
     public static void part1() throws IOException {
+        startPart1();
         var result = readInputLinesForDay(1)
                 .map(l -> {
                             List<String> lineDigits = l.chars()
@@ -29,10 +32,11 @@ class Day1 {
                 .mapToInt(v -> v)
                 .sum();
 
-        System.out.println("Part 1: " + result);
+        result(1, result);
     }
 
     public static void part2() throws IOException {
+        startPart2();
         var result = readInputLinesForDay(1)
                 .map(l -> {
                             List<Integer> digitPerIndex = new ArrayList<>(l.length());
@@ -133,6 +137,6 @@ class Day1 {
                 .mapToInt(v -> v)
                 .sum();
 
-        System.out.println("Part 2: " + result);
+        result(2, result);
     }
 }

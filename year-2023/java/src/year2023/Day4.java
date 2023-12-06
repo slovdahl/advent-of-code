@@ -13,8 +13,10 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static year2023.Common.readInputLinesForDay;
+import static year2023.Common.result;
+import static year2023.Common.startPart1;
+import static year2023.Common.startPart2;
 
-@SuppressWarnings("UseOfSystemOutOrSystemErr")
 class Day4 {
 
     public static void main(String[] args) throws IOException {
@@ -67,6 +69,7 @@ class Day4 {
      * Your puzzle answer was 32609.
      */
     public static void part1() throws IOException {
+        startPart1();
         var result = readInputLinesForDay(4)
                 .map(line -> line.replaceFirst("^Card\\s+\\d+: ", ""))
                 .map(line -> line.split("\\|"))
@@ -89,7 +92,7 @@ class Day4 {
                         }))
                 .sum();
 
-        System.out.println("Part 1: " + result);
+        result(1, result);
     }
 
     /**
@@ -141,6 +144,7 @@ class Day4 {
      * Your puzzle answer was 14624680.
      */
     public static void part2() throws IOException {
+        startPart2();
         Pattern pattern = Pattern.compile("^Card\\s+(\\d+): ([\\s\\d]+) \\| ([\\s\\d]+)$");
 
         var cards = readInputLinesForDay(4)
@@ -187,7 +191,7 @@ class Day4 {
                 .mapToInt(v -> v)
                 .sum();
 
-        System.out.println("Part 2: " + result);
+        result(2, result);
     }
 
     record CardData(Set<Integer> winningNumbers, List<Integer> ownNumbers) {

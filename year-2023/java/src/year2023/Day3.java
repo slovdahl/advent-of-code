@@ -6,15 +6,20 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import static year2023.Common.readInputLinesForDay;
-import static year2023.Day3.RowNumberWithGearIndex.from;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toMap;
+import static year2023.Common.readInputLinesForDay;
+import static year2023.Common.result;
+import static year2023.Common.startPart1;
+import static year2023.Common.startPart2;
+import static year2023.Day3.RowNumberWithGearIndex.from;
 
-@SuppressWarnings("UseOfSystemOutOrSystemErr")
 class Day3 {
 
     public static void main(String[] args) throws IOException {
+        startPart1();
+        startPart2();
+
         List<String> lines = readInputLinesForDay(3).toList();
 
         int numberOfRows = lines.size() + 2;
@@ -39,15 +44,6 @@ class Day3 {
                     sourceArray.length
             );
         }
-
-        /*
-        for (char[] line : input) {
-            for (char ch : line) {
-                System.out.print(ch);
-            }
-            System.out.println();
-        }
-        */
 
         List<RowNumber> numberIndices = new ArrayList<>();
 
@@ -143,7 +139,7 @@ class Day3 {
                 .mapToInt(v -> v)
                 .sum();
 
-        System.out.println("Part 1: " + result);
+        result(1, result);
     }
 
     /**
@@ -234,7 +230,7 @@ class Day3 {
                 .mapToInt(v -> v)
                 .sum();
 
-        System.out.println("Part 2: " + result);
+        result(2, result);
     }
 
     record RowNumber(int row, int start, int end) {

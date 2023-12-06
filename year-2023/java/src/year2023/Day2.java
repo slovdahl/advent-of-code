@@ -7,11 +7,16 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static year2023.Common.readInputLinesForDay;
+import static year2023.Common.result;
+import static year2023.Common.startPart1;
+import static year2023.Common.startPart2;
 
-@SuppressWarnings("UseOfSystemOutOrSystemErr")
 class Day2 {
 
     public static void main(String[] args) throws IOException {
+        startPart1();
+        startPart2();
+
         Pattern linePattern = Pattern.compile("^Game (\\d+):(.*)$");
         Pattern playPattern = Pattern.compile("\\s?(\\d+) (blue|green|red)\\s?");
 
@@ -66,7 +71,7 @@ class Day2 {
                 .mapToInt(v -> v)
                 .sum();
 
-        System.out.println("Part 1: " + result);
+        result(1, result);
     }
 
     public static void part2(List<Game> games) {
@@ -84,7 +89,7 @@ class Day2 {
                 .mapToInt(v -> v)
                 .sum();
 
-        System.out.println("Part 2: " + result);
+        result(2, result);
     }
 
     record Game(int id, List<Play> plays, String rawPlayInput) {
