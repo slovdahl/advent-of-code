@@ -1,12 +1,12 @@
 package year2023;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import static java.util.stream.Collectors.counting;
@@ -17,11 +17,13 @@ import static java.util.stream.Collectors.toUnmodifiableMap;
 import static year2023.Common.readInputLinesForDay;
 import static year2023.Common.result;
 import static year2023.Common.startPart1;
+import static year2023.Common.startPart2;
 
 class Day7 {
 
     public static void main(String[] args) throws IOException {
         part1();
+        part2();
     }
 
     /**
@@ -97,7 +99,20 @@ class Day7 {
                 .map(line -> line.split(" "))
                 .map(parts -> Hand.parse(parts[0], Long.parseLong(parts[1])))
                 .map(hand -> new HandWithType(hand, HandType.from(hand)))
-                .sorted()
+                .sorted(new HandComparator((h1, h2) -> {
+                    for (int i = 0; i < h1.hand.cards.size(); i++) {
+                        Card thisCard = h1.hand.cards.get(i);
+                        Card otherCard = h2.hand.cards.get(i);
+
+                        if (thisCard.ordinal() < otherCard.ordinal()) {
+                            return -1;
+                        } else if (thisCard.ordinal() > otherCard.ordinal()) {
+                            return 1;
+                        }
+                    }
+
+                    return null;
+                }))
                 .toList();
 
         long result = 0;
@@ -108,20 +123,91 @@ class Day7 {
         result(1, result);
     }
 
-    record Hand(List<Card> cards, Map<Integer, List<Card>> numberOfCards, long bid) {
+    /**
+     * To make things a little more interesting, the Elf introduces one additional rule. Now, J
+     * cards are jokers - wildcards that can act like whatever card would make the hand the
+     * strongest type possible.
+     *
+     * To balance this, J cards are now the weakest individual cards, weaker even than 2. The other
+     * cards stay in the same order: A, K, Q, T, 9, 8, 7, 6, 5, 4, 3, 2, J.
+     *
+     * J cards can pretend to be whatever card is best for the purpose of determining hand type;
+     * for example, QJJQ2 is now considered four of a kind. However, for the purpose of breaking
+     * ties between two hands of the same type, J is always treated as J, not the card it's
+     * pretending to be: JKKK2 is weaker than QQQQ2 because J is weaker than Q.
+     *
+     * Now, the above example goes very differently:
+     *
+     * 32T3K 765
+     * T55J5 684
+     * KK677 28
+     * KTJJT 220
+     * QQQJA 483
+     *
+     *   32T3K is still the only one pair; it doesn't contain any jokers, so its strength doesn't increase.
+     *   KK677 is now the only two pair, making it the second-weakest hand.
+     *   T55J5, KTJJT, and QQQJA are now all four of a kind! T55J5 gets rank 3, QQQJA gets rank 4, and KTJJT gets rank 5.
+     *
+     * With the new joker rule, the total winnings in this example are 5905.
+     *
+     * Using the new joker rule, find the rank of every hand in your set. What are the new total
+     * winnings?
+     *
+     * Your puzzle answer was 250757288.
+     */
+    public static void part2() throws IOException {
+        startPart2();
+        var input = readInputLinesForDay(7);
+
+        List<HandWithType> handWithTypes = input
+                .map(line -> line.split(" "))
+                .map(parts -> Hand.parse(parts[0], Long.parseLong(parts[1])))
+                .map(hand -> new HandWithType(hand, HandType.fromJoker(hand)))
+                .sorted(new HandComparator((h1, h2) -> {
+                    for (int i = 0; i < h1.hand.cards.size(); i++) {
+                        Card thisCard = h1.hand.cards.get(i);
+                        Card otherCard = h2.hand.cards.get(i);
+
+                        int thisOrdinal = thisCard == Card._J ? -1 : thisCard.ordinal();
+                        int otherOrdinal = otherCard == Card._J ? -1 : otherCard.ordinal();
+                        if (thisOrdinal < otherOrdinal) {
+                            return -1;
+                        } else if (thisOrdinal > otherOrdinal) {
+                            return 1;
+                        }
+                    }
+
+                    return null;
+                }))
+                .toList();
+
+        long result = 0;
+        for (int i = 0; i < handWithTypes.size(); i++) {
+            result += handWithTypes.get(i).hand.bid * (i + 1);
+        }
+
+        result(2, result);
+    }
+
+    record Hand(List<Card> cards, Map<Card, Integer> cardToCount, Map<Integer, List<Card>> countToCards, long bid) {
         static Hand parse(String cardsInput, long bid) {
             List<Card> cards = new ArrayList<>(5);
             for (char c : cardsInput.toCharArray()) {
                 cards.add(Card.of(c));
             }
 
-            Map<Integer, List<Card>> numberOfCards = cards.stream()
+            Map<Card, Integer> cardToCount = cards.stream()
                     .collect(groupingBy(Function.identity(), counting()))
+                    .entrySet()
+                    .stream()
+                    .collect(toUnmodifiableMap(Map.Entry::getKey, e -> e.getValue().intValue()));
+
+            Map<Integer, List<Card>> countToCards = cardToCount
                     .entrySet()
                     .stream()
                     .collect(
                             groupingBy(
-                                    e -> e.getValue().intValue(),
+                                    Map.Entry::getValue,
                                     mapping(
                                             Map.Entry::getKey,
                                             toUnmodifiableList()
@@ -129,27 +215,31 @@ class Day7 {
                             )
                     );
 
-            return new Hand(cards, numberOfCards, bid);
+            return new Hand(cards, cardToCount, countToCards, bid);
         }
     }
 
-    record HandWithType(Hand hand, HandType type) implements Comparable<HandWithType> {
+    record HandWithType(Hand hand, HandType type) {
+    }
+
+    static class HandComparator implements Comparator<HandWithType> {
+
+        private final BiFunction<HandWithType, HandWithType, Integer> tieBreakStrategy;
+
+        HandComparator(BiFunction<HandWithType, HandWithType, Integer> tieBreakStrategy) {
+            this.tieBreakStrategy = tieBreakStrategy;
+        }
+
         @Override
-        public int compareTo(@NotNull HandWithType other) {
-            if (type.ordinal() < other.type.ordinal()) {
+        public int compare(HandWithType h1, HandWithType h2) {
+            if (h1.type.ordinal() < h2.type.ordinal()) {
                 return -1;
-            } else if (type.ordinal() > other.type.ordinal()) {
+            } else if (h1.type.ordinal() > h2.type.ordinal()) {
                 return 1;
             } else {
-                for (int i = 0; i < hand.cards.size(); i++) {
-                    Card thisCard = hand.cards.get(i);
-                    Card otherCard = other.hand.cards.get(i);
-
-                    if (thisCard.ordinal() < otherCard.ordinal()) {
-                        return -1;
-                    } else if (thisCard.ordinal() > otherCard.ordinal()) {
-                        return 1;
-                    }
+                Integer result = tieBreakStrategy.apply(h1, h2);
+                if (result != null) {
+                    return result;
                 }
             }
 
@@ -158,19 +248,19 @@ class Day7 {
     }
 
     enum Card {
-        CARD_2('2'),
-        CARD_3('3'),
-        CARD_4('4'),
-        CARD_5('5'),
-        CARD_6('6'),
-        CARD_7('7'),
-        CARD_8('8'),
-        CARD_9('9'),
-        CARD_T('T'),
-        CARD_J('J'),
-        CARD_Q('Q'),
-        CARD_K('K'),
-        CARD_A('A');
+        _2('2'),
+        _3('3'),
+        _4('4'),
+        _5('5'),
+        _6('6'),
+        _7('7'),
+        _8('8'),
+        _9('9'),
+        _T('T'),
+        _J('J'),
+        _Q('Q'),
+        _K('K'),
+        _A('A');
 
         private static final Map<Character, Card> LOOKUP = Arrays.stream(values())
                 .collect(toUnmodifiableMap(e -> e.key, e -> e));
@@ -196,7 +286,7 @@ class Day7 {
         FIVE_OF_A_KIND;
 
         static HandType from(Hand hand) {
-            Map<Integer, List<Card>> n = hand.numberOfCards;
+            Map<Integer, List<Card>> n = hand.countToCards;
             if (n.containsKey(5)) {
                 return FIVE_OF_A_KIND;
             } else if (n.containsKey(4)) {
@@ -212,6 +302,43 @@ class Day7 {
                     return ONE_PAIR;
                 } else {
                     throw new IllegalStateException();
+                }
+            } else if (n.containsKey(1) && n.get(1).size() == 5) {
+                return HIGH_CARD;
+            } else {
+                throw new IllegalStateException();
+            }
+        }
+
+        static HandType fromJoker(Hand hand) {
+            Map<Integer, List<Card>> n = hand.countToCards;
+            int numberOfJokers = hand.cardToCount.getOrDefault(Card._J, 0);
+
+            if (n.containsKey(5) ||
+                    (n.containsKey(4) && numberOfJokers == 1) ||
+                    (n.containsKey(3) && numberOfJokers == 2) ||
+                    (n.containsKey(2) && numberOfJokers == 3) ||
+                    (n.containsKey(1) && numberOfJokers == 4)) {
+                return FIVE_OF_A_KIND;
+            } else if (n.containsKey(4) ||
+                    (n.containsKey(3) && numberOfJokers == 1) ||
+                    (n.containsKey(2) && numberOfJokers == 2 && n.get(2).size() == 2) ||
+                    (n.containsKey(1) && numberOfJokers == 3)) {
+                return FOUR_OF_A_KIND;
+            } else if ((n.containsKey(3) && n.containsKey(2)) ||
+                    (n.containsKey(3) && n.containsKey(1) && numberOfJokers == 1) ||
+                    (n.getOrDefault(2, List.of()).size() == 2 && numberOfJokers == 1)) {
+                return FULL_HOUSE;
+            } else if (n.containsKey(3) ||
+                    (n.containsKey(2) && numberOfJokers == 1) ||
+                    (n.containsKey(1) && numberOfJokers == 2)) {
+                return THREE_OF_A_KIND;
+            } else if (n.containsKey(2) || numberOfJokers == 1) {
+                if (n.getOrDefault(2, List.of()).size() == 2 ||
+                        (n.getOrDefault(2, List.of()).size() == 1 && numberOfJokers == 1)) {
+                    return TWO_PAIR;
+                } else {
+                    return ONE_PAIR;
                 }
             } else if (n.containsKey(1) && n.get(1).size() == 5) {
                 return HIGH_CARD;
