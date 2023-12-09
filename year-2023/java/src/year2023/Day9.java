@@ -7,11 +7,13 @@ import java.util.List;
 import static year2023.Common.readInputLinesForDay;
 import static year2023.Common.result;
 import static year2023.Common.startPart1;
+import static year2023.Common.startPart2;
 
 class Day9 {
 
     public static void main(String[] args) throws IOException {
         part1();
+        part2();
     }
 
     /**
@@ -129,8 +131,7 @@ class Day9 {
 
                         if (allZeroes) {
                             break;
-                        }
-                        else {
+                        } else {
                             toCheck = diffs;
                         }
                     }
@@ -145,9 +146,86 @@ class Day9 {
 
                     return allLines.getFirst().getLast();
                 })
-                .mapToInt(v->v)
+                .mapToInt(v -> v)
                 .sum();
 
         result(1, result);
+    }
+
+    /**
+     * Of course, it would be nice to have even more history included in your report. Surely it's
+     * safe to just extrapolate backwards as well, right?
+     *
+     * For each history, repeat the process of finding differences until the sequence of
+     * differences is entirely zero. Then, rather than adding a zero to the end and filling in the
+     * next values of each previous sequence, you should instead add a zero to the beginning of
+     * your sequence of zeroes, then fill in new first values for each previous sequence.
+     *
+     * In particular, here is what the third example history looks like when extrapolating back in
+     * time:
+     *
+     * 5  10  13  16  21  30  45
+     *   5   3   3   5   9  15
+     *    -2   0   2   4   6
+     *       2   2   2   2
+     *         0   0   0
+     *
+     * Adding the new values on the left side of each sequence from bottom to top eventually
+     * reveals the new left-most history value: 5.
+     *
+     * Doing this for the remaining example data above results in previous values of -3 for the
+     * first history and 0 for the second history. Adding all three new values together produces 2.
+     *
+     * Analyze your OASIS report again, this time extrapolating the previous value for each history.
+     * What is the sum of these extrapolated values?
+     */
+    public static void part2() throws IOException {
+        startPart2();
+
+        var input = readInputLinesForDay(9);
+
+        var result = input
+                .map(Common::ints)
+                .map(series -> {
+                    List<List<Integer>> allLines = new ArrayList<>();
+                    allLines.add(new ArrayList<>(series));
+
+                    List<Integer> toCheck = series;
+                    while (true) {
+                        boolean allZeroes = true;
+                        List<Integer> diffs = new ArrayList<>();
+
+                        for (int i = 1; i < toCheck.size(); i++) {
+                            int diff = toCheck.get(i) - toCheck.get(i - 1);
+                            diffs.add(diff);
+
+                            if (diff != 0) {
+                                allZeroes = false;
+                            }
+                        }
+
+                        allLines.add(diffs);
+
+                        if (allZeroes) {
+                            break;
+                        } else {
+                            toCheck = diffs;
+                        }
+                    }
+
+                    List<List<Integer>> diffsReversed = allLines.reversed();
+                    for (int i = 1; i < diffsReversed.size(); i++) {
+                        int diff = diffsReversed.get(i - 1).getFirst();
+                        int first = diffsReversed.get(i).getFirst();
+
+                        diffsReversed.get(i).addFirst(first - diff);
+                    }
+
+                    return allLines.getFirst().getFirst();
+                })
+                .mapToInt(v -> v)
+                .sum();
+
+        result(2, result);
     }
 }
