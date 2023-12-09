@@ -186,7 +186,7 @@ class Day8 {
                     throw new IllegalStateException();
                 })
                 .mapToLong(v -> v)
-                .reduce(Day8::lcm)
+                .reduce(Common::lcm)
                 .ifPresentOrElse(
                         r -> result(2, r),
                         () -> {
@@ -196,26 +196,5 @@ class Day8 {
     }
 
     record Choices(String left, String right) {
-    }
-
-    static long lcm(long number1, long number2) {
-        if (number1 == 0 || number2 == 0) {
-            return 0;
-        } else {
-            long gcd = gcd(number1, number2);
-            return Math.abs(number1 * number2) / gcd;
-        }
-    }
-
-    static long gcd(long number1, long number2) {
-        if (number1 == 0 || number2 == 0) {
-            return number1 + number2;
-        } else {
-            long absNumber1 = Math.abs(number1);
-            long absNumber2 = Math.abs(number2);
-            long biggerValue = Math.max(absNumber1, absNumber2);
-            long smallerValue = Math.min(absNumber1, absNumber2);
-            return gcd(biggerValue % smallerValue, smallerValue);
-        }
     }
 }
