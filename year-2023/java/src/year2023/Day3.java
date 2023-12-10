@@ -22,28 +22,7 @@ class Day3 {
 
         List<String> lines = readInputLinesForDay(3).toList();
 
-        int numberOfRows = lines.size() + 2;
-        int numberOfColumns = lines.getFirst().length() + 2;
-
-        char[][] input = new char[numberOfRows][numberOfColumns];
-        Arrays.fill(input[0], '.');
-        Arrays.fill(input[numberOfRows - 1], '.');
-
-        for (char[] line : input) {
-            line[0] = '.';
-            line[numberOfColumns - 1] = '.';
-        }
-
-        for (int i = 0; i < lines.size(); i++) {
-            char[] sourceArray = lines.get(i).toCharArray();
-            System.arraycopy(
-                    sourceArray,
-                    0,
-                    input[i + 1],
-                    1,
-                    sourceArray.length
-            );
-        }
+        char[][] input = Common.paddedMatrix(lines, '.');
 
         List<RowNumber> numberIndices = new ArrayList<>();
 

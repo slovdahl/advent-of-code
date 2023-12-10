@@ -7,6 +7,7 @@ import java.util.stream.Stream;
 
 import static year2023.Common.readInputLinesForDay;
 
+@SuppressWarnings("unused")
 public class Day1 extends Day {
 
     /**

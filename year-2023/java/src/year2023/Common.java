@@ -95,4 +95,30 @@ public class Common {
         }
     }
 
+    public static char[][] paddedMatrix(List<String> input, char fillerCharacter) {
+        int numberOfRows = input.size() + 2;
+        int numberOfColumns = input.getFirst().length() + 2;
+
+        char[][] arr = new char[numberOfRows][numberOfColumns];
+        Arrays.fill(arr[0], fillerCharacter);
+        Arrays.fill(arr[numberOfRows - 1], fillerCharacter);
+
+        for (char[] line : arr) {
+            line[0] = fillerCharacter;
+            line[numberOfColumns - 1] = fillerCharacter;
+        }
+
+        for (int i = 0; i < input.size(); i++) {
+            char[] sourceArray = input.get(i).toCharArray();
+            System.arraycopy(
+                    sourceArray,
+                    0,
+                    arr[i + 1],
+                    1,
+                    sourceArray.length
+            );
+        }
+
+        return arr;
+    }
 }
