@@ -14,5 +14,5 @@ dependencies {
 }
 
 application {
-    mainClass = 'eu.lovdahl.advent.of.code.Day1'
+    mainClass = 'year2023.App'
 }
