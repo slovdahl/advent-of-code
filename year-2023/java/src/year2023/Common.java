@@ -95,6 +95,19 @@ public class Common {
         }
     }
 
+    public static char[][] matrix(List<String> input) {
+        int numberOfRows = input.size();
+        int numberOfColumns = input.getFirst().length();
+
+        char[][] arr = new char[numberOfRows][numberOfColumns];
+
+        for (int i = 0; i < input.size(); i++) {
+            arr[i] = input.get(i).toCharArray();
+        }
+
+        return arr;
+    }
+
     public static char[][] paddedMatrix(List<String> input, char fillerCharacter) {
         int numberOfRows = input.size() + 2;
         int numberOfColumns = input.getFirst().length() + 2;
@@ -120,5 +133,16 @@ public class Common {
         }
 
         return arr;
+    }
+
+    @SuppressWarnings("UseOfSystemOutOrSystemErr")
+    public static void print(char[][] matrix) {
+        for (char[] chars : matrix) {
+            for (char ch : chars) {
+                System.out.print(ch);
+            }
+            System.out.println();
+        }
+        System.out.println();
     }
 }
