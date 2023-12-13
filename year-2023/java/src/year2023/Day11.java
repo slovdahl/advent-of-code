@@ -4,9 +4,11 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 @SuppressWarnings("unused")
@@ -120,10 +122,42 @@ public class Day11 extends Day {
      */
     @Override
     Object part1(Stream<String> input) throws IOException {
+        int expansionFactor = 2;
+
+        return calculateSumOfShortestPathsBetweenGalaxies(input, expansionFactor);
+    }
+
+    /**
+     * The galaxies are much older (and thus much farther apart) than the researcher initially
+     * estimated.
+     *
+     * Now, instead of the expansion you did before, make each empty row or column one million
+     * times larger. That is, each empty row should be replaced with 1000000 empty rows, and each
+     * empty column should be replaced with 1000000 empty columns.
+     *
+     * (In the example above, if each empty row or column were merely 10 times larger, the sum of
+     * the shortest paths between every pair of galaxies would be 1030. If each empty row or column
+     * were merely 100 times larger, the sum of the shortest paths between every pair of galaxies
+     * would be 8410. However, your universe will need to expand far beyond these values.)
+     *
+     * Starting with the same initial image, expand the universe according to these new rules, then
+     * find the length of the shortest path between every pair of galaxies. What is the sum of
+     * these lengths?
+     *
+     * Your puzzle answer was 519939907614.
+     */
+    @Override
+    Object part2(Stream<String> input) throws Exception {
+        int expansionFactor = 1_000_000;
+
+        return calculateSumOfShortestPathsBetweenGalaxies(input, expansionFactor);
+    }
+
+    private static long calculateSumOfShortestPathsBetweenGalaxies(Stream<String> input, int expansionFactor) {
         char[][] matrix = Common.matrix(input.toList());
 
-        matrix = expandRows(matrix);
-        matrix = expandColumns(matrix);
+        Set<Integer> rowsToExpand = getRowsToExpand(matrix);
+        Set<Integer> columnsToExpand = getColumnsToExpand(matrix);
 
         List<Galaxy> galaxies = new ArrayList<>();
         for (int row = 0; row < matrix.length; row++) {
@@ -134,100 +168,102 @@ public class Day11 extends Day {
             }
         }
 
-        List<Pair> pairs = new ArrayList<>();
+        List<Pair<Galaxy, Galaxy>> pairs = new ArrayList<>();
         for (int element1 = 0; element1 < galaxies.size(); element1++) {
             for (int element2 = element1 + 1; element2 < galaxies.size(); element2++) {
-                pairs.add(new Pair(galaxies.get(element1), galaxies.get(element2)));
+                Galaxy galaxy1 = galaxies.get(element1);
+                Galaxy galaxy2 = galaxies.get(element2);
+
+                if (galaxy2.row + 1 > galaxy1.row) {
+                    galaxy2 = galaxy2.withRow(
+                            expandSpaceBetweenGalaxies(galaxy1.row, galaxy2.row, rowsToExpand, expansionFactor)
+                    );
+                } else if (galaxy1.row + 1 > galaxy2.row) {
+                    galaxy1 = galaxy1.withRow(
+                            expandSpaceBetweenGalaxies(galaxy2.row, galaxy1.row, rowsToExpand, expansionFactor)
+                    );
+                }
+
+                if (galaxy2.column + 1 > galaxy1.column) {
+                    galaxy2 = galaxy2.withColumn(
+                            expandSpaceBetweenGalaxies(galaxy1.column, galaxy2.column, columnsToExpand, expansionFactor)
+                    );
+                } else if (galaxy1.column + 1 > galaxy2.column) {
+                    galaxy1 = galaxy1.withColumn(
+                            expandSpaceBetweenGalaxies(galaxy2.column, galaxy1.column, columnsToExpand, expansionFactor)
+                    );
+                }
+
+                pairs.add(new Pair<>(galaxy1, galaxy2));
             }
         }
 
         return pairs.stream()
-                .mapToInt(pair -> Math.abs(pair.e1.row - pair.e2.row) + Math.abs(pair.e1.column - pair.e2.column))
+                .mapToLong(pair ->
+                        Math.abs(pair.first().row - pair.second().row) +
+                                Math.abs(pair.first().column - pair.second().column)
+                )
                 .sum();
     }
 
+    private static int expandSpaceBetweenGalaxies(int row1, int row2, Set<Integer> toExpand, int expansionFactor) {
+        int count = (int) IntStream.range(row1 + 1, row2)
+                .filter(toExpand::contains)
+                .count();
 
-    private static char[][] expandRows(char[][] matrix) {
-        for (int row = matrix.length - 1; row >= 0; row--) {
-            boolean galaxySeen = false;
-            for (int column = 0; column < matrix[row].length; column++) {
-                if (matrix[row][column] == '#') {
-                    galaxySeen = true;
-                    break;
-                }
-            }
-
-            if (!galaxySeen) {
-                char[][] newMatrix = new char[matrix.length + 1][matrix[0].length];
-
-                System.arraycopy(
-                        matrix,
-                        0,
-                        newMatrix,
-                        0,
-                        row + 1
-                );
-
-                Arrays.fill(newMatrix[row + 1], '.');
-
-                if (row + 1 < matrix.length) {
-                    System.arraycopy(
-                            matrix,
-                            row + 1,
-                            newMatrix,
-                            row + 2,
-                            matrix.length - row - 1
-                    );
-                }
-
-                matrix = newMatrix;
-            }
-        }
-        return matrix;
+        return row2 + count * (expansionFactor - 1);
     }
 
-    private static char[][] expandColumns(char[][] matrix) {
-        for (int column = matrix[0].length - 1; column >= 0; column--) {
+    private static Set<Integer> getRowsToExpand(char[][] matrix) {
+        Set<Integer> rowNumbers = new HashSet<>();
+
+        for (int i = 0; i < matrix.length; i++) {
+            char[] row = matrix[i];
             boolean galaxySeen = false;
-            for (int row = 0; row < matrix.length; row++) {
-                if (matrix[row][column] == '#') {
+            for (char spaceOrGalaxy : row) {
+                if (spaceOrGalaxy == '#') {
                     galaxySeen = true;
                     break;
                 }
             }
 
             if (!galaxySeen) {
-                char[][] newMatrix = new char[matrix.length][matrix[0].length + 1];
-
-                for (int row = 0; row < matrix.length; row++) {
-                    System.arraycopy(
-                            matrix[row],
-                            0,
-                            newMatrix[row],
-                            0,
-                            column + 1
-                    );
-
-                    newMatrix[row][column + 1] = '.';
-
-                    if (column + 1 < matrix[0].length) {
-                        System.arraycopy(
-                                matrix[row],
-                                column + 1,
-                                newMatrix[row],
-                                column + 2,
-                                matrix[0].length - column - 1
-                        );
-                    }
-                }
-
-                matrix = newMatrix;
+                rowNumbers.add(i);
             }
         }
-        return matrix;
+
+        return rowNumbers;
+    }
+
+    private static Set<Integer> getColumnsToExpand(char[][] matrix) {
+        Set<Integer> columnNumbers = new HashSet<>();
+
+        for (int column = 0; column < matrix[0].length; column++) {
+            boolean galaxySeen = false;
+            for (char[] row : matrix) {
+                if (row[column] == '#') {
+                    galaxySeen = true;
+                    break;
+                }
+            }
+
+            if (!galaxySeen) {
+                columnNumbers.add(column);
+            }
+        }
+
+        return columnNumbers;
     }
 
     record Galaxy(int row, int column) implements Comparable<Galaxy> {
+        public Galaxy withRow(int newRow) {
+            return new Galaxy(newRow, column);
+        }
+
+        public Galaxy withColumn(int newColumn) {
+            return new Galaxy(row, newColumn);
+        }
+
         @Override
         public int compareTo(@NotNull Galaxy other) {
             return Comparator
@@ -235,8 +271,5 @@ public class Day11 extends Day {
                     .thenComparing(Galaxy::column)
                     .compare(this, other);
         }
-    }
-
-    record Pair(Galaxy e1, Galaxy e2) {
     }
 }

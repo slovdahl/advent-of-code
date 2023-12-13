@@ -23,9 +23,19 @@ public class App {
                 .sorted(comparing(Class::getName))
                 .toList();
 
-        Class<?> latestClass = dayClasses.getLast();
+        Class<?> clazz;
+        if (args.length > 0) {
+            clazz = dayClasses
+                    .stream()
+                    .filter(cls -> cls.getSimpleName().endsWith("Day" + args[0]))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException("No such day: " + args[0]));
+        }
+        else {
+            clazz = dayClasses.getLast();
+        }
 
-        Constructor<?> constructor = latestClass.getConstructor();
+        Constructor<?> constructor = clazz.getConstructor();
 
         Day dayImpl = (Day)constructor.newInstance();
 
