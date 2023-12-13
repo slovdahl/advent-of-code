@@ -43,11 +43,6 @@ public class App {
         matcher.find();
         String dayStr = matcher.group(1);
 
-        int day = Integer.parseInt(dayStr);
-
-        System.out.println("Day " + day);
-
-        dayImpl.runPart1(Common.readInputLinesForDay(day));
-        dayImpl.runPart2(Common.readInputLinesForDay(day));
+        dayImpl.run(Integer.parseInt(dayStr));
     }
 }

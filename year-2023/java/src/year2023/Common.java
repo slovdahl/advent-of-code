@@ -5,6 +5,7 @@ import com.google.common.base.Stopwatch;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
@@ -133,6 +134,40 @@ public class Common {
         }
 
         return arr;
+    }
+
+    static <T> List<List<T>> permutations(List<List<T>> input) {
+        List<List<T>> permutations = new ArrayList<>();
+        int length = input.size();
+
+        int carry;
+        int[] indices = new int[length];
+
+        do {
+            List<T> instance = new ArrayList<>();
+            for (int i = 0; i < indices.length; i++) {
+                int index = indices[i];
+                instance.add(input.get(i).get(index));
+            }
+            permutations.add(instance);
+
+            carry = 1;
+            for (int i = indices.length - 1; i >= 0; i--) {
+                if (carry == 0) {
+                    break;
+                }
+
+                indices[i] += carry;
+                carry = 0;
+
+                if (indices[i] == input.get(i).size()) {
+                    carry = 1;
+                    indices[i] = 0;
+                }
+            }
+        } while (carry != 1);
+
+        return permutations;
     }
 
     @SuppressWarnings("UseOfSystemOutOrSystemErr")
