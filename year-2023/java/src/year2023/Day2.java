@@ -1,26 +1,22 @@
 package year2023;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
-import static year2023.Common.readInputLinesForDay;
-import static year2023.Common.result;
-import static year2023.Common.startPart1;
-import static year2023.Common.startPart2;
+@SuppressWarnings("unused")
+public class Day2 extends Day {
 
-class Day2 {
+    private List<Game> games;
 
-    public static void main(String[] args) throws IOException {
-        startPart1();
-        startPart2();
-
+    @Override
+    void prepare(Stream<String> input) throws Exception {
         Pattern linePattern = Pattern.compile("^Game (\\d+):(.*)$");
         Pattern playPattern = Pattern.compile("\\s?(\\d+) (blue|green|red)\\s?");
 
-        var games = readInputLinesForDay(2)
+        games = input
                 .map(linePattern::matcher)
                 .filter(Matcher::matches)
                 .map(m -> new Game(Integer.parseInt(m.group(1)), List.of(), m.group(2)))
@@ -56,13 +52,11 @@ class Day2 {
                     return new Game(g.id, plays, "");
                 })
                 .toList();
-
-        part1(games);
-        part2(games);
     }
 
-    public static void part1(List<Game> games) {
-        var result = games.stream()
+    @Override
+    Object part1(Stream<String> input) throws Exception {
+        return games.stream()
                 .filter(
                         g -> g.plays().stream()
                                 .noneMatch(p -> p.red() > 12 || p.green() > 13 || p.blue() > 14)
@@ -70,12 +64,11 @@ class Day2 {
                 .map(Game::id)
                 .mapToInt(v -> v)
                 .sum();
-
-        result(1, result);
     }
 
-    public static void part2(List<Game> games) {
-        var result = games.stream()
+    @Override
+    Object part2(Stream<String> input) throws Exception {
+        return games.stream()
                 .map(
                         g -> g.plays().stream()
                                 .reduce((play, play2) -> new Play(
@@ -88,8 +81,6 @@ class Day2 {
                 .map(play -> play.red() * play.blue() * play.green())
                 .mapToInt(v -> v)
                 .sum();
-
-        result(2, result);
     }
 
     record Game(int id, List<Play> plays, String rawPlayInput) {

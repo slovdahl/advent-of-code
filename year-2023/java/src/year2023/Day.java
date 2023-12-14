@@ -23,15 +23,15 @@ public abstract class Day {
                 ==================%n
                 """, day);
 
-        runPrepare();
+        runPrepare(readInputLinesForDay(day));
         runPart1(readInputLinesForDay(day));
         runPart2(readInputLinesForDay(day));
     }
 
-    private void runPrepare() throws Exception {
+    private void runPrepare(Stream<String> input) throws Exception {
         timePrepare();
 
-        prepare();
+        prepare(input);
 
         result("prepare", "OK");
     }
@@ -52,7 +52,7 @@ public abstract class Day {
         }
     }
 
-    void prepare() throws Exception {
+    void prepare(Stream<String> input) throws Exception {
     }
 
     abstract Object part1(Stream<String> input) throws Exception;
