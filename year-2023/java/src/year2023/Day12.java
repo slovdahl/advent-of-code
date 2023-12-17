@@ -5,25 +5,47 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static year2023.Common.permutations;
+import static java.util.stream.Collectors.toUnmodifiableMap;
+import static year2023.Common.permutationsAsStream;
 
 @SuppressWarnings("unused")
 public class Day12 extends Day {
 
+    private static final String[] ALTERNATIVES = new String[]{".", "#"};
     private static final Pattern DOT_PATTERN = Pattern.compile("\\.+");
 
+    private Map<Integer, List<String>> permutationsByLength;
+    private ConcurrentMap<String, List<String>> candidateToPermutationsCache;
+
     @Override
-    Object part1(Stream<String> input) throws IOException {
+    void prepare(Stream<String> input) {
+        permutationsByLength = IntStream.rangeClosed(1, 16)
+                .mapToObj(length -> Pair.of(
+                        length,
+                        permutationsWithUnknownsReplaced("?".repeat(length))
+                ))
+                .collect(toUnmodifiableMap(Pair::first, Pair::second));
+
+        candidateToPermutationsCache = new ConcurrentHashMap<>();
+    }
+
+    @Override
+    Long part1(Stream<String> input) throws IOException {
         return input
                 .parallel()
                 .map(line -> line.split(" "))
                 .map(pair -> new SpringConditionInput(
-                        pair[0],
                         Arrays.stream(DOT_PATTERN.split(pair[0]))
                                 .filter(s -> !s.isEmpty())
                                 .toList(),
@@ -33,29 +55,29 @@ public class Day12 extends Day {
                 ))
                 .map(sci -> {
                     List<List<String>> unprocessedCandidatePermutations = sci.candidates.stream()
-                            .map(Day12::permutationsWithUnknownsReplaced)
+                            .map(this::candidateToPermutations)
                             .toList();
 
-                    List<List<String>> allPermutations = permutations(unprocessedCandidatePermutations)
-                            .stream()
+                    return permutationsAsStream(unprocessedCandidatePermutations)
                             .map(permutationsThatCanBeSplit -> permutationsThatCanBeSplit.stream()
                                     .mapMulti(
                                             (String candidate, Consumer<String> consumer) -> {
-                                                if (candidate.contains(".")) {
-                                                    DOT_PATTERN.splitAsStream(candidate)
-                                                            .filter(s -> !s.isEmpty())
-                                                            .forEachOrdered(consumer);
-                                                }
-                                                else {
+                                                int hasDot = candidate.indexOf(".");
+                                                if (hasDot >= 0) {
+                                                    StringTokenizer tokenizer = new StringTokenizer(candidate, ".", false);
+                                                    while (tokenizer.hasMoreTokens()) {
+                                                        String next = tokenizer.nextToken();
+                                                        if (!next.isEmpty()) {
+                                                            consumer.accept(next);
+                                                        }
+                                                    }
+                                                } else {
                                                     consumer.accept(candidate);
                                                 }
                                             }
                                     )
                                     .toList()
                             )
-                            .toList();
-
-                    return allPermutations.stream()
                             .filter(permutation -> isValid(permutation, sci.contiguousGroupSizes))
                             .count();
                 })
@@ -63,25 +85,102 @@ public class Day12 extends Day {
                 .sum(); // Your puzzle answer was 7506
     }
 
-    boolean isValid(List<String> candidates, List<Integer> groupSizes) {
-        if (candidates.size() != groupSizes.size()) {
-            return false;
-        }
+    @Override
+    Object part2(Stream<String> input) throws Exception {
+        return input
+                .parallel()
+                .map(line -> line.split(" "))
+                .map(pair -> new String[]{
+                        IntStream.range(0, 5)
+                                .mapToObj(n -> pair[0])
+                                .collect(Collectors.joining("?")),
+                        IntStream.range(0, 5)
+                                .mapToObj(n -> pair[1])
+                                .collect(Collectors.joining(","))
+                })
+                .map(pair -> new SpringConditionInput(
+                        Arrays.stream(DOT_PATTERN.split(pair[0]))
+                                .filter(s -> !s.isEmpty())
+                                .toList(),
+                        Arrays.stream(pair[1].split(","))
+                                .map(Integer::parseInt)
+                                .toList()
+                ))
+                .map(sci -> {
+                    List<List<String>> unprocessedCandidatePermutations = sci.candidates.stream()
+                            .map(this::candidateToPermutations)
+                            .toList();
 
-        for (int i = 0; i < candidates.size(); i++) {
-            if (candidates.get(i).length() != groupSizes.get(i)) {
-                return false;
+                    return permutationsAsStream(unprocessedCandidatePermutations)
+                            .map(permutationsThatCanBeSplit -> permutationsThatCanBeSplit.stream()
+                                    .mapMulti(
+                                            (String candidate, Consumer<String> consumer) -> {
+                                                int hasDot = candidate.indexOf(".");
+                                                if (hasDot >= 0) {
+                                                    StringTokenizer tokenizer = new StringTokenizer(candidate, ".", false);
+                                                    while (tokenizer.hasMoreTokens()) {
+                                                        String next = tokenizer.nextToken();
+                                                        if (!next.isEmpty()) {
+                                                            consumer.accept(next);
+                                                        }
+                                                    }
+                                                } else {
+                                                    consumer.accept(candidate);
+                                                }
+                                            }
+                                    )
+                                    .toList()
+                            )
+                            .filter(permutation -> isValid(permutation, sci.contiguousGroupSizes))
+                            .count();
+                })
+                .mapToLong(v -> v)
+                .sum();
+    }
+
+    private List<String> candidateToPermutations(String candidate) {
+        return candidateToPermutationsCache.computeIfAbsent(candidate, c -> {
+            if (!candidate.contains("#")) {
+                return permutationsByLength.get(candidate.length());
             }
-        }
 
-        return true;
+            return permutationsWithUnknownsReplaced(candidate);
+        });
+    }
+
+    static List<String> permutationsOfBrokenAndWorking(int length) {
+        int n = (int) Math.pow(ALTERNATIVES.length, length);
+        List<String> combinations = new ArrayList<>(n);
+
+        int carry;
+        int[] indices = new int[length];
+        do {
+            StringBuilder sb = new StringBuilder(length);
+            for (int index : indices) {
+                sb.append(ALTERNATIVES[index]);
+            }
+            combinations.add(sb.toString());
+
+            carry = 1;
+            for (int i = indices.length - 1; i >= 0; i--) {
+                if (carry == 0) {
+                    break;
+                }
+
+                indices[i] += carry;
+                carry = 0;
+
+                if (indices[i] == ALTERNATIVES.length) {
+                    carry = 1;
+                    indices[i] = 0;
+                }
+            }
+        } while (carry != 1);
+
+        return combinations;
     }
 
     static List<String> permutationsWithUnknownsReplaced(String input) {
-        String[] alternatives = {".", "#"};
-        List<String> combinations = new ArrayList<>();
-        int length = input.length();
-
         Set<Integer> indicesToReplace = new HashSet<>();
         for (int i = 0; i < input.length(); i++) {
             if (input.charAt(i) == '?') {
@@ -93,6 +192,9 @@ public class Day12 extends Day {
             return List.of(input);
         }
 
+        List<String> combinations = new ArrayList<>();
+        int length = input.length();
+
         int carry;
         int[] indices = new int[length];
 
@@ -100,9 +202,8 @@ public class Day12 extends Day {
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < indices.length; i++) {
                 if (indicesToReplace.contains(i)) {
-                    sb.append(alternatives[indices[i]]);
-                }
-                else {
+                    sb.append(ALTERNATIVES[indices[i]]);
+                } else {
                     sb.append(input.charAt(i));
                 }
             }
@@ -121,16 +222,30 @@ public class Day12 extends Day {
                 indices[i] += carry;
                 carry = 0;
 
-                if (indices[i] == alternatives.length) {
+                if (indices[i] == ALTERNATIVES.length) {
                     carry = 1;
                     indices[i] = 0;
                 }
             }
         } while (carry != 1);
 
-        return List.copyOf(combinations);
+        return combinations;
     }
 
-    record SpringConditionInput(String springConditions, List<String> candidates, List<Integer> contiguousGroupSizes) {
+    boolean isValid(List<String> candidates, List<Integer> groupSizes) {
+        if (candidates.size() != groupSizes.size()) {
+            return false;
+        }
+
+        for (int i = 0; i < candidates.size(); i++) {
+            if (candidates.get(i).length() != groupSizes.get(i)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    record SpringConditionInput(List<String> candidates, List<Integer> contiguousGroupSizes) {
     }
 }

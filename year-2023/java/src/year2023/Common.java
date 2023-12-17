@@ -5,13 +5,20 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 public class Common {
 
     private static final Pattern SPACE_PATTERN = Pattern.compile("\\s+");
+    private static final ExecutorService EXECUTOR_SERVICE = Executors.newCachedThreadPool();
 
     public static Stream<String> readInputLinesForDay(int day) throws IOException {
         Path path = Path.of("year-2023/" + day + "/input");
@@ -118,14 +125,14 @@ public class Common {
     }
 
     static <T> List<List<T>> permutations(List<List<T>> input) {
-        List<List<T>> permutations = new ArrayList<>();
+        List<List<T>> permutations = new ArrayList<>(input.size() * 3);
         int length = input.size();
 
         int carry;
         int[] indices = new int[length];
 
         do {
-            List<T> instance = new ArrayList<>();
+            List<T> instance = new ArrayList<>(indices.length);
             for (int i = 0; i < indices.length; i++) {
                 int index = indices[i];
                 instance.add(input.get(i).get(index));
@@ -149,6 +156,51 @@ public class Common {
         } while (carry != 1);
 
         return permutations;
+    }
+
+    static <T> Stream<List<T>> permutationsAsStream(List<List<T>> input) {
+        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(new Iterator<>() {
+            final int length = input.size();
+            final int[] indices = new int[length];
+            int carry = -1;
+
+            @Override
+            public boolean hasNext() {
+                if (carry == -1) {
+                    carry = 0;
+                    return true;
+                }
+
+                carry = 1;
+                for (int i = indices.length - 1; i >= 0; i--) {
+                    if (carry == 0) {
+                        break;
+                    }
+
+                    indices[i] += carry;
+                    carry = 0;
+
+                    if (indices[i] == input.get(i).size()) {
+                        carry = 1;
+                        indices[i] = 0;
+                    }
+                }
+
+                return carry != 1;
+            }
+
+            @Override
+            public List<T> next() {
+                List<T> instance = new ArrayList<>(indices.length);
+
+                for (int i = 0; i < indices.length; i++) {
+                    int index = indices[i];
+                    instance.add(input.get(i).get(index));
+                }
+
+                return instance;
+            }
+        }, Spliterator.IMMUTABLE), false);
     }
 
     @SuppressWarnings("UseOfSystemOutOrSystemErr")
