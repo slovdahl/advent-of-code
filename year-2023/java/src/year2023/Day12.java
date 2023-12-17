@@ -1,5 +1,8 @@
 package year2023;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -8,14 +11,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toUnmodifiableMap;
 import static year2023.Common.permutationsAsStream;
 
@@ -26,7 +27,8 @@ public class Day12 extends Day {
     private static final Pattern DOT_PATTERN = Pattern.compile("\\.+");
 
     private Map<Integer, List<String>> permutationsByLength;
-    private ConcurrentMap<String, List<String>> candidateToPermutationsCache;
+    private Cache<String, List<String>> candidateToPermutationsCache;
+    private Cache<String, List<String>> unprocessedPermutationsCache;
 
     @Override
     void prepare(Stream<String> input) {
@@ -37,7 +39,13 @@ public class Day12 extends Day {
                 ))
                 .collect(toUnmodifiableMap(Pair::first, Pair::second));
 
-        candidateToPermutationsCache = new ConcurrentHashMap<>();
+        candidateToPermutationsCache = Caffeine.newBuilder()
+                .maximumSize(50_000)
+                .build();
+
+        unprocessedPermutationsCache = Caffeine.newBuilder()
+                .maximumSize(50_000)
+                .build();
     }
 
     @Override
@@ -86,17 +94,17 @@ public class Day12 extends Day {
     }
 
     @Override
-    Object part2(Stream<String> input) throws Exception {
+    Long part2(Stream<String> input) throws Exception {
         return input
                 .parallel()
                 .map(line -> line.split(" "))
                 .map(pair -> new String[]{
                         IntStream.range(0, 5)
                                 .mapToObj(n -> pair[0])
-                                .collect(Collectors.joining("?")),
+                                .collect(joining("?")),
                         IntStream.range(0, 5)
                                 .mapToObj(n -> pair[1])
-                                .collect(Collectors.joining(","))
+                                .collect(joining(","))
                 })
                 .map(pair -> new SpringConditionInput(
                         Arrays.stream(DOT_PATTERN.split(pair[0]))
@@ -117,12 +125,20 @@ public class Day12 extends Day {
                                             (String candidate, Consumer<String> consumer) -> {
                                                 int hasDot = candidate.indexOf(".");
                                                 if (hasDot >= 0) {
-                                                    StringTokenizer tokenizer = new StringTokenizer(candidate, ".", false);
-                                                    while (tokenizer.hasMoreTokens()) {
-                                                        String next = tokenizer.nextToken();
-                                                        if (!next.isEmpty()) {
-                                                            consumer.accept(next);
+                                                    List<String> processed = unprocessedPermutationsCache.get(candidate, c -> {
+                                                        List<String> result = new ArrayList<>();
+                                                        StringTokenizer tokenizer = new StringTokenizer(c, ".", false);
+                                                        while (tokenizer.hasMoreTokens()) {
+                                                            String next = tokenizer.nextToken();
+                                                            if (!next.isEmpty()) {
+                                                                result.add(next);
+                                                            }
                                                         }
+                                                        return result;
+                                                    });
+
+                                                    for (String s : processed) {
+                                                        consumer.accept(s);
                                                     }
                                                 } else {
                                                     consumer.accept(candidate);
@@ -139,12 +155,12 @@ public class Day12 extends Day {
     }
 
     private List<String> candidateToPermutations(String candidate) {
-        return candidateToPermutationsCache.computeIfAbsent(candidate, c -> {
-            if (!candidate.contains("#")) {
-                return permutationsByLength.get(candidate.length());
+        return candidateToPermutationsCache.get(candidate, c -> {
+            if (!c.contains("#")) {
+                return permutationsByLength.get(c.length());
             }
 
-            return permutationsWithUnknownsReplaced(candidate);
+            return permutationsWithUnknownsReplaced(c);
         });
     }
 
