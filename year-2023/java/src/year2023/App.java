@@ -4,6 +4,7 @@ import com.google.common.reflect.ClassPath;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
+import java.util.Comparator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -14,13 +15,18 @@ public class App {
 
     private static final Pattern CLASS_NAME_PATTERN = Pattern.compile("Day(\\d+)");
 
-    @SuppressWarnings("UseOfSystemOutOrSystemErr")
     public static void main(String[] args) throws Exception {
+        Comparator<Class<?>> comparator = Comparator
+                // Hack to get sorting of Day1, Day2, .., Day10, Day 11 to work as expected
+                // without actually comparing the integers.
+                .<Class<?>, Integer>comparing(cls -> cls.getSimpleName().length())
+                .thenComparing(Class::getName);
+
         List<? extends Class<?>> dayClasses = ClassPath.from(App.class.getClassLoader()).getTopLevelClasses("year2023").stream()
                 .map(ClassPath.ClassInfo::load)
                 .filter(Day.class::isAssignableFrom)
                 .filter(clazz -> !Modifier.isAbstract(clazz.getModifiers()))
-                .sorted(comparing(Class::getName))
+                .sorted(comparator)
                 .toList();
 
         Class<?> clazz;
