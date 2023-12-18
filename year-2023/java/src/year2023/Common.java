@@ -192,4 +192,30 @@ public class Common {
         src[srcIndex] = dst[dstIndex];
         dst[dstIndex] = t;
     }
+
+    static void rotateRight(char[][] matrix) {
+        // determines the transpose of the matrix
+        for (int i = 0; i < matrix.length; i++) {
+            for (int j = i; j < matrix.length; j++) {
+                char temp = matrix[i][j];
+                matrix[i][j] = matrix[j][i];
+                matrix[j][i] = temp;
+            }
+        }
+
+        // then we reverse the elements of each row
+        for (int i = 0; i < matrix.length; i++) {
+            // logic to reverse each row i.e. 1D Array
+            int low = 0;
+            int high = matrix.length - 1;
+
+            while (low < high) {
+                char temp = matrix[i][low];
+                matrix[i][low] = matrix[i][high];
+                matrix[i][high] = temp;
+                low++;
+                high--;
+            }
+        }
+    }
 }

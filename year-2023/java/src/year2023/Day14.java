@@ -13,6 +13,26 @@ public class Day14 extends Day {
     Integer part1(Stream<String> input) throws IOException {
         char[][] matrix = matrix(input.toList());
 
+        tiltAllRocksNorth(matrix);
+
+        return calculateLoad(matrix); // Your puzzle answer was 110407
+    }
+
+    @Override
+    Object part2(Stream<String> input) throws Exception {
+        char[][] matrix = matrix(input.toList());
+
+        for (int n = 0; n < 1_000_000_000; n++) {
+            tiltAllRocksNorth(matrix);
+            tiltAllRocksWest(matrix);
+            tiltAllRocksSouth(matrix);
+            tiltAllRocksEast(matrix);
+        }
+
+        return calculateLoad(matrix);
+    }
+
+    private static void tiltAllRocksNorth(char[][] matrix) {
         for (int column = 0; column < matrix[0].length; column++) {
             int nextFreeRow = matrix[0][column] == '.' ? 0 : -1;
             for (int row = 1; row < matrix.length; row++) {
@@ -35,16 +55,95 @@ public class Day14 extends Day {
                 }
             }
         }
+    }
 
+    private static void tiltAllRocksWest(char[][] matrix) {
+        for (char[] row : matrix) {
+            int nextFreeColumn = row[0] == '.' ? 0 : -1;
+
+            for (int column = 0; column < row.length; column++) {
+                char current = row[column];
+                if (current == 'O') {
+                    if (nextFreeColumn >= 0) {
+                        swap(row, nextFreeColumn, column);
+                        nextFreeColumn++;
+                    } else {
+                        nextFreeColumn = -1;
+                    }
+                } else if (current == '.') {
+                    if (nextFreeColumn >= 0 && nextFreeColumn < column) {
+                        continue;
+                    } else {
+                        nextFreeColumn = column;
+                    }
+                } else if (current == '#') {
+                    nextFreeColumn = -1;
+                }
+            }
+        }
+    }
+
+    private static void tiltAllRocksSouth(char[][] matrix) {
+        for (int column = 0; column < matrix[0].length; column++) {
+            int nextFreeRow = matrix[matrix.length - 1][column] == '.' ? 0 : -1;
+            for (int row = matrix.length - 1; row >= 0; row--) {
+                char current = matrix[row][column];
+                if (current == 'O') {
+                    if (nextFreeRow > 0) {
+                        swap(matrix[row], matrix[nextFreeRow], column, column);
+                        nextFreeRow--;
+                    } else {
+                        nextFreeRow = -1;
+                    }
+                } else if (current == '.') {
+                    if (nextFreeRow > row) {
+                        continue;
+                    } else {
+                        nextFreeRow = row;
+                    }
+                } else if (current == '#') {
+                    nextFreeRow = -1;
+                }
+            }
+        }
+    }
+
+    private static void tiltAllRocksEast(char[][] matrix) {
+        for (char[] row : matrix) {
+            int nextFreeColumn = row[row.length - 1] == '.' ? 0 : -1;
+
+            for (int column = row.length - 1; column >= 0; column--) {
+                char current = row[column];
+                if (current == 'O') {
+                    if (nextFreeColumn >= 0) {
+                        swap(row, nextFreeColumn, column);
+                        nextFreeColumn--;
+                    } else {
+                        nextFreeColumn = -1;
+                    }
+                } else if (current == '.') {
+                    if (nextFreeColumn > column) {
+                        continue;
+                    } else {
+                        nextFreeColumn = column;
+                    }
+                } else if (current == '#') {
+                    nextFreeColumn = -1;
+                }
+            }
+        }
+    }
+
+
+    private static int calculateLoad(char[][] matrix) {
         int load = 0;
         for (int row = 0; row < matrix.length; row++) {
             for (int column = 0; column < matrix[row].length; column++) {
                 if (matrix[row][column] == 'O') {
-                    load += (matrix.length - row);
+                    load += matrix.length - row;
                 }
             }
         }
-
-        return load; // Your puzzle answer was 110407
+        return load;
     }
 }
