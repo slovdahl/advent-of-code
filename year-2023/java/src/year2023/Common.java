@@ -171,7 +171,7 @@ public class Common {
     }
 
     @SuppressWarnings("UseOfSystemOutOrSystemErr")
-    public static void print(char[][] matrix) {
+    static void print(char[][] matrix) {
         for (char[] chars : matrix) {
             for (char ch : chars) {
                 System.out.print(ch);
@@ -179,5 +179,17 @@ public class Common {
             System.out.println();
         }
         System.out.println();
+    }
+
+    static final void swap(char[] a, int i, int j) {
+        char t = a[i];
+        a[i] = a[j];
+        a[j] = t;
+    }
+
+    static final void swap(char[] src, char[] dst, int srcIndex, int dstIndex) {
+        char t = src[srcIndex];
+        src[srcIndex] = dst[dstIndex];
+        dst[dstIndex] = t;
     }
 }
