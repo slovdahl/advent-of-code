@@ -1,6 +1,8 @@
 package year2023;
 
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static year2023.Common.matrix;
@@ -18,18 +20,32 @@ public class Day14 extends Day {
         return calculateLoad(matrix); // Your puzzle answer was 110407
     }
 
+    @SuppressWarnings("UseOfSystemOutOrSystemErr")
     @Override
     Object part2(Stream<String> input) throws Exception {
         char[][] matrix = matrix(input.toList());
 
-        for (int n = 0; n < 1_000_000_000; n++) {
+        Set<char[][]> seen = new HashSet<>();
+
+        int period = 13;
+        int[] valuesInPeriod = new int[period];
+
+        int previous = calculateLoad(matrix);
+
+        for (int n = 1; n <= 1_000; n++) {
             tiltAllRocksNorth(matrix);
             tiltAllRocksWest(matrix);
             tiltAllRocksSouth(matrix);
             tiltAllRocksEast(matrix);
+
+            int current = calculateLoad(matrix);
+            System.out.printf("Load diff: %7d %7d%n", (previous - current), current);
+            previous = current;
+
+            valuesInPeriod[n % period] = current;
         }
 
-        return calculateLoad(matrix);
+        return valuesInPeriod[1_000_000_000 % period]; // Your puzzle answer was 87273
     }
 
     private static void tiltAllRocksNorth(char[][] matrix) {
