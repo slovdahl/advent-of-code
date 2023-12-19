@@ -1,8 +1,12 @@
 package year2023;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.SequencedSet;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -17,12 +21,66 @@ public class Day16 extends Day {
         char[][] matrix = matrix(input.toList());
         Set<Tile> energizedTiles = new HashSet<>();
 
+        TileMove startingMove = new TileMove(new Tile(0, 0), Direction.RIGHT);
+
+        findAllEnergizedTiles(startingMove, energizedTiles, matrix, 50_000);
+
+        return energizedTiles.size(); // Your puzzle answer was 7543
+    }
+
+    @Override
+    Object part2(Stream<String> input) throws Exception {
+        char[][] matrix = matrix(input.toList());
+        Map<TileMove, Set<Tile>> energizedTilesPerStartingMove = new HashMap<>();
+
+        List<TileMove> startingMoves = new ArrayList<>();
+        for (int column = 0; column < matrix[0].length; column++) {
+            startingMoves.add(new TileMove(new Tile(0, column), Direction.DOWN));
+            startingMoves.add(new TileMove(new Tile(matrix.length - 1, column), Direction.DOWN));
+        }
+        for (int row = 0; row < matrix.length; row++) {
+            startingMoves.add(new TileMove(new Tile(row, 0), Direction.RIGHT));
+            startingMoves.add(new TileMove(new Tile(row, matrix[0].length - 1), Direction.LEFT));
+        }
+
+        startingMoves.stream()
+                .parallel()
+                .forEach(startingMove -> {
+                    Set<Tile> energizedTiles = new HashSet<>();
+                    energizedTilesPerStartingMove.put(startingMove, energizedTiles);
+
+                    findAllEnergizedTiles(startingMove, energizedTiles, matrix, 50_000);
+                });
+
+        return energizedTilesPerStartingMove
+                .values()
+                .stream()
+                .mapToInt(Set::size)
+                .max()
+                .orElseThrow(); // Your puzzle answer was 8231
+    }
+
+    private static void findAllEnergizedTiles(TileMove startingMove, Set<Tile> energizedTiles, char[][] matrix, int cycleCutOff) {
         SequencedSet<TileMove> currentTiles = new LinkedHashSet<>();
-        currentTiles.add(new TileMove(new Tile(0, 0), Direction.RIGHT));
+        currentTiles.add(startingMove);
+
+        int previousSize = -1;
+        int iterationsSameSize = 0;
 
         while (!currentTiles.isEmpty()) {
             TileMove current = currentTiles.removeFirst();
             energizedTiles.add(current.tile);
+
+            if (previousSize == energizedTiles.size()) {
+                iterationsSameSize++;
+
+                if (iterationsSameSize > cycleCutOff) {
+                    break;
+                }
+            } else {
+                iterationsSameSize = 0;
+                previousSize = energizedTiles.size();
+            }
 
             currentTiles.addAll(switch (matrix[current.tile.row][current.tile.column]) {
                 case '\\' -> {
@@ -101,8 +159,6 @@ public class Day16 extends Day {
                 default -> throw new IllegalStateException();
             });
         }
-
-        return energizedTiles.size(); // Your puzzle answer was 7543
     }
 
     record Tile(int row, int column) {
