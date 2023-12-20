@@ -11,6 +11,8 @@ import java.util.Set;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import static year2023.Common.manhattanDistance;
+
 @SuppressWarnings("unused")
 public class Day11 extends Day {
 
@@ -75,8 +77,10 @@ public class Day11 extends Day {
 
         return pairs.stream()
                 .mapToLong(pair ->
-                        Math.abs(pair.first().row - pair.second().row) +
-                                Math.abs(pair.first().column - pair.second().column)
+                        manhattanDistance(
+                                pair.first().row, pair.first().column,
+                                pair.second().row, pair.second().column
+                        )
                 )
                 .sum();
     }

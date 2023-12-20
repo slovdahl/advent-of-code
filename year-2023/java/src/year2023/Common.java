@@ -73,6 +73,23 @@ public class Common {
         return arr;
     }
 
+    public static int[][] intMatrix(List<String> input) {
+        int numberOfRows = input.size();
+        int numberOfColumns = input.getFirst().length();
+
+        int[][] arr = new int[numberOfRows][numberOfColumns];
+
+        for (int i = 0; i < input.size(); i++) {
+            int j = 0;
+            arr[i] = new int[input.get(i).length()];
+            for (char ch : input.get(i).toCharArray()) {
+                arr[i][j++] = Character.getNumericValue(ch);
+            }
+        }
+
+        return arr;
+    }
+
     public static char[][] paddedMatrix(List<String> input, char fillerCharacter) {
         int numberOfRows = input.size() + 2;
         int numberOfColumns = input.getFirst().length() + 2;
@@ -181,5 +198,11 @@ public class Common {
                 high--;
             }
         }
+    }
+
+    public static int manhattanDistance(int row1, int column1,
+                                        int row2, int column2) {
+        return Math.abs(row1 - row2) +
+                Math.abs(column1 - column2);
     }
 }
