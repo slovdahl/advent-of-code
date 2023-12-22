@@ -95,7 +95,7 @@ public class Day12 extends Day {
 
     @Override
     Long part2(Stream<String> input) throws Exception {
-        return input
+        List<String[]> list = input
                 .parallel()
                 .map(line -> line.split(" "))
                 .map(pair -> new String[]{
@@ -106,6 +106,14 @@ public class Day12 extends Day {
                                 .mapToObj(n -> pair[1])
                                 .collect(joining(","))
                 })
+                .toList();
+
+        long distinct = list.stream()
+                .map(a -> a[0])
+                .distinct()
+                .count();
+
+        return list.stream()
                 .map(pair -> new SpringConditionInput(
                         Arrays.stream(DOT_PATTERN.split(pair[0]))
                                 .filter(s -> !s.isEmpty())
