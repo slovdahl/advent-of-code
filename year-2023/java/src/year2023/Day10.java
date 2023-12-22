@@ -2,23 +2,32 @@ package year2023;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Collectors.toUnmodifiableMap;
+import static year2023.Common.paddedMatrix;
+import static year2023.Common.printWithoutPadding;
 
 @SuppressWarnings("unused")
 public class Day10 extends Day {
 
+    private char[][] matrix;
+    private Coordinate startingPoint;
+    private int steps;
+    private Set<Coordinate> seenCoordinates;
+
     @Override
-    Object part1(Stream<String> input) throws IOException {
+    void prepare(Stream<String> input) {
         List<String> lines = input.toList();
 
-        char[][] matrix = Common.paddedMatrix(lines, '.');
+        matrix = paddedMatrix(lines, '.');
 
-        Coordinate startingPoint = null;
         for (int row = 0; row < matrix.length; row++) {
             for (int column = 0; column < matrix[row].length; column++) {
                 if (matrix[row][column] == 'S') {
@@ -27,34 +36,60 @@ public class Day10 extends Day {
             }
         }
 
-        assert startingPoint != null;
+        if (startingPoint == null) {
+            throw new IllegalStateException();
+        }
+
+        Direction startingPointOut = null;
+        Direction startingPointIn = null;
 
         Coordinate current = startingPoint;
         Direction previousDirection = null;
-        int steps = 0;
+        seenCoordinates = new HashSet<>();
+
         do {
+            seenCoordinates.add(current);
             char ch = matrix[current.row][current.column];
 
             PipeType pipeType = PipeType.LOOKUP.get(ch);
 
             steps++;
             if (previousDirection != Direction.SOUTH && pipeType.north.contains(current.north(matrix))) {
+                if (previousDirection == null) {
+                    startingPointOut = Direction.NORTH;
+                }
                 previousDirection = Direction.NORTH;
                 current = current.toNorth();
             } else if (previousDirection != Direction.WEST && pipeType.east.contains(current.east(matrix))) {
+                if (previousDirection == null) {
+                    startingPointOut = Direction.EAST;
+                }
                 previousDirection = Direction.EAST;
                 current = current.toEast();
             } else if (previousDirection != Direction.NORTH && pipeType.south.contains(current.south(matrix))) {
+                if (previousDirection == null) {
+                    startingPointOut = Direction.SOUTH;
+                }
                 previousDirection = Direction.SOUTH;
                 current = current.toSouth();
             } else if (previousDirection != Direction.EAST && pipeType.west.contains(current.west(matrix))) {
+                if (previousDirection == null) {
+                    startingPointOut = Direction.WEST;
+                }
                 previousDirection = Direction.WEST;
                 current = current.toWest();
             } else {
-                if (current.north(matrix) == 'S' ||
-                        current.east(matrix) == 'S' ||
-                        current.south(matrix) == 'S' ||
-                        current.west(matrix) == 'S') {
+                if (current.north(matrix) == 'S') {
+                    startingPointIn = Direction.NORTH;
+                    break;
+                } else if (current.east(matrix) == 'S') {
+                    startingPointIn = Direction.EAST;
+                    break;
+                } else if (current.south(matrix) == 'S') {
+                    startingPointIn = Direction.SOUTH;
+                    break;
+                } else if (current.west(matrix) == 'S') {
+                    startingPointIn = Direction.WEST;
                     break;
                 } else {
                     throw new IllegalStateException();
@@ -62,22 +97,134 @@ public class Day10 extends Day {
             }
         } while (true);
 
+        Set<Character> possibleStartCharacters = Arrays.stream(PipeType.values())
+                .filter(t -> t != PipeType.S)
+                .map(t -> t.ch)
+                .collect(toSet());
+
+        switch (startingPointOut) {
+            case NORTH -> {
+                possibleStartCharacters.remove('-');
+                possibleStartCharacters.remove('7');
+                possibleStartCharacters.remove('F');
+            }
+            case EAST -> {
+                possibleStartCharacters.remove('|');
+                possibleStartCharacters.remove('J');
+                possibleStartCharacters.remove('7');
+            }
+            case SOUTH -> {
+                possibleStartCharacters.remove('-');
+                possibleStartCharacters.remove('L');
+                possibleStartCharacters.remove('J');
+            }
+            case WEST -> {
+                possibleStartCharacters.remove('|');
+                possibleStartCharacters.remove('L');
+                possibleStartCharacters.remove('F');
+            }
+        }
+
+        switch (startingPointIn) {
+            case NORTH -> {
+                possibleStartCharacters.remove('-');
+                possibleStartCharacters.remove('L');
+                possibleStartCharacters.remove('J');
+            }
+            case EAST -> {
+                possibleStartCharacters.remove('|');
+                possibleStartCharacters.remove('L');
+                possibleStartCharacters.remove('F');
+            }
+            case SOUTH -> {
+                possibleStartCharacters.remove('-');
+                possibleStartCharacters.remove('7');
+                possibleStartCharacters.remove('F');
+            }
+            case WEST -> {
+                possibleStartCharacters.remove('|');
+                possibleStartCharacters.remove('J');
+                possibleStartCharacters.remove('7');
+            }
+        }
+
+        if (possibleStartCharacters.size() > 1) {
+            throw new IllegalStateException();
+        }
+
+        matrix[startingPoint.row][startingPoint.column] = possibleStartCharacters.iterator().next();
+    }
+
+    @Override
+    Integer part1(Stream<String> input) throws IOException {
         return steps / 2; // Your puzzle answer was 6757
     }
 
-    record Coordinate(int row, int column) {
-        boolean isConnectedTo(char currentPipe, int toRow, int toColumn) {
-            return switch (currentPipe) {
-                case '|' -> column == toColumn && (row + 1 == toRow || row - 1 == toRow);
-                case '-' -> row == toRow && (column + 1 == toColumn || column - 1 == toColumn);
-                case 'L' -> (column == toColumn && row - 1 == toRow) || (row == toRow && column + 1 == toColumn);
-                case 'J' -> (column == toColumn && row - 1 == toRow) || (row == toRow && column - 1 == toColumn);
-                case '7' -> (row == toRow && column - 1 == toColumn) || (column == toColumn && row + 1 == toRow);
-                case 'F' -> (row == toRow && column + 1 == toColumn) || (column == toColumn && row + 1 == toRow);
-                default -> false;
-            };
+    @Override
+    Object part2(Stream<String> input) throws Exception {
+        for (int row = 1; row < matrix.length - 1; row++) {
+            for (int column = 1; column < matrix[row].length - 1; column++) {
+                if (!seenCoordinates.contains(new Coordinate(row, column))) {
+                    matrix[row][column] = ' ';
+                }
+            }
         }
 
+        printWithoutPadding(matrix);
+
+        Map<Integer, Set<Coordinate>> coordinatesPerRow = seenCoordinates.stream()
+                .collect(groupingBy(Coordinate::row, toSet()));
+
+        int enclosedTiles = 0;
+        for (Integer row : coordinatesPerRow.keySet()) {
+            char[] rowContent = matrix[row];
+            int seenPipes = 0;
+            Direction pendingPipeInDirection = null;
+
+            for (char columnContent : rowContent) {
+                if (columnContent == '|') {
+                    seenPipes++;
+                } else if (columnContent == '-') {
+                    if (pendingPipeInDirection == null) {
+                        throw new IllegalStateException();
+                    }
+                } else if (columnContent == 'L' || columnContent == 'F') {
+                    if (pendingPipeInDirection != null) {
+                        throw new IllegalStateException();
+                    } else {
+                        pendingPipeInDirection = columnContent == 'F' ? Direction.SOUTH : Direction.NORTH;
+                    }
+                } else if (columnContent == 'J' || columnContent == '7') {
+                    if (pendingPipeInDirection != null) {
+                        if (columnContent == '7' && pendingPipeInDirection == Direction.SOUTH ||
+                                columnContent == 'J' && pendingPipeInDirection == Direction.NORTH) {
+                            seenPipes += 2;
+                        } else {
+                            seenPipes += 1;
+                        }
+
+                        pendingPipeInDirection = null;
+                    } else {
+                        throw new IllegalStateException();
+                    }
+                } else if (columnContent == ' ') {
+                    if (seenPipes % 2 == 1) {
+                        enclosedTiles++;
+                    }
+                }
+            }
+
+            if (seenPipes % 2 == 1) {
+                throw new IllegalStateException("row " + row);
+            } else if (pendingPipeInDirection != null) {
+                throw new IllegalStateException("row " + row);
+            }
+        }
+
+        return enclosedTiles;
+    }
+
+    record Coordinate(int row, int column) {
         char north(char[][] matrix) {
             return matrix[row - 1][column];
         }
@@ -136,13 +283,13 @@ public class Day10 extends Day {
                  Set<Character> north,
                  Set<Character> east,
                  Set<Character> south,
-                 Set<Character> canConnectWest) {
+                 Set<Character> west) {
 
             this.ch = ch;
             this.north = north;
             this.east = east;
             this.south = south;
-            this.west = canConnectWest;
+            this.west = west;
         }
     }
 

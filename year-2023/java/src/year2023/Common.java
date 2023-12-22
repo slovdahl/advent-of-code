@@ -162,6 +162,17 @@ public class Common {
         System.out.println();
     }
 
+    @SuppressWarnings("UseOfSystemOutOrSystemErr")
+    static void printWithoutPadding(char[][] matrix) {
+        for (int row = 1; row < matrix.length - 1; row++) {
+            for (int column = 1; column < matrix[row].length - 1; column++) {
+                System.out.print(matrix[row][column]);
+            }
+            System.out.println();
+        }
+        System.out.println();
+    }
+
     static final void swap(char[] a, int i, int j) {
         char t = a[i];
         a[i] = a[j];
