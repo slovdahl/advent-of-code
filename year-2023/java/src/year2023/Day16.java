@@ -1,5 +1,7 @@
 package year2023;
 
+import year2023.tools.Direction;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -204,12 +206,5 @@ public class Day16 extends Day {
         TileMove left() {
             return new TileMove(tile.left(), Direction.LEFT);
         }
-    }
-
-    enum Direction {
-        UP,
-        RIGHT,
-        DOWN,
-        LEFT
     }
 }

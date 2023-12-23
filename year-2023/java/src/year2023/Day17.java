@@ -4,6 +4,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.SortedSetMultimap;
 import com.google.common.collect.TreeMultimap;
+import year2023.tools.Direction;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -298,12 +299,5 @@ public class Day17 extends Day {
         public String toString() {
             return "" + value;
         }
-    }
-
-    enum Direction {
-        UP,
-        RIGHT,
-        DOWN,
-        LEFT
     }
 }

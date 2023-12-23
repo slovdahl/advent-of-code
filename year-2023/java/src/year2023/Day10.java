@@ -161,7 +161,7 @@ public class Day10 extends Day {
     }
 
     @Override
-    Object part2(Stream<String> input) throws Exception {
+    Integer part2(Stream<String> input) throws Exception {
         for (int row = 1; row < matrix.length - 1; row++) {
             for (int column = 1; column < matrix[row].length - 1; column++) {
                 if (!seenCoordinates.contains(new Coordinate(row, column))) {
