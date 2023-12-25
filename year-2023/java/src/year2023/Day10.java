@@ -1,5 +1,7 @@
 package year2023;
 
+import year2023.tools.Coordinate;
+
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -49,7 +51,7 @@ public class Day10 extends Day {
 
         do {
             seenCoordinates.add(current);
-            char ch = matrix[current.row][current.column];
+            char ch = matrix[current.row()][current.column()];
 
             PipeType pipeType = PipeType.LOOKUP.get(ch);
 
@@ -152,7 +154,7 @@ public class Day10 extends Day {
             throw new IllegalStateException();
         }
 
-        matrix[startingPoint.row][startingPoint.column] = possibleStartCharacters.iterator().next();
+        matrix[startingPoint.row()][startingPoint.column()] = possibleStartCharacters.iterator().next();
     }
 
     @Override
@@ -222,40 +224,6 @@ public class Day10 extends Day {
         }
 
         return enclosedTiles;
-    }
-
-    record Coordinate(int row, int column) {
-        char north(char[][] matrix) {
-            return matrix[row - 1][column];
-        }
-
-        char east(char[][] matrix) {
-            return matrix[row][column + 1];
-        }
-
-        char south(char[][] matrix) {
-            return matrix[row + 1][column];
-        }
-
-        char west(char[][] matrix) {
-            return matrix[row][column - 1];
-        }
-
-        Coordinate toNorth() {
-            return new Coordinate(row - 1, column);
-        }
-
-        Coordinate toEast() {
-            return new Coordinate(row, column + 1);
-        }
-
-        Coordinate toSouth() {
-            return new Coordinate(row + 1, column);
-        }
-
-        Coordinate toWest() {
-            return new Coordinate(row, column - 1);
-        }
     }
 
     enum PipeType {

@@ -1,25 +1,35 @@
 package year2023;
 
+import com.google.common.collect.ContiguousSet;
+import com.google.common.collect.DiscreteDomain;
+import com.google.common.collect.Range;
+import year2023.tools.Coordinate;
 import year2023.tools.Direction;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
 
-@SuppressWarnings({"unused", "UseOfSystemOutOrSystemErr"})
+@SuppressWarnings({"unused"})
 public class Day18 extends Day {
 
     @Override
     Long part1(Stream<String> input) throws IOException {
-        Matrix matrix = new Matrix();
+        SparseMatrix matrix = new SparseMatrix();
         Coordinate current = new Coordinate(0, 0);
 
         for (String line : input.toList()) {
             String[] split = line.split(" ");
 
-            Direction direction = from(split[0]);
+            Direction direction = Coordinate.from(split[0]);
             int steps = Integer.parseInt(split[1]);
 
             current = matrix.add(
@@ -29,241 +39,227 @@ public class Day18 extends Day {
             );
         }
 
-        System.out.println("Current: " + current);
+        mergeAdjacentRanges(matrix);
 
-        matrix.print();
+        return calculateCubicMetersForLava(matrix); // Your puzzle answer was 42317
+    }
 
-        int enclosedTiles = 0;
+    private static void mergeAdjacentRanges(SparseMatrix matrix) {
+        for (SortedSet<ContiguousSet<Integer>> row : matrix.matrix) {
+            if (row.isEmpty()) {
+                continue;
+            }
+
+            boolean changed;
+            do {
+                changed = false;
+                Iterator<ContiguousSet<Integer>> iterator = row.iterator();
+
+                ContiguousSet<Integer> current = iterator.next();
+
+                while (iterator.hasNext()) {
+                    ContiguousSet<Integer> next = iterator.next();
+
+                    if (!current.intersection(next).isEmpty() || current.last() + 1 == next.first()) {
+                        row.remove(current);
+                        row.remove(next);
+
+                        row.add(ContiguousSet.create(
+                                current.range().span(next.range()),
+                                DiscreteDomain.integers()
+                        ));
+
+                        changed = true;
+                        break;
+                    }
+
+                    current = next;
+                }
+            } while (changed);
+        }
+    }
+
+    private static long calculateCubicMetersForLava(SparseMatrix matrix) {
+        long enclosedTiles = 0L;
+        Map<Integer, AtomicLong> enclosedTilesPerRow = new LinkedHashMap<>();
+
         for (int row = 0; row < matrix.rows(); row++) {
-            List<Character> rowContent = matrix.row(row);
+            SortedSet<ContiguousSet<Integer>> rowContent = matrix.row(row);
+
+            SortedSet<ContiguousSet<Integer>> previousRowRanges = null;
+            if (row > 0) {
+                previousRowRanges = matrix.row(row - 1);
+            }
+
+            SortedSet<ContiguousSet<Integer>> nextRowRanges = null;
+            if (row < matrix.rows() - 1) {
+                nextRowRanges = matrix.row(row + 1);
+            }
 
             int seenEdges = 0;
-            Direction pendingEdgeInDirection = null;
 
-            for (int column = 0; column < rowContent.size(); column++) {
-                Character columnContent = rowContent.get(column);
+            ContiguousSet<Integer> previous = null;
+            for (ContiguousSet<Integer> current : rowContent) {
+                enclosedTiles += current.size();
+                enclosedTilesPerRow.computeIfAbsent(row, r -> new AtomicLong())
+                        .addAndGet(current.size());
 
-                if (columnContent == '#') {
-                    boolean up = false;
-                    boolean down = false;
-                    if (row > 0 && matrix.row(row - 1).get(column) == '#') {
-                        up = true;
-                    }
-                    if (row < matrix.rows() - 1 && matrix.row(row + 1).get(column) == '#') {
-                        down = true;
-                    }
+                if (previous != null && seenEdges % 2 == 1) {
+                    int toAdd = Math.abs(previous.last() - current.first() - 1) - 2;
 
-                    if (pendingEdgeInDirection != null) {
-                        if (up && pendingEdgeInDirection == Direction.DOWN ||
-                                down && pendingEdgeInDirection == Direction.UP) {
+                    enclosedTiles += toAdd;
+                    enclosedTilesPerRow.computeIfAbsent(row, r -> new AtomicLong())
+                            .addAndGet(toAdd);
+                }
 
-                            pendingEdgeInDirection = null;
-                        } else if (up && pendingEdgeInDirection == Direction.UP ||
-                                down && pendingEdgeInDirection == Direction.DOWN) {
+                if (current.size() == 1) {
+                    seenEdges++;
+                } else {
+                    boolean startUp = false;
+                    boolean startDown = false;
+                    boolean endUp = false;
+                    boolean endDown = false;
 
-                            seenEdges++;
-                            pendingEdgeInDirection = null;
-                        } else if (!up && !down) {
-                            continue;
-                        } else {
-                            throw new IllegalStateException();
+                    if (previousRowRanges != null) {
+                        for (ContiguousSet<Integer> previousRowRange : previousRowRanges) {
+                            if (previousRowRange.contains(current.first())) {
+                                startUp = true;
+                            } else if (previousRowRange.contains(current.last())) {
+                                endUp = true;
+                            }
                         }
+                    }
+
+                    if (nextRowRanges != null) {
+                        for (ContiguousSet<Integer> nextRowRange : nextRowRanges) {
+                            if (nextRowRange.contains(current.first())) {
+                                startDown = true;
+                            } else if (nextRowRange.contains(current.last())) {
+                                endDown = true;
+                            }
+                        }
+                    }
+
+                    if (startUp && startDown || endUp && endDown || !startUp && !startDown || !endUp && !endDown) {
+                        throw new IllegalStateException();
+                    } else if (startUp && endUp || startDown && endDown) {
+                        seenEdges += 2;
                     } else {
                         seenEdges++;
-
-                        if (up && down) {
-                            continue;
-                        } else if (up) {
-                            pendingEdgeInDirection = Direction.UP;
-                        } else if (down) {
-                            pendingEdgeInDirection = Direction.DOWN;
-                        } else {
-                            throw new IllegalStateException();
-                        }
-                    }
-                } else if (columnContent == '.') {
-                    if (seenEdges % 2 == 1) {
-                        matrix.row(row).set(column, '!');
-                        enclosedTiles++;
                     }
                 }
+
+                previous = current;
             }
 
             if (seenEdges % 2 == 1) {
                 throw new IllegalStateException("row " + row);
-            } else if (pendingEdgeInDirection != null) {
-                throw new IllegalStateException("row " + row);
             }
         }
 
-        matrix.print();
-
-        return matrix.stream()
-                .parallel()
-                .flatMap(Collection::stream)
-                .filter(c -> c == '#' || c == '!')
-                .count();
+        return enclosedTiles;
     }
 
-    private static Direction from(String d) {
-        return switch (d) {
-            case "U" -> Direction.UP;
-            case "R" -> Direction.RIGHT;
-            case "D" -> Direction.DOWN;
-            case "L" -> Direction.LEFT;
-            default -> throw new IllegalStateException();
-        };
-    }
+    private static class SparseMatrix {
 
-    private static class Matrix {
-        private final List<List<Character>> matrix;
+        private List<SortedSet<ContiguousSet<Integer>>> matrix;
         private int count;
 
-        Matrix() {
+        SparseMatrix() {
             matrix = new ArrayList<>();
-        }
-
-        @SuppressWarnings("UseOfSystemOutOrSystemErr")
-        void print() {
-            System.out.println();
-            for (List<Character> characters : matrix) {
-                for (Character ch : characters) {
-                    System.out.print(ch);
-                }
-                System.out.println();
-            }
-            System.out.println();
+            matrix.add(newRow());
         }
 
         Coordinate add(Coordinate startingPoint, Direction direction, int steps) {
-            if (matrix.isEmpty()) {
-                matrix.add(newRow());
-            }
-
             if (direction == Direction.UP) {
-                if (startingPoint.row - steps < 0) {
-                    int rowsToAdd = Math.abs(startingPoint.row - steps);
-                    for (int i = 0; i < rowsToAdd; i++) {
-                        matrix.addFirst(newRow());
-                    }
-                    startingPoint = new Coordinate(startingPoint.row + rowsToAdd, startingPoint.column);
+                if (startingPoint.row() - steps < 0) {
+                    int rowsToAdd = Math.abs(startingPoint.row() - steps);
+
+                    prependNumberOfRows(rowsToAdd);
+
+                    startingPoint = new Coordinate(startingPoint.row() + rowsToAdd, startingPoint.column());
                 }
 
+                Range<Integer> range = Range.singleton(startingPoint.column());
                 for (int step = 1; step <= steps; step++) {
-                    List<Character> row = matrix.get(startingPoint.row - step);
-                    row.set(startingPoint.column, '#');
+                    addToRow(startingPoint.row() - step, range);
                 }
 
-                return new Coordinate(startingPoint.row - steps, startingPoint.column);
+                return new Coordinate(startingPoint.row() - steps, startingPoint.column());
             } else if (direction == Direction.RIGHT) {
-                List<Character> row = matrix.get(startingPoint.row);
-                int end = startingPoint.column + steps;
-                increaseRowLengthsTo(end + 1);
+                int end = startingPoint.column() + steps;
 
-                for (int column = startingPoint.column + 1; column <= end; column++) {
-                    row.set(column, '#');
-                }
+                addToRow(startingPoint.row(), Range.closed(startingPoint.column(), end));
 
-                return new Coordinate(startingPoint.row, startingPoint.column + steps);
+                return new Coordinate(startingPoint.row(), end);
             } else if (direction == Direction.DOWN) {
-                if (startingPoint.row + steps >= matrix.size()) {
-                    int rowsToAdd = startingPoint.row + steps - matrix.size();
+                if (startingPoint.row() + steps >= matrix.size()) {
+                    int rowsToAdd = startingPoint.row() + steps - matrix.size();
                     for (int i = 0; i <= rowsToAdd; i++) {
                         matrix.add(newRow());
                     }
                 }
 
+                Range<Integer> range = Range.singleton(startingPoint.column());
                 for (int step = 1; step <= steps; step++) {
-                    List<Character> row = matrix.get(startingPoint.row + step);
-                    row.set(startingPoint.column, '#');
+                    addToRow(startingPoint.row() + step, range);
                 }
 
-                return new Coordinate(startingPoint.row + steps, startingPoint.column);
+                return new Coordinate(startingPoint.row() + steps, startingPoint.column());
             } else if (direction == Direction.LEFT) {
-                List<Character> row = matrix.get(startingPoint.row);
+                int end = startingPoint.column() - steps;
 
-                int end = startingPoint.column - steps;
+                addToRow(startingPoint.row(), Range.closed(end, startingPoint.column()));
 
-                if (end < 0) {
-                    prependColumns(Math.abs(startingPoint.column - steps));
-                    startingPoint = new Coordinate(startingPoint.row, startingPoint.column + steps);
-                    end = 0;
-                }
-
-                for (int column = startingPoint.column; column >= end; column--) {
-                    row.set(column, '#');
-                }
-
-                return new Coordinate(startingPoint.row, startingPoint.column - steps);
+                return new Coordinate(startingPoint.row(), startingPoint.column() - steps);
             }
 
             throw new IllegalStateException();
         }
 
-        List<Character> row(int row) {
-            while (matrix.size() - 1 < row) {
-                matrix.add(newRow());
+        private void prependNumberOfRows(int rowsToAdd) {
+            List<SortedSet<ContiguousSet<Integer>>> newMatrix = new ArrayList<>(matrix.size() + rowsToAdd);
+            for (int i = 0; i < rowsToAdd; i++) {
+                newMatrix.add(newRow());
+            }
+            newMatrix.addAll(matrix);
+
+            matrix = newMatrix;
+        }
+
+        private SortedSet<ContiguousSet<Integer>> newRow() {
+            return new TreeSet<>(
+                    Comparator.<ContiguousSet<Integer>, Integer>comparing(ContiguousSet::first)
+                            .thenComparing(ContiguousSet::last)
+            );
+        }
+
+        void addToRow(int row, Range<Integer> range) {
+            getOrCreate(row)
+                    .add(ContiguousSet.create(range, DiscreteDomain.integers()));
+        }
+
+        SortedSet<ContiguousSet<Integer>> getOrCreate(int row) {
+            SortedSet<ContiguousSet<Integer>> rowContent = matrix.get(row);
+
+            if (rowContent == null) {
+                rowContent = newRow();
+                matrix.set(row, rowContent);
             }
 
-            return matrix.get(row);
+            return rowContent;
         }
 
         int rows() {
             return matrix.size();
         }
 
-        int columns() {
-            return !matrix.isEmpty() ? matrix.getFirst().size() : 0;
+        SortedSet<ContiguousSet<Integer>> row(int row) {
+            return matrix.get(row);
         }
 
-        Stream<List<Character>> stream() {
+        Stream<SortedSet<ContiguousSet<Integer>>> stream() {
             return matrix.stream();
         }
-
-        private Character get(int row, int column) {
-            while (matrix.size() - 1 < row) {
-                matrix.add(newRow());
-            }
-
-            if (matrix.getFirst().size() - 1 < column) {
-                increaseRowLengthsTo(column + 1);
-            }
-
-            return matrix.get(row).get(column);
-        }
-
-        private List<Character> newRow() {
-            List<Character> row = new ArrayList<>();
-
-            if (!matrix.isEmpty()) {
-                for (int i = 0; i < matrix.getFirst().size(); i++) {
-                    row.add('.');
-                }
-            }
-
-            return row;
-        }
-
-        private void increaseRowLengthsTo(int length) {
-            for (List<Character> row : matrix) {
-                if (row.size() < length) {
-                    int numberToAdd = length - row.size();
-                    for (int column = 0; column < numberToAdd; column++) {
-                        row.add('.');
-                    }
-                }
-            }
-        }
-
-        private void prependColumns(int columns) {
-            for (List<Character> row : matrix) {
-                for (int i = 0; i < columns; i++) {
-                    row.addFirst('.');
-                }
-            }
-        }
-    }
-
-    private record Coordinate(int row, int column) {
     }
 }
