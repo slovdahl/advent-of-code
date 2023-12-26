@@ -10,12 +10,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Objects;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
 
 @SuppressWarnings({"unused"})
@@ -44,6 +42,39 @@ public class Day18 extends Day {
         return calculateCubicMetersForLava(matrix); // Your puzzle answer was 42317
     }
 
+    @Override
+    Long part2(Stream<String> input) throws Exception {
+        SparseMatrix matrix = new SparseMatrix();
+        Coordinate current = new Coordinate(0, 0);
+
+        for (String line : input.toList()) {
+            String[] split = line.split(" ");
+
+            Direction direction = from(Integer.parseInt(split[2].substring(7, 8), 16));
+            int steps = Integer.parseInt(split[2].substring(2, 7), 16);
+
+            current = matrix.add(
+                    current,
+                    direction,
+                    steps
+            );
+        }
+
+        mergeAdjacentRanges(matrix);
+
+        return calculateCubicMetersForLava(matrix); // Your puzzle answer was 83605563360288
+    }
+
+    private static Direction from(int d) {
+        return switch (d) {
+            case 0 -> Direction.RIGHT;
+            case 1 -> Direction.DOWN;
+            case 2 -> Direction.LEFT;
+            case 3 -> Direction.UP;
+            default -> throw new IllegalStateException();
+        };
+    }
+
     private static void mergeAdjacentRanges(SparseMatrix matrix) {
         for (SortedSet<ContiguousSet<Integer>> row : matrix.matrix) {
             if (row.isEmpty()) {
@@ -60,7 +91,7 @@ public class Day18 extends Day {
                 while (iterator.hasNext()) {
                     ContiguousSet<Integer> next = iterator.next();
 
-                    if (!current.intersection(next).isEmpty() || current.last() + 1 == next.first()) {
+                    if (current.last() + 1 == next.first() || Objects.equals(current.last(), next.first())) {
                         row.remove(current);
                         row.remove(next);
 
@@ -81,7 +112,6 @@ public class Day18 extends Day {
 
     private static long calculateCubicMetersForLava(SparseMatrix matrix) {
         long enclosedTiles = 0L;
-        Map<Integer, AtomicLong> enclosedTilesPerRow = new LinkedHashMap<>();
 
         for (int row = 0; row < matrix.rows(); row++) {
             SortedSet<ContiguousSet<Integer>> rowContent = matrix.row(row);
@@ -101,15 +131,11 @@ public class Day18 extends Day {
             ContiguousSet<Integer> previous = null;
             for (ContiguousSet<Integer> current : rowContent) {
                 enclosedTiles += current.size();
-                enclosedTilesPerRow.computeIfAbsent(row, r -> new AtomicLong())
-                        .addAndGet(current.size());
 
                 if (previous != null && seenEdges % 2 == 1) {
                     int toAdd = Math.abs(previous.last() - current.first() - 1) - 2;
 
                     enclosedTiles += toAdd;
-                    enclosedTilesPerRow.computeIfAbsent(row, r -> new AtomicLong())
-                            .addAndGet(toAdd);
                 }
 
                 if (current.size() == 1) {
@@ -162,8 +188,11 @@ public class Day18 extends Day {
 
     private static class SparseMatrix {
 
+        public static final Comparator<ContiguousSet<Integer>> CONTIGUOUS_SET_COMPARATOR = Comparator
+                .<ContiguousSet<Integer>, Integer>comparing(ContiguousSet::first)
+                .thenComparing(ContiguousSet::last);
+
         private List<SortedSet<ContiguousSet<Integer>>> matrix;
-        private int count;
 
         SparseMatrix() {
             matrix = new ArrayList<>();
@@ -228,10 +257,7 @@ public class Day18 extends Day {
         }
 
         private SortedSet<ContiguousSet<Integer>> newRow() {
-            return new TreeSet<>(
-                    Comparator.<ContiguousSet<Integer>, Integer>comparing(ContiguousSet::first)
-                            .thenComparing(ContiguousSet::last)
-            );
+            return new TreeSet<>(CONTIGUOUS_SET_COMPARATOR);
         }
 
         void addToRow(int row, Range<Integer> range) {
@@ -256,10 +282,6 @@ public class Day18 extends Day {
 
         SortedSet<ContiguousSet<Integer>> row(int row) {
             return matrix.get(row);
-        }
-
-        Stream<SortedSet<ContiguousSet<Integer>>> stream() {
-            return matrix.stream();
         }
     }
 }
