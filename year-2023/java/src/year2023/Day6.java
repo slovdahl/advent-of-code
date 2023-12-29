@@ -9,7 +9,7 @@ import java.util.stream.Stream;
 import static year2023.Common.ints;
 import static year2023.Common.longs;
 
-@SuppressWarnings({"unused", "UseOfSystemOutOrSystemErr"})
+@SuppressWarnings("unused")
 public class Day6 extends Day {
 
     @Override

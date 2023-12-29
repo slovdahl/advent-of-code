@@ -151,7 +151,6 @@ public class Common {
         return permutations;
     }
 
-    @SuppressWarnings("UseOfSystemOutOrSystemErr")
     static void print(char[][] matrix) {
         for (char[] chars : matrix) {
             for (char ch : chars) {
@@ -162,7 +161,6 @@ public class Common {
         System.out.println();
     }
 
-    @SuppressWarnings("UseOfSystemOutOrSystemErr")
     static void printWithoutPadding(char[][] matrix) {
         for (int row = 1; row < matrix.length - 1; row++) {
             for (int column = 1; column < matrix[row].length - 1; column++) {

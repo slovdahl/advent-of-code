@@ -13,7 +13,6 @@ public abstract class Day {
     private static final AtomicReference<Stopwatch> PART1_TIMING = new AtomicReference<>();
     private static final AtomicReference<Stopwatch> PART2_TIMING = new AtomicReference<>();
 
-    @SuppressWarnings("UseOfSystemOutOrSystemErr")
     final void run(int day) throws Exception {
         System.out.printf("""
                 ==================
@@ -73,7 +72,6 @@ public abstract class Day {
         PART2_TIMING.set(Stopwatch.createStarted());
     }
 
-    @SuppressWarnings("UseOfSystemOutOrSystemErr")
     private void result(String part, Object result) {
         Stopwatch stopwatch = switch (part) {
             case "prepare" -> PREPARE_TIMING.get().stop();

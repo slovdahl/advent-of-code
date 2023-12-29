@@ -20,7 +20,6 @@ public class Day14 extends Day {
         return calculateLoad(matrix); // Your puzzle answer was 110407
     }
 
-    @SuppressWarnings("UseOfSystemOutOrSystemErr")
     @Override
     Object part2(Stream<String> input) throws Exception {
         char[][] matrix = matrix(input.toList());

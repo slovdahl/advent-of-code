@@ -1,10 +1,10 @@
 package year2023;
 
 import java.io.IOException;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -35,6 +35,95 @@ public class Day20 extends Day {
                 &con -> output
                 """.lines();
 
+        Map<String, Module> modules = parseAndInitModules(input);
+
+        Queue<InFlightPulse> queue = new LinkedBlockingQueue<>();
+        AtomicLong lowPulses = new AtomicLong();
+        AtomicLong highPulses = new AtomicLong();
+
+        for (int push = 0; push < 1_000; push++) {
+            queue.add(new InFlightPulse(Pulse.LOW, "button", "broadcaster"));
+
+            while (!queue.isEmpty()) {
+                InFlightPulse poll = queue.poll();
+
+                if (poll.pulse() == Pulse.LOW) {
+                    lowPulses.incrementAndGet();
+                } else {
+                    highPulses.incrementAndGet();
+                }
+
+                Module module = modules.get(poll.target());
+
+                if (module == null) {
+                    continue;
+                }
+
+                queue.addAll(
+                        module.moduleAction()
+                                .pulse(poll.pulse(), poll.source())
+                );
+            }
+        }
+
+        return lowPulses.get() * highPulses.get(); // Your puzzle answer was 743090292
+    }
+
+    @Override
+    Long part2(Stream<String> input) throws Exception {
+        Map<String, Module> modules = parseAndInitModules(input);
+
+        Queue<InFlightPulse> queue = new ArrayDeque<>();
+        boolean machineStarted = false;
+
+        Map<String, Long> lastHighPulseToLl = new HashMap<>();
+        Map<String, Long> diffForLastHighPulseToLl = new HashMap<>();
+
+        for (long push = 1; push <= 10_000L; push++) {
+            queue.add(new InFlightPulse(Pulse.LOW, "button", "broadcaster"));
+
+            while (!queue.isEmpty()) {
+                InFlightPulse poll = queue.poll();
+
+                if (poll.pulse() == Pulse.LOW && poll.target().equals("rx")) {
+                    machineStarted = true;
+                }
+
+                Module module = modules.get(poll.target());
+
+                if (module == null) {
+                    continue;
+                }
+
+                if ("ll".equals(module.name()) &&
+                        poll.pulse() == Pulse.HIGH &&
+                        module.moduleAction() instanceof ConjunctionModule m) {
+
+                    Long prev = lastHighPulseToLl.put(poll.source(), push);
+                    long diff = (prev != null ? push - prev : push);
+                    diffForLastHighPulseToLl.put(poll.source(), diff);
+
+                    System.out.println(diff + " for " + poll.source() + ": " + m.numberOfHigh + " " + poll);
+                }
+
+                queue.addAll(
+                        module.moduleAction()
+                                .pulse(poll.pulse(), poll.source())
+                );
+            }
+
+            if (machineStarted) {
+                return push;
+            }
+        }
+
+        return diffForLastHighPulseToLl.values().stream()
+                .mapToLong(v -> v)
+                .reduce((left, right) -> left * right)
+                .orElseThrow(); // Your puzzle answer was 241528184647003
+    }
+
+    private static Map<String, Module> parseAndInitModules(Stream<String> input) {
         Map<String, Module> modules = input
                 .map(line -> {
                     String[] split = line.split(" ", 3);
@@ -59,7 +148,7 @@ public class Day20 extends Day {
                             type.moduleAction(name, connections)
                     );
                 })
-                .collect(toMap(Module::name, module -> module, (x, y) -> y, LinkedHashMap::new));
+                .collect(toMap(Module::name, module -> module));
 
         modules.values().forEach(module -> {
             if (module.moduleAction() instanceof ConjunctionModule conjunctionModule) {
@@ -67,42 +156,7 @@ public class Day20 extends Day {
             }
         });
 
-        Queue<InFlightPulse> queue = new LinkedBlockingQueue<>();
-        AtomicLong lowPulses = new AtomicLong();
-        AtomicLong highPulses = new AtomicLong();
-
-        for (int push = 0; push < 1_000; push++) {
-            queue.add(new InFlightPulse(Pulse.LOW, "button", "broadcaster"));
-
-            while (!queue.isEmpty()) {
-                List<InFlightPulse> newPulses = new ArrayList<>();
-
-                while (!queue.isEmpty()) {
-                    InFlightPulse poll = queue.poll();
-
-                    if (poll.pulse() == Pulse.LOW) {
-                        lowPulses.incrementAndGet();
-                    } else {
-                        highPulses.incrementAndGet();
-                    }
-
-                    Module module = modules.get(poll.target());
-
-                    if (module == null) {
-                        continue;
-                    }
-
-                    newPulses.addAll(
-                            module.moduleAction()
-                                    .pulse(poll.pulse(), poll.source())
-                    );
-                }
-
-                queue.addAll(newPulses);
-            }
-        }
-
-        return lowPulses.get() * highPulses.get(); // Your puzzle answer was 743090292
+        return modules;
     }
 
     private record Module(String name, Type type, List<String> connections, ModuleAction moduleAction) {
@@ -148,9 +202,7 @@ public class Day20 extends Day {
 
         @Override
         public List<InFlightPulse> pulse(Pulse pulse, String source) {
-            return connections.stream()
-                    .map(connection -> new InFlightPulse(Pulse.LOW, "broadcaster", connection))
-                    .toList();
+            return sendPulses(connections, Pulse.LOW, "broadcaster");
         }
     }
 
@@ -175,9 +227,7 @@ public class Day20 extends Day {
             Pulse pulseToSend = state ? Pulse.LOW : Pulse.HIGH;
             state = !state;
 
-            return connections.stream()
-                    .map(connection -> new InFlightPulse(pulseToSend, name, connection))
-                    .toList();
+            return sendPulses(connections, pulseToSend, name);
         }
     }
 
@@ -186,11 +236,13 @@ public class Day20 extends Day {
         private final String name;
         private final List<String> connections;
         private final Map<String, Pulse> inputStates;
+        private int numberOfHigh;
 
         private ConjunctionModule(String name, List<String> connections) {
             this.name = name;
             this.connections = connections;
             inputStates = new HashMap<>();
+            numberOfHigh = 0;
         }
 
         void initInputStates(Map<String, Module> modules) {
@@ -210,17 +262,30 @@ public class Day20 extends Day {
 
         @Override
         public List<InFlightPulse> pulse(Pulse pulse, String source) {
-            inputStates.put(source, pulse);
+            Pulse previous = inputStates.put(source, pulse);
 
-            boolean allHigh = inputStates.values().stream()
-                    .allMatch(p -> p == Pulse.HIGH);
+            if (previous != pulse) {
+                if (pulse == Pulse.HIGH) {
+                    numberOfHigh++;
+                } else {
+                    numberOfHigh--;
+                }
+            }
+
+            boolean allHigh = numberOfHigh == inputStates.size();
 
             Pulse pulseToSend = allHigh ? Pulse.LOW : Pulse.HIGH;
 
-            return connections.stream()
-                    .map(connection -> new InFlightPulse(pulseToSend, name, connection))
-                    .toList();
+            return sendPulses(connections, pulseToSend, name);
         }
+    }
+
+    private static List<InFlightPulse> sendPulses(List<String> connections, Pulse pulseToSend, String name) {
+        List<InFlightPulse> pulses = new ArrayList<>(connections.size());
+        for (String connection : connections) {
+            pulses.add(new InFlightPulse(pulseToSend, name, connection));
+        }
+        return pulses;
     }
 
     private enum Pulse {
@@ -229,5 +294,10 @@ public class Day20 extends Day {
     }
 
     private record InFlightPulse(Pulse pulse, String source, String target) {
+
+        @Override
+        public String toString() {
+            return "InFlightPulse{" + source + " -" + pulse.name() + "-> " + target + "}";
+        }
     }
 }
