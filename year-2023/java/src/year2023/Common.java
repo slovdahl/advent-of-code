@@ -1,7 +1,10 @@
 package year2023;
 
+import year2023.tools.Coordinate;
+
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -14,10 +17,11 @@ public class Common {
     private static final Pattern SPACE_PATTERN = Pattern.compile("\\s+");
 
     public static Stream<String> readInputLinesForDay(int day) throws IOException {
-        Path path = Path.of("year-2023/" + day + "/input");
+        Path path = Path.of("year-2023/input/" + day + "/input");
 
         if (!path.toFile().exists()) {
-            path = Path.of(day + "/input");
+            // TODO: fetch from adventofcode.com
+            throw new NoSuchFileException(path.toString());
         }
 
         return Files.lines(path);
