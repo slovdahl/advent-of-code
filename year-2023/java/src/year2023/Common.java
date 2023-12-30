@@ -121,6 +121,18 @@ public class Common {
         return arr;
     }
 
+    public static Coordinate findChar(char[][] haystack, char needle) {
+        for (int row = 0; row < haystack.length; row++) {
+            for (int column = 0; column < haystack[row].length; column++) {
+                if (haystack[row][column] == needle) {
+                    return new Coordinate(row, column);
+                }
+            }
+        }
+
+        throw new IllegalStateException("No " + needle + " found in matrix");
+    }
+
     static <T> List<List<T>> permutations(List<List<T>> input) {
         List<List<T>> permutations = new ArrayList<>();
         int length = input.size();
