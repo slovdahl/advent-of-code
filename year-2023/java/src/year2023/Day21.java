@@ -14,6 +14,7 @@ import java.util.concurrent.RecursiveAction;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import static com.google.common.base.Preconditions.checkState;
 import static java.util.Comparator.comparing;
 import static year2023.Common.deepClone;
 import static year2023.Common.findChar;
@@ -90,12 +91,8 @@ public class Day21 extends Day {
         int clonesInEachDirection = remainingStepsAfterStartingPointMatrix / matrix[0].length;
         int fullClonesInEachDirection = clonesInEachDirection - 1;
 
-        if (clonesInEachDirection * matrix[0].length != remainingStepsAfterStartingPointMatrix) {
-            throw new IllegalStateException();
-        }
-        if (clonesInEachDirection % 2 != 0) {
-            throw new IllegalStateException();
-        }
+        checkState(clonesInEachDirection * matrix[0].length == remainingStepsAfterStartingPointMatrix);
+        checkState(clonesInEachDirection % 2 == 0);
 
         //
         // LEFT
