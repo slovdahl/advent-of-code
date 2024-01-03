@@ -82,6 +82,14 @@ public record Coordinate(int row, int column) {
         return new Coordinate(row, column - 1);
     }
 
+    public Coordinate withRow(int row) {
+        return new Coordinate(row, column);
+    }
+
+    public Coordinate withColumn(int column) {
+        return new Coordinate(row, column);
+    }
+
     public static Direction from(String d) {
         return switch (d) {
             case "U" -> Direction.UP;

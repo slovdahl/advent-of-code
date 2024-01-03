@@ -3,6 +3,8 @@ package year2023;
 import year2023.tools.Coordinate;
 
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
@@ -20,8 +22,11 @@ public class Common {
         Path path = Path.of("year-2023/input/" + day + "/input");
 
         if (!path.toFile().exists()) {
-            // TODO: fetch from adventofcode.com
-            throw new NoSuchFileException(path.toString());
+            path = Path.of("input/" + day + "/input");
+            if (!path.toFile().exists()) {
+                // TODO: fetch from adventofcode.com
+                throw new NoSuchFileException(path.toString());
+            }
         }
 
         return Files.lines(path);
@@ -133,6 +138,14 @@ public class Common {
         throw new IllegalStateException("No " + needle + " found in matrix");
     }
 
+    public static char[][] deepClone(char[][] input) {
+        char[][] result = new char[input.length][];
+        for (int i = 0; i < input.length; i++) {
+            result[i] = input[i].clone();
+        }
+        return result;
+    }
+
     static <T> List<List<T>> permutations(List<List<T>> input) {
         List<List<T>> permutations = new ArrayList<>();
         int length = input.size();
@@ -167,14 +180,19 @@ public class Common {
         return permutations;
     }
 
-    static void print(char[][] matrix) {
-        for (char[] chars : matrix) {
-            for (char ch : chars) {
-                System.out.print(ch);
-            }
-            System.out.println();
+    static void print(PrintStream s, char[][]... matrices) {
+        if (matrices.length == 0) {
+            return;
         }
-        System.out.println();
+
+        for (int row = 0; row < matrices[0].length; row++) {
+            for (char[][] matrix : matrices) {
+                for (int column = 0; column < matrix[row].length; column++) {
+                    s.print(matrix[row][column]);
+                }
+            }
+            s.println();
+        }
     }
 
     static void printWithoutPadding(char[][] matrix) {
