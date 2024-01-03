@@ -133,6 +133,14 @@ public class Common {
         throw new IllegalStateException("No " + needle + " found in matrix");
     }
 
+    public static char[][] deepClone(char[][] input) {
+        char[][] result = new char[input.length][];
+        for (int i = 0; i < input.length; i++) {
+            result[i] = input[i].clone();
+        }
+        return result;
+    }
+
     static <T> List<List<T>> permutations(List<List<T>> input) {
         List<List<T>> permutations = new ArrayList<>();
         int length = input.size();
@@ -167,14 +175,19 @@ public class Common {
         return permutations;
     }
 
-    static void print(char[][] matrix) {
-        for (char[] chars : matrix) {
-            for (char ch : chars) {
-                System.out.print(ch);
+    static void print(char[][]... matrices) {
+        if (matrices.length == 0) {
+            return;
+        }
+
+        for (int row = 0; row < matrices[0].length; row++) {
+            for (char[][] matrix : matrices) {
+                for (int column = 0; column < matrix[row].length; column++) {
+                    System.out.print(matrix[row][column]);
+                }
             }
             System.out.println();
         }
-        System.out.println();
     }
 
     static void printWithoutPadding(char[][] matrix) {
