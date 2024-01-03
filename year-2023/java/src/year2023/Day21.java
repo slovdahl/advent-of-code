@@ -344,8 +344,8 @@ public class Day21 extends Day {
                         // Top half
                         return finalStatesInLeftMostAndOneUp.size() +
                                 finalStatesInLeftMostAndOneUpOneRight.size() +
-                                (row - 3L) * allFinalStates.size() +
-                                (row - 2L) * allFinalStatesOneStepShifted.size() +
+                                (row - 2L) * allFinalStates.size() +
+                                (row - 1L) * allFinalStatesOneStepShifted.size() +
                                 finalStatesInRightMostAndOneUp.size() +
                                 finalStatesInRightMostAndOneUpAndOneLeft.size();
                     } else if (row > clonesInEachDirection + 1) {
@@ -368,6 +368,7 @@ public class Day21 extends Day {
         // 617726306629133 incorrect
         // 617726306644227 incorrect
         // 617723253143121 incorrect
+        // 617729360145333 incorrect
     }
 
     private static Set<Coordinate> findFinalCoordinates(char[][] matrix, Coordinate startingPoint, int stepsToTake, ConcurrentMap<Coordinate, Integer> visitedCoordinates) {
