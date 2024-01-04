@@ -98,7 +98,7 @@ public class Day21 extends Day {
         // LEFT
         //
         Set<Coordinate> finalStatesInLeftMost = new HashSet<>();
-        for (Coordinate coordinate : allFinalStates) {
+        for (Coordinate coordinate : allFinalStatesOneStepShifted) {
             if (coordinate.row() == startingPoint.row() ||
                     (coordinate.row() > startingPoint.row() && coordinate.column() >= coordinate.row() - 65) ||
                     (coordinate.row() < startingPoint.row() && coordinate.column() >= 65 - coordinate.row())) {
@@ -115,7 +115,7 @@ public class Day21 extends Day {
                     .orElseThrow()
                     .withRow(matrix.length - 1);
 
-            for (Coordinate coordinate : allFinalStatesOneStepShifted) {
+            for (Coordinate coordinate : allFinalStates) {
                 if (coordinate.row() <= start.row() && coordinate.column() >= start.column() + (131 - coordinate.row())) {
                     finalStatesInLeftMostAndOneUp.add(coordinate);
                 } else if (coordinate.row() > start.row()) {
@@ -131,7 +131,7 @@ public class Day21 extends Day {
                     .orElseThrow()
                     .withColumn(0);
 
-            for (Coordinate coordinate : allFinalStates) {
+            for (Coordinate coordinate : allFinalStatesOneStepShifted) {
                 if (coordinate.row() >= start.row() ||
                         coordinate.column() >= start.row() - coordinate.row() - 1) {
 
@@ -148,7 +148,7 @@ public class Day21 extends Day {
                     .orElseThrow()
                     .withRow(0);
 
-            for (Coordinate coordinate : allFinalStatesOneStepShifted) {
+            for (Coordinate coordinate : allFinalStates) {
                 if (coordinate.row() >= start.row() && coordinate.column() > start.column() + coordinate.row()) {
                     finalStatesInLeftMostAndOneDown.add(coordinate);
                 } else if (coordinate.row() < start.row()) {
@@ -164,7 +164,7 @@ public class Day21 extends Day {
                     .orElseThrow()
                     .withColumn(0);
 
-            for (Coordinate coordinate : allFinalStates) {
+            for (Coordinate coordinate : allFinalStatesOneStepShifted) {
                 if (coordinate.row() <= start.row() ||
                         coordinate.column() >= coordinate.row() - start.row() - 1) {
 
@@ -177,7 +177,7 @@ public class Day21 extends Day {
         // RIGHT
         //
         Set<Coordinate> finalStatesInRightMost = new HashSet<>();
-        for (Coordinate coordinate : allFinalStates) {
+        for (Coordinate coordinate : allFinalStatesOneStepShifted) {
             if (coordinate.row() == startingPoint.row() ||
                     (coordinate.row() > startingPoint.row() && coordinate.column() <= 195 - coordinate.row()) ||
                     (coordinate.row() < startingPoint.row() && coordinate.column() <= 65 + coordinate.row())) {
@@ -194,7 +194,7 @@ public class Day21 extends Day {
                     .orElseThrow()
                     .withRow(matrix.length - 1);
 
-            for (Coordinate coordinate : allFinalStatesOneStepShifted) {
+            for (Coordinate coordinate : allFinalStates) {
                 if (coordinate.row() <= start.row() && coordinate.column() <= start.column() - (131 - coordinate.row())) {
                     finalStatesInRightMostAndOneUp.add(coordinate);
                 } else if (coordinate.row() > start.row()) {
@@ -210,7 +210,7 @@ public class Day21 extends Day {
                     .orElseThrow()
                     .withColumn(130);
 
-            for (Coordinate coordinate : allFinalStates) {
+            for (Coordinate coordinate : allFinalStatesOneStepShifted) {
                 if (coordinate.row() >= start.row() ||
                         coordinate.column() < start.row() + coordinate.row() - 1) {
 
@@ -227,7 +227,7 @@ public class Day21 extends Day {
                     .orElseThrow()
                     .withRow(0);
 
-            for (Coordinate coordinate : allFinalStatesOneStepShifted) {
+            for (Coordinate coordinate : allFinalStates) {
                 if (coordinate.row() >= start.row() && coordinate.column() < start.column() - coordinate.row()) {
                     finalStatesInRightMostAndOneDown.add(coordinate);
                 } else if (coordinate.row() < start.row()) {
@@ -243,7 +243,7 @@ public class Day21 extends Day {
                     .orElseThrow()
                     .withColumn(130);
 
-            for (Coordinate coordinate : allFinalStates) {
+            for (Coordinate coordinate : allFinalStatesOneStepShifted) {
                 if (coordinate.row() <= start.row() ||
                         coordinate.column() <= 131 - (coordinate.row() - start.row())) {
 
@@ -256,7 +256,7 @@ public class Day21 extends Day {
         // TOP
         //
         Set<Coordinate> finalStatesInTopMost = new HashSet<>();
-        for (Coordinate coordinate : allFinalStates) {
+        for (Coordinate coordinate : allFinalStatesOneStepShifted) {
             if (coordinate.column() == startingPoint.column() ||
                     (coordinate.column() > startingPoint.column() && coordinate.row() >= coordinate.column() - 65) ||
                     (coordinate.column() < startingPoint.column() && coordinate.row() >= 65 - coordinate.column())) {
@@ -269,7 +269,7 @@ public class Day21 extends Day {
         // BOTTOM
         //
         Set<Coordinate> finalStatesInBottomMost = new HashSet<>();
-        for (Coordinate coordinate : allFinalStates) {
+        for (Coordinate coordinate : allFinalStatesOneStepShifted) {
             if (coordinate.column() == startingPoint.column() ||
                     (coordinate.column() > startingPoint.column() && coordinate.row() <= 195 - coordinate.column()) ||
                     (coordinate.column() < startingPoint.column() && coordinate.row() <= 65 + coordinate.column())) {
@@ -333,24 +333,24 @@ public class Day21 extends Day {
                                 finalStatesInRightMostAndOneDown.size();
                     } else if (row == clonesInEachDirection + 1) {
                         // Middle row
-                        return (row - 2L) * allFinalStates.size() +
-                                (row - 1L) * allFinalStatesOneStepShifted.size() +
+                        return (row - 1L) * allFinalStates.size() +
+                                (row - 2L) * allFinalStatesOneStepShifted.size() +
                                 finalStatesInLeftMost.size() +
                                 finalStatesInRightMost.size();
                     } else if (row <= clonesInEachDirection) {
                         // Top half
                         return finalStatesInLeftMostAndOneUp.size() +
                                 finalStatesInLeftMostAndOneUpOneRight.size() +
-                                (row - 2L) * allFinalStates.size() +
-                                (row - 1L) * allFinalStatesOneStepShifted.size() +
+                                (row - 1L) * allFinalStates.size() +
+                                (row - 2L) * allFinalStatesOneStepShifted.size() +
                                 finalStatesInRightMostAndOneUp.size() +
                                 finalStatesInRightMostAndOneUpAndOneLeft.size();
                     } else if (row > clonesInEachDirection + 1) {
                         // Bottom half
                         return finalStatesInLeftMostAndOneDown.size() +
                                 finalStatesInLeftMostAndOneDownOneRight.size() +
-                                (long) (bottomRow - row - 1) * allFinalStates.size() +
-                                (long) (bottomRow - row) * allFinalStatesOneStepShifted.size() +
+                                (long) (bottomRow - row) * allFinalStates.size() +
+                                (long) (bottomRow - row - 1) * allFinalStatesOneStepShifted.size() +
                                 finalStatesInRightMostAndOneDown.size() +
                                 finalStatesInRightMostAndOneDownAndOneLeft.size();
                     } else {
