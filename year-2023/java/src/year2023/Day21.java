@@ -24,6 +24,8 @@ import static year2023.Common.print;
 @SuppressWarnings("unused")
 public class Day21 extends Day {
 
+    private static final boolean DEBUG = false;
+
     @Override
     Integer part1(Stream<String> input) throws Exception {
         Stream<String> sampleInput = """
@@ -278,48 +280,51 @@ public class Day21 extends Day {
             }
         }
 
-        // leftmost-2
-        printWithFinalStates(matrix, Set.of(), finalStatesInLeftMostAndOneUp, finalStatesInLeftMostAndOneUpOneRight);
+        if (DEBUG) {
+            // leftmost-2
+            printWithFinalStates(matrix, Set.of(), finalStatesInLeftMostAndOneUp, finalStatesInLeftMostAndOneUpOneRight);
 
-        // leftmost-1
-        printWithFinalStates(matrix, finalStatesInLeftMostAndOneUp, finalStatesInLeftMostAndOneUpOneRight);
+            // leftmost-1
+            printWithFinalStates(matrix, finalStatesInLeftMostAndOneUp, finalStatesInLeftMostAndOneUpOneRight);
 
-        // leftmost
-        printWithFinalStates(matrix, finalStatesInLeftMost, allFinalStatesOneStepShifted);
+            // leftmost
+            printWithFinalStates(matrix, finalStatesInLeftMost, allFinalStatesOneStepShifted);
 
-        // leftmost+1
-        printWithFinalStates(matrix, finalStatesInLeftMostAndOneDown, finalStatesInLeftMostAndOneDownOneRight);
+            // leftmost+1
+            printWithFinalStates(matrix, finalStatesInLeftMostAndOneDown, finalStatesInLeftMostAndOneDownOneRight);
 
-        System.out.println();
-        System.out.println();
+            System.out.println();
+            System.out.println();
 
-        // rightmost-1
-        printWithFinalStates(matrix, finalStatesInRightMostAndOneUpAndOneLeft, finalStatesInRightMostAndOneUp);
+            // rightmost-1
+            printWithFinalStates(matrix, finalStatesInRightMostAndOneUpAndOneLeft, finalStatesInRightMostAndOneUp);
 
-        // rightmost
-        printWithFinalStates(matrix, allFinalStatesOneStepShifted, finalStatesInRightMost);
+            // rightmost
+            printWithFinalStates(matrix, allFinalStatesOneStepShifted, finalStatesInRightMost);
 
-        // rightmost+1
-        printWithFinalStates(matrix, finalStatesInRightMostAndOneDownAndOneLeft, finalStatesInRightMostAndOneDown);
+            // rightmost+1
+            printWithFinalStates(matrix, finalStatesInRightMostAndOneDownAndOneLeft, finalStatesInRightMostAndOneDown);
 
-        System.out.println();
-        System.out.println();
+            System.out.println();
+            System.out.println();
 
-        // topmost
-        printWithFinalStates(matrix, finalStatesInLeftMostAndOneUp, finalStatesInTopMost, finalStatesInRightMostAndOneUp);
+            // topmost
+            printWithFinalStates(matrix, finalStatesInLeftMostAndOneUp, finalStatesInTopMost, finalStatesInRightMostAndOneUp);
 
-        System.out.println();
-        System.out.println();
+            System.out.println();
+            System.out.println();
 
-        // bottommost-1
-        printWithFinalStates(matrix, finalStatesInLeftMostAndOneDown, finalStatesInLeftMostAndOneDownOneRight, allFinalStatesOneStepShifted, finalStatesInRightMostAndOneDownAndOneLeft, finalStatesInRightMostAndOneDown);
+            // bottommost-1
+            printWithFinalStates(matrix, finalStatesInLeftMostAndOneDown, finalStatesInLeftMostAndOneDownOneRight, allFinalStatesOneStepShifted, finalStatesInRightMostAndOneDownAndOneLeft, finalStatesInRightMostAndOneDown);
 
-        // bottommost
-        printWithFinalStates(matrix, Set.of(), finalStatesInLeftMostAndOneDown, finalStatesInBottomMost, finalStatesInRightMostAndOneDown, Set.of());
+            // bottommost
+            printWithFinalStates(matrix, Set.of(), finalStatesInLeftMostAndOneDown, finalStatesInBottomMost, finalStatesInRightMostAndOneDown, Set.of());
+        }
 
         int bottomRow = (2 * clonesInEachDirection) + 1;
 
         return IntStream.rangeClosed(1, bottomRow)
+                .parallel()
                 .mapToLong(row -> {
                     if (row == 1) {
                         // Top row
@@ -336,7 +341,8 @@ public class Day21 extends Day {
                         return (row - 1L) * allFinalStates.size() +
                                 (row - 2L) * allFinalStatesOneStepShifted.size() +
                                 finalStatesInLeftMost.size() +
-                                finalStatesInRightMost.size();
+                                finalStatesInRightMost.size() +
+                                1 /* starting point */;
                     } else if (row <= clonesInEachDirection) {
                         // Top half
                         return finalStatesInLeftMostAndOneUp.size() +
@@ -366,6 +372,10 @@ public class Day21 extends Day {
         // 617726306644227 incorrect
         // 617723253143121 incorrect
         // 617729360145333 incorrect
+        // 617729392918089 incorrect
+        // 617729388062901 incorrect(?)
+
+        // 617729388062902
     }
 
     private static Set<Coordinate> findFinalCoordinates(char[][] matrix, Coordinate startingPoint, int stepsToTake, ConcurrentMap<Coordinate, Integer> visitedCoordinates) {
