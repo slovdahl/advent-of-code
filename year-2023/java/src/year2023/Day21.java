@@ -60,8 +60,10 @@ public class Day21 extends Day {
             matrix[finalCoordinate.row()][finalCoordinate.column()] = 'O';
         }
 
-        print(matrix);
-        System.out.println();
+        if (DEBUG) {
+            print(matrix);
+            System.out.println();
+        }
 
         return finalCoordinates.size(); // Your puzzle answer was 3733
     }
@@ -85,7 +87,7 @@ public class Day21 extends Day {
         Set<Coordinate> allFinalStatesOneStepShifted = findFinalCoordinates(
                 matrix,
                 startingPoint,
-                matrix.length * 2 + 1,
+                (matrix.length * 2) + 1,
                 new ConcurrentHashMap<>()
         );
 
@@ -373,9 +375,8 @@ public class Day21 extends Day {
         // 617723253143121 incorrect
         // 617729360145333 incorrect
         // 617729392918089 incorrect
-        // 617729388062901 incorrect(?)
-
-        // 617729388062902
+        // 617729388062901 incorrect
+        // 617729388062902 incorrect
     }
 
     private static Set<Coordinate> findFinalCoordinates(char[][] matrix, Coordinate startingPoint, int stepsToTake, ConcurrentMap<Coordinate, Integer> visitedCoordinates) {
