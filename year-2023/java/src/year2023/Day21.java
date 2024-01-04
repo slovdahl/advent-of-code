@@ -89,8 +89,8 @@ public class Day21 extends Day {
 
         int remainingStepsAfterStartingPointMatrix = maximumStepsToTake - (startingPoint.column() + 1) + 1;
         int clonesInEachDirection = remainingStepsAfterStartingPointMatrix / matrix[0].length;
-        int fullClonesInEachDirection = clonesInEachDirection - 1;
 
+        checkState(remainingStepsAfterStartingPointMatrix % matrix[0].length == 0);
         checkState(clonesInEachDirection * matrix[0].length == remainingStepsAfterStartingPointMatrix);
         checkState(clonesInEachDirection % 2 == 0);
 
