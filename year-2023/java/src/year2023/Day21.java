@@ -24,7 +24,7 @@ import static year2023.Common.print;
 @SuppressWarnings("unused")
 public class Day21 extends Day {
 
-    private static final boolean DEBUG = false;
+    private static final boolean DEBUG = true;
 
     @Override
     Integer part1(Stream<String> input) throws Exception {
@@ -44,7 +44,11 @@ public class Day21 extends Day {
 
         char[][] matrix = matrix(input.toList());
 
-        int stepsToTake = matrix.length == 11 ? 6 : 64;
+        // TODO:
+        //  - make a 5 x 5 of the matrix
+        //  - set maximum steps to take = 65 + 131 + 131 + 131 + 131
+        //  - visualize, check what the slopes look like
+        int stepsToTake = matrix.length == 11 ? 6 : (65 + (131 * 2));
 
         Coordinate startingPoint = findChar(matrix, 'S');
         matrix[startingPoint.row()][startingPoint.column()] = '.';
@@ -70,6 +74,9 @@ public class Day21 extends Day {
 
     @Override
     Long part2(Stream<String> input) throws Exception {
+        if (DEBUG) {
+            return 0L;
+        }
         char[][] matrix = matrix(input.toList());
 
         Coordinate startingPoint = findChar(matrix, 'S');
