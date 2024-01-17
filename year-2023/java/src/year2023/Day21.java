@@ -25,7 +25,8 @@ import static year2023.Common.print;
 @SuppressWarnings("unused")
 public class Day21 extends Day {
 
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = false;
+    private static final boolean OUTPUT_DUPLICATED_INPUT = false;
 
     @Override
     Integer part1(Stream<String> input) throws Exception {
@@ -45,13 +46,11 @@ public class Day21 extends Day {
 
         char[][] matrix = matrix(input.toList());
 
-        // TODO:
-        //  - make a 13 x 13 of the matrix
-        //  - set maximum steps to take = 65 + (131 * 4)
-        //  - visualize, check what the slopes look like
         int stepsToTake;
         if (matrix.length == 11) {
             stepsToTake = 6;
+        } else if (matrix.length == 131) {
+            stepsToTake = 64;
         } else {
             stepsToTake = matrix.length / 2;
         }
@@ -59,27 +58,25 @@ public class Day21 extends Day {
         Coordinate startingPoint = findChar(matrix, 'S');
         matrix[startingPoint.row()][startingPoint.column()] = '.';
 
-        /*
-        try (var stream = new PrintStream("output.txt")) {
-            printWithFinalStates(matrix, stream, Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of());
-            printWithFinalStates(matrix, stream, Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of());
-            printWithFinalStates(matrix, stream, Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of());
-            printWithFinalStates(matrix, stream, Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of());
-            printWithFinalStates(matrix, stream, Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of());
-            printWithFinalStates(matrix, stream, Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of());
-            printWithFinalStates(matrix, stream, Set.of(), Set.of(), Set.of(), Set.of(), Set.of(startingPoint), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of());
-            printWithFinalStates(matrix, stream, Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of());
-            printWithFinalStates(matrix, stream, Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of());
-            printWithFinalStates(matrix, stream, Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of());
-            printWithFinalStates(matrix, stream, Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of());
-            printWithFinalStates(matrix, stream, Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of());
-            printWithFinalStates(matrix, stream, Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of());
-        }
+        if (OUTPUT_DUPLICATED_INPUT) {
+            try (var stream = new PrintStream("output.txt")) {
+                printWithFinalStates(matrix, stream, Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of());
+                printWithFinalStates(matrix, stream, Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of());
+                printWithFinalStates(matrix, stream, Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of());
+                printWithFinalStates(matrix, stream, Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of());
+                printWithFinalStates(matrix, stream, Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of());
+                printWithFinalStates(matrix, stream, Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of());
+                printWithFinalStates(matrix, stream, Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(startingPoint), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of());
+                printWithFinalStates(matrix, stream, Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of());
+                printWithFinalStates(matrix, stream, Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of());
+                printWithFinalStates(matrix, stream, Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of());
+                printWithFinalStates(matrix, stream, Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of());
+                printWithFinalStates(matrix, stream, Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of());
+                printWithFinalStates(matrix, stream, Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of());
+            }
 
-        if (true) {
             return 0;
         }
-        */
 
         Set<Coordinate> finalCoordinates = findFinalCoordinates(
                 matrix,
@@ -99,24 +96,21 @@ public class Day21 extends Day {
         }
 
         return finalCoordinates.size(); // Your puzzle answer was 3733
-
-        // WITH 5x5:    94603    (part 2: 945xx)
-        // WITH 9x9:    306123   (part 2: 305926, 306060, 306058, 306124)
-        // WITH 13x13:  
     }
 
     @Override
     Long part2(Stream<String> input) throws Exception {
-        if (!DEBUG) {
-            return 0L;
-        }
         char[][] matrix = matrix(input.toList());
 
         Coordinate startingPoint = findChar(matrix, 'S');
         matrix[startingPoint.row()][startingPoint.column()] = '.';
 
-        int maximumStepsToTake = 26501365;
-        //int maximumStepsToTake = 65 + (131 * 4);
+        int maximumStepsToTake;
+        if (matrix.length == 65) {
+            maximumStepsToTake = 26501365;
+        } else {
+            maximumStepsToTake = 65 + (131 * 6);
+        }
 
         Set<Coordinate> allFinalStates = findFinalCoordinates(
                 matrix,
@@ -231,7 +225,7 @@ public class Day21 extends Day {
             }
         }
 
-        Set<Coordinate> finalStatesInRightMostAndOneUpAlt1 = new HashSet<>();
+        Set<Coordinate> finalStatesInRightMostAndOneUp = new HashSet<>();
         {
             Coordinate start = finalStatesInRightMost.stream()
                     .filter(c -> c.row() == 0)
@@ -240,52 +234,17 @@ public class Day21 extends Day {
                     .withRow(matrix.length - 1);
 
             for (Coordinate coordinate : allFinalStates) {
-                // TODO: fixed for one case but breaks others
-                //if (coordinate.row() <= start.row() && coordinate.column() <= start.column() - (129 - coordinate.row())) {
                 if (coordinate.row() <= start.row() && coordinate.column() <= start.column() - (131 - coordinate.row())) {
-                    finalStatesInRightMostAndOneUpAlt1.add(coordinate);
+                    finalStatesInRightMostAndOneUp.add(coordinate);
                 } else if (coordinate.row() > start.row()) {
                     throw new IllegalStateException();
                 }
             }
         }
 
-        Set<Coordinate> finalStatesInRightMostAndOneUpAlt2 = new HashSet<>();
+        Set<Coordinate> finalStatesInRightMostAndOneUpAndOneLeft = new HashSet<>();
         {
-            Coordinate start = finalStatesInRightMost.stream()
-                    .filter(c -> c.row() == 0)
-                    .max(comparing(Coordinate::column))
-                    .orElseThrow()
-                    .withRow(matrix.length - 1);
-
-            for (Coordinate coordinate : allFinalStates) {
-                if (coordinate.row() <= start.row() && coordinate.column() <= start.column() - (130 - coordinate.row())) {
-                    finalStatesInRightMostAndOneUpAlt2.add(coordinate);
-                } else if (coordinate.row() > start.row()) {
-                    throw new IllegalStateException();
-                }
-            }
-        }
-
-        Set<Coordinate> finalStatesInRightMostAndOneUpAndOneLeftAlt1 = new HashSet<>();
-        {
-            Coordinate start = finalStatesInRightMostAndOneUpAlt1.stream()
-                    .min(comparing(Coordinate::row))
-                    .orElseThrow()
-                    .withColumn(130);
-
-            for (Coordinate coordinate : allFinalStatesOneStepShifted) {
-                if (coordinate.row() >= start.row() ||
-                        coordinate.column() < start.row() + coordinate.row() - 1) {
-
-                    finalStatesInRightMostAndOneUpAndOneLeftAlt1.add(coordinate);
-                }
-            }
-        }
-
-        Set<Coordinate> finalStatesInRightMostAndOneUpAndOneLeftAlt2 = new HashSet<>();
-        {
-            Coordinate start = finalStatesInRightMostAndOneUpAlt2.stream()
+            Coordinate start = finalStatesInRightMostAndOneUp.stream()
                     .min(comparing(Coordinate::row))
                     .orElseThrow()
                     .withColumn(130);
@@ -294,7 +253,7 @@ public class Day21 extends Day {
                 if (coordinate.row() >= start.row() ||
                         coordinate.column() < start.row() + coordinate.row()) {
 
-                    finalStatesInRightMostAndOneUpAndOneLeftAlt2.add(coordinate);
+                    finalStatesInRightMostAndOneUpAndOneLeft.add(coordinate);
                 }
             }
         }
@@ -359,58 +318,21 @@ public class Day21 extends Day {
         }
 
         if (DEBUG) {
-            try (var stream = new PrintStream("output2.txt")) {
-                printWithFinalStates(matrix, stream, Set.of(), Set.of(), Set.of(), finalStatesInLeftMostAndOneUp, finalStatesInTopMost, finalStatesInRightMostAndOneUpAlt1, Set.of(), Set.of(), Set.of());
-                printWithFinalStates(matrix, stream, Set.of(), Set.of(), finalStatesInLeftMostAndOneUp, finalStatesInLeftMostAndOneUpOneRight, allFinalStates, finalStatesInRightMostAndOneUpAndOneLeftAlt2, finalStatesInRightMostAndOneUpAlt2, Set.of(), Set.of());
-                printWithFinalStates(matrix, stream, Set.of(), finalStatesInLeftMostAndOneUp, finalStatesInLeftMostAndOneUpOneRight, allFinalStates, allFinalStatesOneStepShifted, allFinalStates, finalStatesInRightMostAndOneUpAndOneLeftAlt2, finalStatesInRightMostAndOneUpAlt1, Set.of());
-                printWithFinalStates(matrix, stream, finalStatesInLeftMostAndOneUp, finalStatesInLeftMostAndOneUpOneRight, allFinalStates, allFinalStatesOneStepShifted, allFinalStates, allFinalStatesOneStepShifted, allFinalStates, finalStatesInRightMostAndOneUpAndOneLeftAlt2, finalStatesInRightMostAndOneUpAlt2);
-                printWithFinalStates(matrix, stream, finalStatesInLeftMost, allFinalStates, allFinalStatesOneStepShifted, allFinalStates, allFinalStatesOneStepShifted, allFinalStates, allFinalStatesOneStepShifted, allFinalStates, finalStatesInRightMost);
-                printWithFinalStates(matrix, stream, finalStatesInLeftMostAndOneDown, finalStatesInLeftMostAndOneDownOneRight, allFinalStates, allFinalStatesOneStepShifted, allFinalStates, allFinalStatesOneStepShifted, allFinalStates, finalStatesInRightMostAndOneDownAndOneLeft, finalStatesInRightMostAndOneDown);
-                printWithFinalStates(matrix, stream, Set.of(), finalStatesInLeftMostAndOneDown, finalStatesInLeftMostAndOneDownOneRight, allFinalStates, allFinalStatesOneStepShifted, allFinalStates, finalStatesInRightMostAndOneDownAndOneLeft, finalStatesInRightMostAndOneDown, Set.of());
-                printWithFinalStates(matrix, stream, Set.of(), Set.of(), finalStatesInLeftMostAndOneDown, finalStatesInLeftMostAndOneDownOneRight, allFinalStates, finalStatesInRightMostAndOneDownAndOneLeft, finalStatesInRightMostAndOneDown, Set.of(), Set.of());
-                printWithFinalStates(matrix, stream, Set.of(), Set.of(), Set.of(), finalStatesInLeftMostAndOneDown, finalStatesInBottomMost, finalStatesInRightMostAndOneDown, Set.of(), Set.of(), Set.of());
+            try (var stream = new PrintStream("output-13x13.txt")) {
+                printWithFinalStates(matrix, stream, Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), finalStatesInLeftMostAndOneUp, finalStatesInTopMost, finalStatesInRightMostAndOneUp, Set.of(), Set.of(), Set.of(), Set.of(), Set.of());
+                printWithFinalStates(matrix, stream, Set.of(), Set.of(), Set.of(), Set.of(), finalStatesInLeftMostAndOneUp, finalStatesInLeftMostAndOneUpOneRight, allFinalStates, finalStatesInRightMostAndOneUpAndOneLeft, finalStatesInRightMostAndOneUp, Set.of(), Set.of(), Set.of(), Set.of());
+                printWithFinalStates(matrix, stream, Set.of(), Set.of(), Set.of(), finalStatesInLeftMostAndOneUp, finalStatesInLeftMostAndOneUpOneRight, allFinalStates, allFinalStatesOneStepShifted, allFinalStates, finalStatesInRightMostAndOneUpAndOneLeft, finalStatesInRightMostAndOneUp, Set.of(), Set.of(), Set.of());
+                printWithFinalStates(matrix, stream, Set.of(), Set.of(), finalStatesInLeftMostAndOneUp, finalStatesInLeftMostAndOneUpOneRight, allFinalStates, allFinalStatesOneStepShifted, allFinalStates, allFinalStatesOneStepShifted, allFinalStates, finalStatesInRightMostAndOneUpAndOneLeft, finalStatesInRightMostAndOneUp, Set.of(), Set.of());
+                printWithFinalStates(matrix, stream, Set.of(), finalStatesInLeftMostAndOneUp, finalStatesInLeftMostAndOneUpOneRight, allFinalStates, allFinalStatesOneStepShifted, allFinalStates, allFinalStatesOneStepShifted, allFinalStates, allFinalStatesOneStepShifted, allFinalStates, finalStatesInRightMostAndOneUpAndOneLeft, finalStatesInRightMostAndOneUp, Set.of());
+                printWithFinalStates(matrix, stream, finalStatesInLeftMostAndOneUp, finalStatesInLeftMostAndOneUpOneRight, allFinalStates, allFinalStatesOneStepShifted, allFinalStates, allFinalStatesOneStepShifted, allFinalStates, allFinalStatesOneStepShifted, allFinalStates, allFinalStatesOneStepShifted, allFinalStates, finalStatesInRightMostAndOneUpAndOneLeft, finalStatesInRightMostAndOneUp);
+                printWithFinalStates(matrix, stream, finalStatesInLeftMost, allFinalStates, allFinalStatesOneStepShifted, allFinalStates, allFinalStatesOneStepShifted, allFinalStates, allFinalStatesOneStepShifted, allFinalStates, allFinalStatesOneStepShifted, allFinalStates, allFinalStatesOneStepShifted, allFinalStates, finalStatesInRightMost);
+                printWithFinalStates(matrix, stream, finalStatesInLeftMostAndOneDown, finalStatesInLeftMostAndOneDownOneRight, allFinalStates, allFinalStatesOneStepShifted, allFinalStates, allFinalStatesOneStepShifted, allFinalStates, allFinalStatesOneStepShifted, allFinalStates, allFinalStatesOneStepShifted, allFinalStates, finalStatesInRightMostAndOneDownAndOneLeft, finalStatesInRightMostAndOneDown);
+                printWithFinalStates(matrix, stream, Set.of(), finalStatesInLeftMostAndOneDown, finalStatesInLeftMostAndOneDownOneRight, allFinalStates, allFinalStatesOneStepShifted, allFinalStates, allFinalStatesOneStepShifted, allFinalStates, allFinalStatesOneStepShifted, allFinalStates, finalStatesInRightMostAndOneDownAndOneLeft, finalStatesInRightMostAndOneDown, Set.of());
+                printWithFinalStates(matrix, stream, Set.of(), Set.of(), finalStatesInLeftMostAndOneDown, finalStatesInLeftMostAndOneDownOneRight, allFinalStates, allFinalStatesOneStepShifted, allFinalStates, allFinalStatesOneStepShifted, allFinalStates, finalStatesInRightMostAndOneDownAndOneLeft, finalStatesInRightMostAndOneDown, Set.of(), Set.of());
+                printWithFinalStates(matrix, stream, Set.of(), Set.of(), Set.of(), finalStatesInLeftMostAndOneDown, finalStatesInLeftMostAndOneDownOneRight, allFinalStates, allFinalStatesOneStepShifted, allFinalStates, finalStatesInRightMostAndOneDownAndOneLeft, finalStatesInRightMostAndOneDown, Set.of(), Set.of(), Set.of());
+                printWithFinalStates(matrix, stream, Set.of(), Set.of(), Set.of(), Set.of(), finalStatesInLeftMostAndOneDown, finalStatesInLeftMostAndOneDownOneRight, allFinalStates, finalStatesInRightMostAndOneDownAndOneLeft, finalStatesInRightMostAndOneDown, Set.of(), Set.of(), Set.of(), Set.of());
+                printWithFinalStates(matrix, stream, Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), finalStatesInLeftMostAndOneDown, finalStatesInBottomMost, finalStatesInRightMostAndOneDown, Set.of(), Set.of(), Set.of(), Set.of(), Set.of());
             }
-        }
-
-        if (DEBUG && false) {
-            // leftmost-2
-            printWithFinalStates(matrix, Set.of(), finalStatesInLeftMostAndOneUp, finalStatesInLeftMostAndOneUpOneRight);
-
-            // leftmost-1
-            printWithFinalStates(matrix, finalStatesInLeftMostAndOneUp, finalStatesInLeftMostAndOneUpOneRight);
-
-            // leftmost
-            printWithFinalStates(matrix, finalStatesInLeftMost, allFinalStatesOneStepShifted);
-
-            // leftmost+1
-            printWithFinalStates(matrix, finalStatesInLeftMostAndOneDown, finalStatesInLeftMostAndOneDownOneRight);
-
-            System.out.println();
-            System.out.println();
-
-            // rightmost-1
-            printWithFinalStates(matrix, finalStatesInRightMostAndOneUpAndOneLeftAlt1, finalStatesInRightMostAndOneUpAlt1);
-
-            // rightmost
-            printWithFinalStates(matrix, allFinalStatesOneStepShifted, finalStatesInRightMost);
-
-            // rightmost+1
-            printWithFinalStates(matrix, finalStatesInRightMostAndOneDownAndOneLeft, finalStatesInRightMostAndOneDown);
-
-            System.out.println();
-            System.out.println();
-
-            // topmost
-            printWithFinalStates(matrix, finalStatesInLeftMostAndOneUp, finalStatesInTopMost, finalStatesInRightMostAndOneUpAlt1);
-
-            System.out.println();
-            System.out.println();
-
-            // bottommost-1
-            printWithFinalStates(matrix, finalStatesInLeftMostAndOneDown, finalStatesInLeftMostAndOneDownOneRight, allFinalStatesOneStepShifted, finalStatesInRightMostAndOneDownAndOneLeft, finalStatesInRightMostAndOneDown);
-
-            // bottommost
-            printWithFinalStates(matrix, Set.of(), finalStatesInLeftMostAndOneDown, finalStatesInBottomMost, finalStatesInRightMostAndOneDown, Set.of());
         }
 
         int bottomRow = (2 * clonesInEachDirection) + 1;
@@ -422,7 +344,7 @@ public class Day21 extends Day {
                         // Top row
                         return (long) finalStatesInLeftMostAndOneUp.size() +
                                 finalStatesInTopMost.size() +
-                                finalStatesInRightMostAndOneUpAlt1.size();
+                                finalStatesInRightMostAndOneUp.size();
                     } else if (row == bottomRow) {
                         // Bottom row
                         return (long) finalStatesInLeftMostAndOneDown.size() +
@@ -433,16 +355,15 @@ public class Day21 extends Day {
                         return (row - 1L) * allFinalStates.size() +
                                 (row - 2L) * allFinalStatesOneStepShifted.size() +
                                 finalStatesInLeftMost.size() +
-                                finalStatesInRightMost.size() +
-                                1 /* starting point */;
+                                finalStatesInRightMost.size();
                     } else if (row <= clonesInEachDirection) {
                         // Top half
                         return finalStatesInLeftMostAndOneUp.size() +
                                 finalStatesInLeftMostAndOneUpOneRight.size() +
                                 (row - 1L) * allFinalStates.size() +
                                 (row - 2L) * allFinalStatesOneStepShifted.size() +
-                                (row % 2 == 0 ? finalStatesInRightMostAndOneUpAlt2 : finalStatesInRightMostAndOneUpAlt1).size() +
-                                (true ? finalStatesInRightMostAndOneUpAndOneLeftAlt2 : finalStatesInRightMostAndOneUpAndOneLeftAlt1).size();
+                                finalStatesInRightMostAndOneUp.size() +
+                                finalStatesInRightMostAndOneUpAndOneLeft.size();
                     } else if (row > clonesInEachDirection + 1) {
                         // Bottom half
                         return finalStatesInLeftMostAndOneDown.size() +
@@ -455,19 +376,7 @@ public class Day21 extends Day {
                         throw new IllegalStateException();
                     }
                 })
-                .sum();
-
-        // 617720199619352 too low
-        // 617723253120458 too low
-        // 617723253128027 too low
-        // 617726306629133 incorrect
-        // 617726306644227 incorrect
-        // 617723253143121 incorrect
-        // 617729360145333 incorrect
-        // 617729392918089 incorrect
-        // 617729388062901 incorrect
-        // 617729388062902 incorrect
-        // 617729401414636 incorrect
+                .sum(); // Your puzzle answer was 617729401414635
     }
 
     private static Set<Coordinate> findFinalCoordinates(char[][] matrix, Coordinate startingPoint, int stepsToTake, ConcurrentMap<Coordinate, Integer> visitedCoordinates) {
