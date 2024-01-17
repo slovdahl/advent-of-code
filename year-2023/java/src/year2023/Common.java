@@ -3,6 +3,8 @@ package year2023;
 import year2023.tools.Coordinate;
 
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
@@ -20,8 +22,11 @@ public class Common {
         Path path = Path.of("year-2023/input/" + day + "/input");
 
         if (!path.toFile().exists()) {
-            // TODO: fetch from adventofcode.com
-            throw new NoSuchFileException(path.toString());
+            path = Path.of("input/" + day + "/input");
+            if (!path.toFile().exists()) {
+                // TODO: fetch from adventofcode.com
+                throw new NoSuchFileException(path.toString());
+            }
         }
 
         return Files.lines(path);
@@ -175,7 +180,7 @@ public class Common {
         return permutations;
     }
 
-    static void print(char[][]... matrices) {
+    static void print(PrintStream s, char[][]... matrices) {
         if (matrices.length == 0) {
             return;
         }
@@ -183,10 +188,10 @@ public class Common {
         for (int row = 0; row < matrices[0].length; row++) {
             for (char[][] matrix : matrices) {
                 for (int column = 0; column < matrix[row].length; column++) {
-                    System.out.print(matrix[row][column]);
+                    s.print(matrix[row][column]);
                 }
             }
-            System.out.println();
+            s.println();
         }
     }
 
