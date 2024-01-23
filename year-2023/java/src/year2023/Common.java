@@ -1,9 +1,10 @@
 package year2023;
 
+import com.google.common.graph.EndpointPair;
+import com.google.common.graph.Graph;
 import year2023.tools.Coordinate;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
@@ -247,5 +248,15 @@ public class Common {
                                         int row2, int column2) {
         return Math.abs(row1 - row2) +
                 Math.abs(column1 - column2);
+    }
+
+    public static void visualizeAsDot(PrintStream s, Graph<String> graph) {
+        s.println("graph aoc {");
+
+        for (EndpointPair<String> edge : graph.edges()) {
+            s.println("  " + edge.nodeU() + " -- " + edge.nodeV());
+        }
+
+        s.println("}");
     }
 }
