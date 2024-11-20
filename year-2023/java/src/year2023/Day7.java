@@ -1,9 +1,9 @@
 package year2023;
 
+import lib.Card;
 import lib.Day;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -137,35 +137,6 @@ public class Day7 extends Day {
             }
 
             return 0;
-        }
-    }
-
-    enum Card {
-        _2('2'),
-        _3('3'),
-        _4('4'),
-        _5('5'),
-        _6('6'),
-        _7('7'),
-        _8('8'),
-        _9('9'),
-        _T('T'),
-        _J('J'),
-        _Q('Q'),
-        _K('K'),
-        _A('A');
-
-        private static final Map<Character, Card> LOOKUP = Arrays.stream(values())
-                .collect(toUnmodifiableMap(e -> e.key, e -> e));
-
-        private final char key;
-
-        Card(char key) {
-            this.key = key;
-        }
-
-        static Card of(char ch) {
-            return LOOKUP.get(ch);
         }
     }
 
