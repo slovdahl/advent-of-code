@@ -1,5 +1,7 @@
 package year2023;
 
+import lib.Day;
+
 import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -18,7 +20,7 @@ import static java.util.stream.Collectors.toMap;
 public class Day20 extends Day {
 
     @Override
-    Long part1(Stream<String> input) throws IOException {
+    protected Long part1(Stream<String> input) throws IOException {
         Stream<String> sampleInput = """
                 broadcaster -> a, b, c
                 %a -> b
@@ -70,7 +72,7 @@ public class Day20 extends Day {
     }
 
     @Override
-    Long part2(Stream<String> input) throws Exception {
+    protected Long part2(Stream<String> input) throws Exception {
         Map<String, Module> modules = parseAndInitModules(input);
 
         Queue<InFlightPulse> queue = new ArrayDeque<>();

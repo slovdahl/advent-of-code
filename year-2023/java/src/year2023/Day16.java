@@ -1,6 +1,7 @@
 package year2023;
 
-import year2023.tools.Direction;
+import lib.Day;
+import lib.Direction;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -13,13 +14,13 @@ import java.util.SequencedSet;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import static year2023.Common.matrix;
+import static lib.Common.matrix;
 
 @SuppressWarnings("unused")
 public class Day16 extends Day {
 
     @Override
-    Integer part1(Stream<String> input) throws IOException {
+    protected Integer part1(Stream<String> input) throws IOException {
         char[][] matrix = matrix(input.toList());
         Set<Tile> energizedTiles = new HashSet<>();
 
@@ -31,7 +32,7 @@ public class Day16 extends Day {
     }
 
     @Override
-    Object part2(Stream<String> input) throws Exception {
+    protected Object part2(Stream<String> input) throws Exception {
         char[][] matrix = matrix(input.toList());
         Map<TileMove, Set<Tile>> energizedTilesPerStartingMove = new HashMap<>();
 

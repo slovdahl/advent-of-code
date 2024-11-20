@@ -1,5 +1,7 @@
 package year2023;
 
+import lib.Day;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -16,7 +18,7 @@ import java.util.stream.Stream;
 public class Day4 extends Day {
 
     @Override
-    Object part1(Stream<String> input) throws Exception {
+    protected Object part1(Stream<String> input) throws Exception {
         return input
                 .map(line -> line.replaceFirst("^Card\\s+\\d+: ", ""))
                 .map(line -> line.split("\\|"))
@@ -41,7 +43,7 @@ public class Day4 extends Day {
     }
 
     @Override
-    Object part2(Stream<String> input) throws Exception {
+    protected Object part2(Stream<String> input) throws Exception {
         Pattern pattern = Pattern.compile("^Card\\s+(\\d+): ([\\s\\d]+) \\| ([\\s\\d]+)$");
 
         var cards = input

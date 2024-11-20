@@ -1,5 +1,7 @@
 package year2023;
 
+import lib.Day;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -9,13 +11,13 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toMap;
-import static year2023.Common.splitOnComma;
+import static lib.Common.splitOnComma;
 
 @SuppressWarnings("unused")
 public class Day15 extends Day {
 
     @Override
-    Integer part1(Stream<String> input) throws IOException {
+    protected Integer part1(Stream<String> input) throws IOException {
         return splitOnComma(input.findFirst().orElseThrow())
                 .map(Day15::hash)
                 .mapToInt(v -> v)
@@ -23,7 +25,7 @@ public class Day15 extends Day {
     }
 
     @Override
-    Integer part2(Stream<String> input) throws Exception {
+    protected Integer part2(Stream<String> input) throws Exception {
         Map<Integer, Box> boxes = IntStream.range(0, 256)
                 .mapToObj(n -> new Box(n, new ArrayList<>(), new HashMap<>()))
                 .collect(toMap(box -> box.number, box -> box));

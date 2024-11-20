@@ -1,7 +1,8 @@
 package year2023;
 
 import com.google.common.collect.ContiguousSet;
-import year2023.tools.Pair;
+import lib.Day;
+import lib.Pair;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -22,7 +23,7 @@ public class Day22 extends Day {
     private Map<Integer, List<Brick>> bricksPerLastZ;
 
     @Override
-    void prepare(Stream<String> input) {
+    protected void prepare(Stream<String> input) {
         Stream<String> sampleInput = """
                 1,0,1~1,2,1
                 0,0,2~2,0,2
@@ -54,14 +55,14 @@ public class Day22 extends Day {
     }
 
     @Override
-    Long part1(Stream<String> input) throws Exception {
+    protected Long part1(Stream<String> input) throws Exception {
         return bricks.stream()
                 .filter(brick -> getBricksSupportingThis(brick, bricksPerFirstZ, bricksPerLastZ).isEmpty())
                 .count(); // Your puzzle answer was 501
     }
 
     @Override
-    Integer part2(Stream<String> input) throws Exception {
+    protected Integer part2(Stream<String> input) throws Exception {
         return bricks.stream()
                 .filter(brick -> !getBricksSupportingThis(brick, bricksPerFirstZ, bricksPerLastZ).isEmpty())
                 .mapToInt(brick -> {

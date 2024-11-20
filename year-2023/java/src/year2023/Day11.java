@@ -1,7 +1,9 @@
 package year2023;
 
+import lib.Common;
+import lib.Day;
 import org.jetbrains.annotations.NotNull;
-import year2023.tools.Pair;
+import lib.Pair;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -12,20 +14,20 @@ import java.util.Set;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static year2023.Common.manhattanDistance;
+import static lib.Common.manhattanDistance;
 
 @SuppressWarnings("unused")
 public class Day11 extends Day {
 
     @Override
-    Object part1(Stream<String> input) throws IOException {
+    protected Object part1(Stream<String> input) throws IOException {
         int expansionFactor = 2;
 
         return calculateSumOfShortestPathsBetweenGalaxies(input, expansionFactor); // Your puzzle answer was 9947476
     }
 
     @Override
-    Object part2(Stream<String> input) throws Exception {
+    protected Object part2(Stream<String> input) throws Exception {
         int expansionFactor = 1_000_000;
 
         return calculateSumOfShortestPathsBetweenGalaxies(input, expansionFactor); // Your puzzle answer was 519939907614

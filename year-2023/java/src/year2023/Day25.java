@@ -4,19 +4,20 @@ import com.google.common.collect.Iterators;
 import com.google.common.graph.GraphBuilder;
 import com.google.common.graph.MutableGraph;
 import com.google.common.graph.Traverser;
+import lib.Day;
 
 import java.io.PrintStream;
 import java.util.Map;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toUnmodifiableMap;
-import static year2023.Common.visualizeAsDot;
+import static lib.Common.visualizeAsDot;
 
 @SuppressWarnings("unused")
 public class Day25 extends Day {
 
     @Override
-    Integer part1(Stream<String> input) throws Exception {
+    protected Integer part1(Stream<String> input) throws Exception {
         Stream<String> sampleInput = """
                 jqt: rhn xhk nvd
                 rsh: frs pzl lsr

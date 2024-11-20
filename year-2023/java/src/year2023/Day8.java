@@ -1,5 +1,8 @@
 package year2023;
 
+import lib.Common;
+import lib.Day;
+
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -13,7 +16,7 @@ import static java.util.stream.Collectors.toUnmodifiableMap;
 public class Day8 extends Day {
 
     @Override
-    Object part1(Stream<String> rawInput) throws Exception {
+    protected Object part1(Stream<String> rawInput) throws Exception {
         var input = rawInput.collect(toList());
 
         String path = input.removeFirst();
@@ -47,7 +50,7 @@ public class Day8 extends Day {
     }
 
     @Override
-    Object part2(Stream<String> rawInput) throws Exception {
+    protected Object part2(Stream<String> rawInput) throws Exception {
         var input = rawInput.collect(toList());
 
         String path = input.removeFirst();

@@ -1,6 +1,7 @@
 package year2023;
 
-import year2023.tools.Coordinate;
+import lib.Coordinate;
+import lib.Day;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -17,10 +18,10 @@ import java.util.stream.Stream;
 
 import static com.google.common.base.Preconditions.checkState;
 import static java.util.Comparator.comparing;
-import static year2023.Common.deepClone;
-import static year2023.Common.findChar;
-import static year2023.Common.matrix;
-import static year2023.Common.print;
+import static lib.Common.deepClone;
+import static lib.Common.findChar;
+import static lib.Common.matrix;
+import static lib.Common.print;
 
 @SuppressWarnings("unused")
 public class Day21 extends Day {
@@ -29,7 +30,7 @@ public class Day21 extends Day {
     private static final boolean OUTPUT_DUPLICATED_INPUT = false;
 
     @Override
-    Integer part1(Stream<String> input) throws Exception {
+    protected Integer part1(Stream<String> input) throws Exception {
         Stream<String> sampleInput = """
                 ...........
                 .....###.#.
@@ -99,7 +100,7 @@ public class Day21 extends Day {
     }
 
     @Override
-    Long part2(Stream<String> input) throws Exception {
+    protected Long part2(Stream<String> input) throws Exception {
         char[][] matrix = matrix(input.toList());
 
         Coordinate startingPoint = findChar(matrix, 'S');

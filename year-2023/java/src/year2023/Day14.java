@@ -1,18 +1,20 @@
 package year2023;
 
+import lib.Day;
+
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import static year2023.Common.matrix;
-import static year2023.Common.swap;
+import static lib.Common.matrix;
+import static lib.Common.swap;
 
 @SuppressWarnings("unused")
 public class Day14 extends Day {
 
     @Override
-    Integer part1(Stream<String> input) throws IOException {
+    protected Integer part1(Stream<String> input) throws IOException {
         char[][] matrix = matrix(input.toList());
 
         tiltAllRocksNorth(matrix);
@@ -21,7 +23,7 @@ public class Day14 extends Day {
     }
 
     @Override
-    Object part2(Stream<String> input) throws Exception {
+    protected Object part2(Stream<String> input) throws Exception {
         char[][] matrix = matrix(input.toList());
 
         Set<char[][]> seen = new HashSet<>();

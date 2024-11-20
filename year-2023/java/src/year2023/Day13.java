@@ -1,5 +1,7 @@
 package year2023;
 
+import lib.Day;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -13,7 +15,7 @@ public class Day13 extends Day {
     private List<List<char[]>> patterns;
 
     @Override
-    void prepare(Stream<String> input) {
+    protected void prepare(Stream<String> input) {
         List<String> inputLines = input.toList();
         patterns = new ArrayList<>();
 
@@ -32,7 +34,7 @@ public class Day13 extends Day {
     }
 
     @Override
-    Integer part1(Stream<String> input) throws IOException {
+    protected Integer part1(Stream<String> input) throws IOException {
         int rowSummary = 0;
         int columnSummary = 0;
 
@@ -144,7 +146,7 @@ public class Day13 extends Day {
     }
 
     @Override
-    Integer part2(Stream<String> input) throws Exception {
+    protected Integer part2(Stream<String> input) throws Exception {
         Map<Integer, Integer> lastHalfRowPartOfMirror = new LinkedHashMap<>();
         Map<Integer, Integer> lastHalfColumnPartOfMirror = new LinkedHashMap<>();
 

@@ -1,6 +1,7 @@
 package year2023;
 
-import year2023.tools.Coordinate;
+import lib.Coordinate;
+import lib.Day;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -13,8 +14,8 @@ import java.util.stream.Stream;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Collectors.toUnmodifiableMap;
-import static year2023.Common.paddedMatrix;
-import static year2023.Common.printWithoutPadding;
+import static lib.Common.paddedMatrix;
+import static lib.Common.printWithoutPadding;
 
 @SuppressWarnings("unused")
 public class Day10 extends Day {
@@ -25,7 +26,7 @@ public class Day10 extends Day {
     private Set<Coordinate> seenCoordinates;
 
     @Override
-    void prepare(Stream<String> input) {
+    protected void prepare(Stream<String> input) {
         List<String> lines = input.toList();
 
         matrix = paddedMatrix(lines, '.');
@@ -158,12 +159,12 @@ public class Day10 extends Day {
     }
 
     @Override
-    Integer part1(Stream<String> input) throws IOException {
+    protected Integer part1(Stream<String> input) throws IOException {
         return steps / 2; // Your puzzle answer was 6757
     }
 
     @Override
-    Integer part2(Stream<String> input) throws Exception {
+    protected Integer part2(Stream<String> input) throws Exception {
         for (int row = 1; row < matrix.length - 1; row++) {
             for (int column = 1; column < matrix[row].length - 1; column++) {
                 if (!seenCoordinates.contains(new Coordinate(row, column))) {

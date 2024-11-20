@@ -1,6 +1,8 @@
 package year2023;
 
 import com.google.common.collect.Sets;
+import lib.Common;
+import lib.Day;
 
 import java.util.Iterator;
 import java.util.Set;
@@ -12,7 +14,7 @@ import static java.util.stream.Collectors.toUnmodifiableSet;
 public class Day24 extends Day {
 
     @Override
-    Long part1(Stream<String> input) throws Exception {
+    protected Long part1(Stream<String> input) throws Exception {
         Stream<String> sampleInput = """
                 19, 13, 30 @ -2,  1, -2
                 18, 19, 22 @ -1, -1, -2

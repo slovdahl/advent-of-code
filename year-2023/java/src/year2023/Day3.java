@@ -1,5 +1,8 @@
 package year2023;
 
+import lib.Common;
+import lib.Day;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -16,7 +19,7 @@ public class Day3 extends Day {
     private List<RowNumber> numberIndices;
 
     @Override
-    void prepare(Stream<String> rawInput) {
+    protected void prepare(Stream<String> rawInput) {
         input = Common.paddedMatrix(rawInput.toList(), '.');
         numberIndices = new ArrayList<>();
 
@@ -48,7 +51,7 @@ public class Day3 extends Day {
     }
 
     @Override
-    Object part1(Stream<String> ignored) throws Exception {
+    protected Object part1(Stream<String> ignored) throws Exception {
         List<RowNumber> validRowNumbers = new ArrayList<>();
 
         for (RowNumber rowNumber : numberIndices) {
@@ -80,7 +83,7 @@ public class Day3 extends Day {
     }
 
     @Override
-    Object part2(Stream<String> ignored) throws Exception {
+    protected Object part2(Stream<String> ignored) throws Exception {
         List<RowNumberWithGearIndex> rowNumberAdjacentToGear = new ArrayList<>();
 
         for (RowNumber rowNumber : numberIndices) {

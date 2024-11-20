@@ -1,4 +1,4 @@
-package year2023.tools;
+package lib;
 
 public enum Direction {
     UP,

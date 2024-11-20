@@ -1,8 +1,7 @@
-package year2023;
+package lib;
 
 import com.google.common.graph.EndpointPair;
 import com.google.common.graph.Graph;
-import year2023.tools.Coordinate;
 
 import java.io.IOException;
 import java.io.PrintStream;
@@ -19,8 +18,8 @@ public class Common {
 
     private static final Pattern SPACE_PATTERN = Pattern.compile("\\s+");
 
-    public static Stream<String> readInputLinesForDay(int day) throws IOException {
-        Path path = Path.of("year-2023/input/" + day + "/input");
+    public static Stream<String> readInputLinesFor(int year, int day) throws IOException {
+        Path path = Path.of("year-" + year + "/input/" + day + "/input");
 
         if (!path.toFile().exists()) {
             path = Path.of("input/" + day + "/input");
@@ -147,7 +146,7 @@ public class Common {
         return result;
     }
 
-    static <T> List<List<T>> permutations(List<List<T>> input) {
+    public static <T> List<List<T>> permutations(List<List<T>> input) {
         List<List<T>> permutations = new ArrayList<>();
         int length = input.size();
 
@@ -181,7 +180,7 @@ public class Common {
         return permutations;
     }
 
-    static void print(PrintStream s, char[][]... matrices) {
+    public static void print(PrintStream s, char[][]... matrices) {
         if (matrices.length == 0) {
             return;
         }
@@ -196,7 +195,7 @@ public class Common {
         }
     }
 
-    static void printWithoutPadding(char[][] matrix) {
+    public static void printWithoutPadding(char[][] matrix) {
         for (int row = 1; row < matrix.length - 1; row++) {
             for (int column = 1; column < matrix[row].length - 1; column++) {
                 System.out.print(matrix[row][column]);
@@ -206,19 +205,17 @@ public class Common {
         System.out.println();
     }
 
-    static final void swap(char[] a, int i, int j) {
-        char t = a[i];
-        a[i] = a[j];
-        a[j] = t;
+    public static final void swap(char[] a, int i, int j) {
+        swap(a, a, i, j);
     }
 
-    static final void swap(char[] src, char[] dst, int srcIndex, int dstIndex) {
+    public static final void swap(char[] src, char[] dst, int srcIndex, int dstIndex) {
         char t = src[srcIndex];
         src[srcIndex] = dst[dstIndex];
         dst[dstIndex] = t;
     }
 
-    static void rotateRight(char[][] matrix) {
+    public static void rotateRight(char[][] matrix) {
         // determines the transpose of the matrix
         for (int i = 0; i < matrix.length; i++) {
             for (int j = i; j < matrix.length; j++) {
@@ -250,6 +247,9 @@ public class Common {
                 Math.abs(column1 - column2);
     }
 
+    // $ brew install graphviz
+    // $ sudo apt-get install graphviz
+    // $ neato -Tsvg d25.dot > d25.svg
     public static void visualizeAsDot(PrintStream s, Graph<String> graph) {
         s.println("graph aoc {");
 

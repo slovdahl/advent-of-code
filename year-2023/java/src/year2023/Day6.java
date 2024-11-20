@@ -1,19 +1,21 @@
 package year2023;
 
+import lib.Day;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import static year2023.Common.ints;
-import static year2023.Common.longs;
+import static lib.Common.ints;
+import static lib.Common.longs;
 
 @SuppressWarnings("unused")
 public class Day6 extends Day {
 
     @Override
-    Object part1(Stream<String> input) throws Exception {
+    protected Object part1(Stream<String> input) throws Exception {
         List<String> inputWithoutPrefix = input
                 .map(l -> l.substring(10))
                 .toList();
@@ -55,7 +57,7 @@ public class Day6 extends Day {
     }
 
     @Override
-    Object part2(Stream<String> input) throws Exception {
+    protected Object part2(Stream<String> input) throws Exception {
         List<String> inputWithoutPrefix = input
                 .map(l -> l.substring(10))
                 .map(l -> l.replace(" ", ""))

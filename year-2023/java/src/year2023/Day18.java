@@ -3,8 +3,9 @@ package year2023;
 import com.google.common.collect.ContiguousSet;
 import com.google.common.collect.DiscreteDomain;
 import com.google.common.collect.Range;
-import year2023.tools.Coordinate;
-import year2023.tools.Direction;
+import lib.Coordinate;
+import lib.Day;
+import lib.Direction;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -20,7 +21,7 @@ import java.util.stream.Stream;
 public class Day18 extends Day {
 
     @Override
-    Long part1(Stream<String> input) throws IOException {
+    protected Long part1(Stream<String> input) throws IOException {
         SparseMatrix matrix = new SparseMatrix();
         Coordinate current = new Coordinate(0, 0);
 
@@ -43,7 +44,7 @@ public class Day18 extends Day {
     }
 
     @Override
-    Long part2(Stream<String> input) throws Exception {
+    protected Long part2(Stream<String> input) throws Exception {
         SparseMatrix matrix = new SparseMatrix();
         Coordinate current = new Coordinate(0, 0);
 

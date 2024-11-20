@@ -1,5 +1,8 @@
 package year2023;
 
+import lib.Common;
+import lib.Day;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
@@ -8,7 +11,7 @@ import java.util.stream.Stream;
 public class Day9 extends Day {
 
     @Override
-    Object part1(Stream<String> input) throws Exception {
+    protected Object part1(Stream<String> input) throws Exception {
         return input
                 .map(Common::ints)
                 .map(series -> {
@@ -53,7 +56,7 @@ public class Day9 extends Day {
     }
 
     @Override
-    Object part2(Stream<String> input) throws Exception {
+    protected Object part2(Stream<String> input) throws Exception {
         return input
                 .map(Common::ints)
                 .map(series -> {

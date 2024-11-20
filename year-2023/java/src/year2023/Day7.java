@@ -1,5 +1,7 @@
 package year2023;
 
+import lib.Day;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -19,7 +21,7 @@ import static java.util.stream.Collectors.toUnmodifiableMap;
 public class Day7 extends Day {
 
     @Override
-    Object part1(Stream<String> input) throws Exception {
+    protected Object part1(Stream<String> input) throws Exception {
         List<HandWithType> handWithTypes = input
                 .map(line -> line.split(" "))
                 .map(parts -> Hand.parse(parts[0], Long.parseLong(parts[1])))
@@ -49,7 +51,7 @@ public class Day7 extends Day {
     }
 
     @Override
-    Object part2(Stream<String> input) throws Exception {
+    protected Object part2(Stream<String> input) throws Exception {
         List<HandWithType> handWithTypes = input
                 .map(line -> line.split(" "))
                 .map(parts -> Hand.parse(parts[0], Long.parseLong(parts[1])))

@@ -4,6 +4,7 @@ import com.google.common.collect.ContiguousSet;
 import com.google.common.collect.DiscreteDomain;
 import com.google.common.collect.ImmutableRangeSet;
 import com.google.common.collect.Range;
+import lib.Day;
 
 import java.io.IOException;
 import java.util.ArrayDeque;
@@ -27,7 +28,7 @@ public class Day19 extends Day {
     private Map<String, Workflow> workflows;
 
     @Override
-    void prepare(Stream<String> input) {
+    protected void prepare(Stream<String> input) {
         Stream<String> sampleInput = """
                 px{a<2006:qkq,m>2090:A,rfg}
                 pv{a>1716:R,A}
@@ -57,7 +58,7 @@ public class Day19 extends Day {
     }
 
     @Override
-    Long part1(Stream<String> input) throws IOException {
+    protected Long part1(Stream<String> input) throws IOException {
         List<Part> parts = parseParts(partRatingsStrings);
 
         Queue<State> states = new ArrayDeque<>();
@@ -93,7 +94,7 @@ public class Day19 extends Day {
     }
 
     @Override
-    Long part2(Stream<String> input) throws Exception {
+    protected Long part2(Stream<String> input) throws Exception {
         List<RangesPart> acceptedRangesParts = new ArrayList<>();
 
         RangeState initialState = new RangeState(new RangesPart(ANY, ANY, ANY, ANY), "in");

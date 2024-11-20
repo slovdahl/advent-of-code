@@ -1,4 +1,4 @@
-package year2023.tools;
+package lib;
 
 public record Coordinate(int row, int column) {
 
@@ -51,7 +51,7 @@ public record Coordinate(int row, int column) {
     }
 
     public Coordinate toNorth() {
-        return new Coordinate(row - 1, column);
+        return moveUp();
     }
 
     public Coordinate moveUp() {
@@ -59,7 +59,7 @@ public record Coordinate(int row, int column) {
     }
 
     public Coordinate toEast() {
-        return new Coordinate(row, column + 1);
+        return moveRight();
     }
 
     public Coordinate moveRight() {
@@ -67,7 +67,7 @@ public record Coordinate(int row, int column) {
     }
 
     public Coordinate toSouth() {
-        return new Coordinate(row + 1, column);
+        return moveDown();
     }
 
     public Coordinate moveDown() {
@@ -75,7 +75,7 @@ public record Coordinate(int row, int column) {
     }
 
     public Coordinate toWest() {
-        return new Coordinate(row, column - 1);
+        return moveLeft();
     }
 
     public Coordinate moveLeft() {
@@ -88,6 +88,15 @@ public record Coordinate(int row, int column) {
 
     public Coordinate withColumn(int column) {
         return new Coordinate(row, column);
+    }
+
+    public Coordinate move(Direction direction) {
+        return switch (direction) {
+            case UP -> moveUp();
+            case DOWN -> moveDown();
+            case LEFT -> moveLeft();
+            case RIGHT -> moveRight();
+        };
     }
 
     public static Direction from(String d) {

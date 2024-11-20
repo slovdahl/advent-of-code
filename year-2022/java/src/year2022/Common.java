@@ -1,4 +1,4 @@
-package eu.lovdahl.advent.of.code;
+package year2022;
 
 import java.io.IOException;
 import java.nio.file.Files;

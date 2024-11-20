@@ -4,7 +4,8 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.SortedSetMultimap;
 import com.google.common.collect.TreeMultimap;
-import year2023.tools.Direction;
+import lib.Day;
+import lib.Direction;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -16,14 +17,14 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import static java.util.Comparator.naturalOrder;
-import static year2023.Common.intMatrix;
-import static year2023.Common.manhattanDistance;
+import static lib.Common.intMatrix;
+import static lib.Common.manhattanDistance;
 
 @SuppressWarnings("unused")
 public class Day17 extends Day {
 
     @Override
-    Integer part1(Stream<String> input) throws IOException {
+    protected Integer part1(Stream<String> input) throws IOException {
         Stream<String> sampleInput = """
                 2413432311323
                 3215453535623

@@ -1,5 +1,7 @@
 package year2023;
 
+import lib.Day;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -12,7 +14,7 @@ public class Day2 extends Day {
     private List<Game> games;
 
     @Override
-    void prepare(Stream<String> input) throws Exception {
+    protected void prepare(Stream<String> input) throws Exception {
         Pattern linePattern = Pattern.compile("^Game (\\d+):(.*)$");
         Pattern playPattern = Pattern.compile("\\s?(\\d+) (blue|green|red)\\s?");
 
@@ -55,7 +57,7 @@ public class Day2 extends Day {
     }
 
     @Override
-    Object part1(Stream<String> input) throws Exception {
+    protected Object part1(Stream<String> input) throws Exception {
         return games.stream()
                 .filter(
                         g -> g.plays().stream()
@@ -67,7 +69,7 @@ public class Day2 extends Day {
     }
 
     @Override
-    Object part2(Stream<String> input) throws Exception {
+    protected Object part2(Stream<String> input) throws Exception {
         return games.stream()
                 .map(
                         g -> g.plays().stream()

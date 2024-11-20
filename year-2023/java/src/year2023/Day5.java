@@ -1,6 +1,7 @@
 package year2023;
 
 import com.google.common.collect.Range;
+import lib.Day;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,13 +11,13 @@ import java.util.stream.LongStream;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
-import static year2023.Common.longs;
+import static lib.Common.longs;
 
 @SuppressWarnings("unused")
 public class Day5 extends Day {
 
     @Override
-    Object part1(Stream<String> rawInput) throws Exception {
+    protected Object part1(Stream<String> rawInput) throws Exception {
         List<String> input = rawInput.collect(toList());
 
         LongStream initialSeeds = longs(input.removeFirst().replace("seeds: ", "")).stream().mapToLong(v -> v);
@@ -85,7 +86,7 @@ public class Day5 extends Day {
     }
 
     @Override
-    Object part2(Stream<String> rawInput) throws Exception {
+    protected Object part2(Stream<String> rawInput) throws Exception {
         List<String> input = rawInput.collect(toList());
 
         List<Long> seedRanges = longs(input.removeFirst().replace("seeds: ", ""));

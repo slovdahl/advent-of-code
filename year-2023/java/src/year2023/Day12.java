@@ -1,5 +1,7 @@
 package year2023;
 
+import lib.Day;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -10,7 +12,7 @@ import java.util.function.Consumer;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-import static year2023.Common.permutations;
+import static lib.Common.permutations;
 
 @SuppressWarnings("unused")
 public class Day12 extends Day {
@@ -18,7 +20,7 @@ public class Day12 extends Day {
     private static final Pattern DOT_PATTERN = Pattern.compile("\\.+");
 
     @Override
-    Object part1(Stream<String> input) throws IOException {
+    protected Object part1(Stream<String> input) throws IOException {
         return input
                 .parallel()
                 .map(line -> line.split(" "))

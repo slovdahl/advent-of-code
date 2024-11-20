@@ -1,11 +1,11 @@
-package year2023;
+package lib;
 
 import com.google.common.base.Stopwatch;
 
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
-import static year2023.Common.readInputLinesForDay;
+import static lib.Common.readInputLinesFor;
 
 public abstract class Day {
 
@@ -13,7 +13,9 @@ public abstract class Day {
     private static final AtomicReference<Stopwatch> PART1_TIMING = new AtomicReference<>();
     private static final AtomicReference<Stopwatch> PART2_TIMING = new AtomicReference<>();
 
-    final void run(int day) throws Exception {
+    public final void run(int day) throws Exception {
+        int year = Integer.parseInt(getClass().getPackageName().substring(4));
+
         System.out.printf("""
                 ==================
                 |                |
@@ -22,9 +24,9 @@ public abstract class Day {
                 ==================%n
                 """, day);
 
-        runPrepare(readInputLinesForDay(day));
-        runPart1(readInputLinesForDay(day));
-        runPart2(readInputLinesForDay(day));
+        runPrepare(readInputLinesFor(year, day));
+        runPart1(readInputLinesFor(year, day));
+        runPart2(readInputLinesFor(year, day));
     }
 
     private void runPrepare(Stream<String> input) throws Exception {
@@ -51,12 +53,12 @@ public abstract class Day {
         }
     }
 
-    void prepare(Stream<String> input) throws Exception {
+    protected void prepare(Stream<String> input) throws Exception {
     }
 
-    abstract Object part1(Stream<String> input) throws Exception;
+   protected abstract Object part1(Stream<String> input) throws Exception;
 
-    Object part2(Stream<String> input) throws Exception {
+    protected Object part2(Stream<String> input) throws Exception {
         throw new UnsupportedOperationException();
     }
 

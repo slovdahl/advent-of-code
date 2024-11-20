@@ -1,5 +1,7 @@
 package year2023;
 
+import lib.Day;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -9,7 +11,7 @@ import java.util.stream.Stream;
 public class Day1 extends Day {
 
     @Override
-    Object part1(Stream<String> input) throws IOException {
+    protected Object part1(Stream<String> input) throws IOException {
         return input
                 .map(l -> {
                             List<String> lineDigits = l.chars()
@@ -26,7 +28,7 @@ public class Day1 extends Day {
     }
 
     @Override
-    Object part2(Stream<String> input) throws IOException {
+    protected Object part2(Stream<String> input) throws IOException {
         return input
                 .map(l -> {
                             List<Integer> digitPerIndex = new ArrayList<>(l.length());
