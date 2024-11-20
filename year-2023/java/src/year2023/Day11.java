@@ -1,7 +1,7 @@
 package year2023;
 
-import lib.Common;
 import lib.Day;
+import lib.Matrix;
 import org.jetbrains.annotations.NotNull;
 import lib.Pair;
 
@@ -14,7 +14,7 @@ import java.util.Set;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static lib.Common.manhattanDistance;
+import static lib.Matrix.manhattanDistance;
 
 @SuppressWarnings("unused")
 public class Day11 extends Day {
@@ -34,7 +34,7 @@ public class Day11 extends Day {
     }
 
     private static long calculateSumOfShortestPathsBetweenGalaxies(Stream<String> input, int expansionFactor) {
-        char[][] matrix = Common.matrix(input.toList());
+        char[][] matrix = Matrix.matrix(input.toList());
 
         Set<Integer> rowsToExpand = getRowsToExpand(matrix);
         Set<Integer> columnsToExpand = getColumnsToExpand(matrix);

@@ -14,8 +14,8 @@ import java.util.stream.Stream;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Collectors.toUnmodifiableMap;
-import static lib.Common.paddedMatrix;
-import static lib.Common.printWithoutPadding;
+import static lib.Matrix.paddedMatrix;
+import static lib.Matrix.printWithoutPadding;
 
 @SuppressWarnings("unused")
 public class Day10 extends Day {

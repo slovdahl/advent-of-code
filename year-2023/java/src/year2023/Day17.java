@@ -17,8 +17,8 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import static java.util.Comparator.naturalOrder;
-import static lib.Common.intMatrix;
-import static lib.Common.manhattanDistance;
+import static lib.Matrix.intMatrix;
+import static lib.Matrix.manhattanDistance;
 
 @SuppressWarnings("unused")
 public class Day17 extends Day {

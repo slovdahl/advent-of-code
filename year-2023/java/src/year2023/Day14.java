@@ -7,7 +7,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import static lib.Common.matrix;
+import static lib.Matrix.matrix;
 import static lib.Common.swap;
 
 @SuppressWarnings("unused")

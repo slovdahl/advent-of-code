@@ -1,7 +1,7 @@
 package year2023;
 
-import lib.Common;
 import lib.Day;
+import lib.Parse;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,7 +13,7 @@ public class Day9 extends Day {
     @Override
     protected Object part1(Stream<String> input) throws Exception {
         return input
-                .map(Common::ints)
+                .map(Parse::ints)
                 .map(series -> {
                     List<List<Integer>> allLines = new ArrayList<>();
                     allLines.add(new ArrayList<>(series));
@@ -58,7 +58,7 @@ public class Day9 extends Day {
     @Override
     protected Object part2(Stream<String> input) throws Exception {
         return input
-                .map(Common::ints)
+                .map(Parse::ints)
                 .map(series -> {
                     List<List<Integer>> allLines = new ArrayList<>();
                     allLines.add(new ArrayList<>(series));

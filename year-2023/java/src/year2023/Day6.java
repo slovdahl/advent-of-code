@@ -8,8 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import static lib.Common.ints;
-import static lib.Common.longs;
+import static lib.Parse.ints;
+import static lib.Parse.longs;
 
 @SuppressWarnings("unused")
 public class Day6 extends Day {

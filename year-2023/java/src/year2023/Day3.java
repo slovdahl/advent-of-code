@@ -1,7 +1,7 @@
 package year2023;
 
-import lib.Common;
 import lib.Day;
+import lib.Matrix;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +20,7 @@ public class Day3 extends Day {
 
     @Override
     protected void prepare(Stream<String> rawInput) {
-        input = Common.paddedMatrix(rawInput.toList(), '.');
+        input = Matrix.paddedMatrix(rawInput.toList(), '.');
         numberIndices = new ArrayList<>();
 
         for (int i = 0; i < input.length; i++) {

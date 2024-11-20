@@ -11,7 +11,7 @@ import java.util.stream.LongStream;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
-import static lib.Common.longs;
+import static lib.Parse.longs;
 
 @SuppressWarnings("unused")
 public class Day5 extends Day {

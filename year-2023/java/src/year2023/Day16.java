@@ -14,7 +14,7 @@ import java.util.SequencedSet;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import static lib.Common.matrix;
+import static lib.Matrix.matrix;
 
 @SuppressWarnings("unused")
 public class Day16 extends Day {

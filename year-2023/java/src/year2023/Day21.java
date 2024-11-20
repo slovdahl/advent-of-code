@@ -18,10 +18,10 @@ import java.util.stream.Stream;
 
 import static com.google.common.base.Preconditions.checkState;
 import static java.util.Comparator.comparing;
-import static lib.Common.deepClone;
-import static lib.Common.findChar;
-import static lib.Common.matrix;
-import static lib.Common.print;
+import static lib.Matrix.deepClone;
+import static lib.Matrix.findChar;
+import static lib.Matrix.matrix;
+import static lib.Matrix.print;
 
 @SuppressWarnings("unused")
 public class Day21 extends Day {
