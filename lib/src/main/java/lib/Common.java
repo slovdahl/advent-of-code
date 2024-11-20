@@ -15,15 +15,22 @@ import java.util.stream.Stream;
 
 public class Common {
 
-    public static Stream<String> readInputLinesFor(int year, int day) throws IOException {
-        Path path = Path.of("year-" + year + "/input/" + day + "/input");
+    public static Stream<String> readInputLinesFor(int year, int day) throws IOException, InterruptedException {
+        Path userDir = Path.of(System.getProperty("user.dir"));
+        Path path = userDir;
+        Path tokenPath;
+        if (Files.exists(userDir.resolve("settings.gradle"))) {
+            path = path.resolve("year-" + year);
+            tokenPath = userDir.resolve(".aoc-token");
+        }
+        else {
+            tokenPath = userDir.getParent().resolve(".aoc-token");
+        }
+
+        path = path.resolve("input/" + day + "/input");
 
         if (!path.toFile().exists()) {
-            path = Path.of("input/" + day + "/input");
-            if (!path.toFile().exists()) {
-                // TODO: fetch from adventofcode.com
-                throw new NoSuchFileException(path.toString());
-            }
+            Downloader.download(year, day, path, Files.readString(tokenPath).trim());
         }
 
         return Files.lines(path);

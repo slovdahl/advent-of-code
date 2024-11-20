@@ -13,5 +13,6 @@ build
 # Common
 .DS_Store
 
+.aoc-token
 year-20*/*/input
 year-20*/input
