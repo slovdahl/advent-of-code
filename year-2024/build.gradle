@@ -1,0 +1,19 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+dependencies {
+    implementation project(':lib')
+    implementation 'com.google.guava:guava:33.0.0-jre'
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(23)
+    }
+}
+
+application {
+    mainClass = 'year2024.App'
+}
