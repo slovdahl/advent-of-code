@@ -1,8 +1,8 @@
 rootProject.name = 'advent-of-code'
 
 include(
-    'year-2022',
-    'year-2023'
+        'year-2022',
+        'year-2023'
 )
 
 dependencyResolutionManagement {
