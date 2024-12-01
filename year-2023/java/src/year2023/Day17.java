@@ -24,6 +24,11 @@ import static lib.Matrix.manhattanDistance;
 public class Day17 extends Day {
 
     @Override
+    protected Mode mode() {
+        return Mode.REAL_INPUT;
+    }
+
+    @Override
     protected Integer part1(Stream<String> input) throws IOException {
         Stream<String> sampleInput = """
                 2413432311323

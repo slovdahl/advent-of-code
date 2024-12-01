@@ -20,6 +20,11 @@ import static java.util.stream.Collectors.toMap;
 public class Day20 extends Day {
 
     @Override
+    protected Mode mode() {
+        return Mode.REAL_INPUT;
+    }
+
+    @Override
     protected Long part1(Stream<String> input) throws IOException {
         Stream<String> sampleInput = """
                 broadcaster -> a, b, c

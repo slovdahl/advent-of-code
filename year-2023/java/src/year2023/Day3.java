@@ -19,6 +19,11 @@ public class Day3 extends Day {
     private List<RowNumber> numberIndices;
 
     @Override
+    protected Mode mode() {
+        return Mode.REAL_INPUT;
+    }
+
+    @Override
     protected void prepare(Stream<String> rawInput) {
         input = Matrix.paddedMatrix(rawInput.toList(), '.');
         numberIndices = new ArrayList<>();

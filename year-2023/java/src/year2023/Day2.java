@@ -14,6 +14,11 @@ public class Day2 extends Day {
     private List<Game> games;
 
     @Override
+    protected Mode mode() {
+        return Mode.REAL_INPUT;
+    }
+
+    @Override
     protected void prepare(Stream<String> input) throws Exception {
         Pattern linePattern = Pattern.compile("^Game (\\d+):(.*)$");
         Pattern playPattern = Pattern.compile("\\s?(\\d+) (blue|green|red)\\s?");

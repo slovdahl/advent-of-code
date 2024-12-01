@@ -14,6 +14,11 @@ import static lib.Common.swap;
 public class Day14 extends Day {
 
     @Override
+    protected Mode mode() {
+        return Mode.REAL_INPUT;
+    }
+
+    @Override
     protected Integer part1(Stream<String> input) throws IOException {
         char[][] matrix = matrix(input.toList());
 

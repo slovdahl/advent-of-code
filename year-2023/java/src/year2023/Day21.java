@@ -30,6 +30,11 @@ public class Day21 extends Day {
     private static final boolean OUTPUT_DUPLICATED_INPUT = false;
 
     @Override
+    protected Mode mode() {
+        return Mode.REAL_INPUT;
+    }
+
+    @Override
     protected Integer part1(Stream<String> input) throws Exception {
         Stream<String> sampleInput = """
                 ...........

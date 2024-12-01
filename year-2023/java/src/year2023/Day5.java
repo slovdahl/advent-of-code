@@ -17,6 +17,11 @@ import static lib.Parse.longs;
 public class Day5 extends Day {
 
     @Override
+    protected Mode mode() {
+        return Mode.REAL_INPUT;
+    }
+
+    @Override
     protected Object part1(Stream<String> rawInput) throws Exception {
         List<String> input = rawInput.collect(toList());
 

@@ -2,10 +2,12 @@ package lib;
 
 import com.google.common.base.Stopwatch;
 
+import java.io.IOException;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
 import static lib.Common.readInputLinesFor;
+import static lib.Common.readSampleInputLinesFor;
 
 public abstract class Day {
 
@@ -24,9 +26,9 @@ public abstract class Day {
                 ==================%n
                 """, day);
 
-        runPrepare(readInputLinesFor(year, day));
-        runPart1(readInputLinesFor(year, day));
-        runPart2(readInputLinesFor(year, day));
+        runPrepare(getInput(year, day));
+        runPart1(getInput(year, day));
+        runPart2(getInput(year, day));
     }
 
     private void runPrepare(Stream<String> input) throws Exception {
@@ -53,13 +55,22 @@ public abstract class Day {
         }
     }
 
+    protected abstract Mode mode();
+
     protected void prepare(Stream<String> input) throws Exception {
     }
 
-   protected abstract Object part1(Stream<String> input) throws Exception;
+    protected abstract Object part1(Stream<String> input) throws Exception;
 
     protected Object part2(Stream<String> input) throws Exception {
         throw new UnsupportedOperationException();
+    }
+
+    private Stream<String> getInput(int year, int day) throws IOException, InterruptedException {
+        return switch (mode()) {
+            case SAMPLE_INPUT -> readSampleInputLinesFor(year, day);
+            case REAL_INPUT -> readInputLinesFor(year, day);
+        };
     }
 
     private void timePrepare() {
@@ -89,5 +100,10 @@ public abstract class Day {
                  Result  %s
                 ==========================================================
                 %n""", part, stopwatch, result);
+    }
+
+    public enum Mode {
+        SAMPLE_INPUT,
+        REAL_INPUT;
     }
 }

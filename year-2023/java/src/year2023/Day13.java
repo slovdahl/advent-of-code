@@ -15,6 +15,11 @@ public class Day13 extends Day {
     private List<List<char[]>> patterns;
 
     @Override
+    protected Mode mode() {
+        return Mode.REAL_INPUT;
+    }
+
+    @Override
     protected void prepare(Stream<String> input) {
         List<String> inputLines = input.toList();
         patterns = new ArrayList<>();

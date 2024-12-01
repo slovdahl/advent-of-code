@@ -17,6 +17,11 @@ import static lib.Common.splitOnComma;
 public class Day15 extends Day {
 
     @Override
+    protected Mode mode() {
+        return Mode.REAL_INPUT;
+    }
+
+    @Override
     protected Integer part1(Stream<String> input) throws IOException {
         return splitOnComma(input.findFirst().orElseThrow())
                 .map(Day15::hash)

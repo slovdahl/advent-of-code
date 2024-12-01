@@ -11,6 +11,11 @@ import java.util.stream.Stream;
 public class Day9 extends Day {
 
     @Override
+    protected Mode mode() {
+        return Mode.REAL_INPUT;
+    }
+
+    @Override
     protected Object part1(Stream<String> input) throws Exception {
         return input
                 .map(Parse::ints)

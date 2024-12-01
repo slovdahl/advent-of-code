@@ -28,6 +28,11 @@ public class Day19 extends Day {
     private Map<String, Workflow> workflows;
 
     @Override
+    protected Mode mode() {
+        return Mode.REAL_INPUT;
+    }
+
+    @Override
     protected void prepare(Stream<String> input) {
         Stream<String> sampleInput = """
                 px{a<2006:qkq,m>2090:A,rfg}

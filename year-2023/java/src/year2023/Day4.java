@@ -18,6 +18,11 @@ import java.util.stream.Stream;
 public class Day4 extends Day {
 
     @Override
+    protected Mode mode() {
+        return Mode.REAL_INPUT;
+    }
+
+    @Override
     protected Object part1(Stream<String> input) throws Exception {
         return input
                 .map(line -> line.replaceFirst("^Card\\s+\\d+: ", ""))

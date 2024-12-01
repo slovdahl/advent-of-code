@@ -26,6 +26,11 @@ public class Day10 extends Day {
     private Set<Coordinate> seenCoordinates;
 
     @Override
+    protected Mode mode() {
+        return Mode.REAL_INPUT;
+    }
+
+    @Override
     protected void prepare(Stream<String> input) {
         List<String> lines = input.toList();
 

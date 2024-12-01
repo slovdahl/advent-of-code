@@ -20,6 +20,11 @@ import static lib.Matrix.manhattanDistance;
 public class Day11 extends Day {
 
     @Override
+    protected Mode mode() {
+        return Mode.REAL_INPUT;
+    }
+
+    @Override
     protected Object part1(Stream<String> input) throws IOException {
         int expansionFactor = 2;
 

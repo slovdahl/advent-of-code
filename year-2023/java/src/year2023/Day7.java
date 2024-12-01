@@ -21,6 +21,11 @@ import static java.util.stream.Collectors.toUnmodifiableMap;
 public class Day7 extends Day {
 
     @Override
+    protected Mode mode() {
+        return Mode.REAL_INPUT;
+    }
+
+    @Override
     protected Object part1(Stream<String> input) throws Exception {
         List<HandWithType> handWithTypes = input
                 .map(line -> line.split(" "))

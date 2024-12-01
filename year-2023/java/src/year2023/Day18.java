@@ -21,6 +21,11 @@ import java.util.stream.Stream;
 public class Day18 extends Day {
 
     @Override
+    protected Mode mode() {
+        return Mode.REAL_INPUT;
+    }
+
+    @Override
     protected Long part1(Stream<String> input) throws IOException {
         SparseMatrix matrix = new SparseMatrix();
         Coordinate current = new Coordinate(0, 0);

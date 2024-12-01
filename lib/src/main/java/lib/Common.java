@@ -6,7 +6,6 @@ import com.google.common.graph.Graph;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,6 +14,17 @@ import java.util.stream.Stream;
 
 public class Common {
 
+    public static Stream<String> readSampleInputLinesFor(int year, int day) throws IOException {
+        Path path = Path.of(System.getProperty("user.dir"))
+                .resolve("input/" + day + "/sample");
+
+        if (!path.toFile().exists()) {
+            throw new IllegalStateException("Sample file not found for " + year + "/ " + day + ": " + path);
+        }
+
+        return Files.lines(path);
+    }
+
     public static Stream<String> readInputLinesFor(int year, int day) throws IOException, InterruptedException {
         Path userDir = Path.of(System.getProperty("user.dir"));
         Path path = userDir;
@@ -22,8 +32,7 @@ public class Common {
         if (Files.exists(userDir.resolve("settings.gradle"))) {
             path = path.resolve("year-" + year);
             tokenPath = userDir.resolve(".aoc-token");
-        }
-        else {
+        } else {
             tokenPath = userDir.getParent().resolve(".aoc-token");
         }
 

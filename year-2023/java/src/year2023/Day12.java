@@ -20,6 +20,11 @@ public class Day12 extends Day {
     private static final Pattern DOT_PATTERN = Pattern.compile("\\.+");
 
     @Override
+    protected Mode mode() {
+        return Mode.REAL_INPUT;
+    }
+
+    @Override
     protected Object part1(Stream<String> input) throws IOException {
         return input
                 .parallel()

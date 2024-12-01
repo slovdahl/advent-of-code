@@ -23,6 +23,11 @@ public class Day22 extends Day {
     private Map<Integer, List<Brick>> bricksPerLastZ;
 
     @Override
+    protected Mode mode() {
+        return Mode.REAL_INPUT;
+    }
+
+    @Override
     protected void prepare(Stream<String> input) {
         Stream<String> sampleInput = """
                 1,0,1~1,2,1

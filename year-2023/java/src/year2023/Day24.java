@@ -14,6 +14,11 @@ import static java.util.stream.Collectors.toUnmodifiableSet;
 public class Day24 extends Day {
 
     @Override
+    protected Mode mode() {
+        return Mode.REAL_INPUT;
+    }
+
+    @Override
     protected Long part1(Stream<String> input) throws Exception {
         Stream<String> sampleInput = """
                 19, 13, 30 @ -2,  1, -2
