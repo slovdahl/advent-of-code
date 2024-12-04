@@ -56,6 +56,31 @@ public class Day4 extends Day {
         return sum; // Your puzzle answer was 2571
     }
 
+    @Override
+    protected Object part2(Stream<String> input) {
+        int sum = 0;
+
+        char[][] matrix = Matrix.matrix(input.toList());
+
+        for (int i = 0; i < matrix.length; i++) {
+            for (int j = 0; j < matrix[i].length; j++) {
+                char ch = matrix[i][j];
+                if (ch != 'A' ||
+                        i == 0 || j == 0 ||
+                        i == matrix.length - 1 || j == matrix[i].length - 1) {
+
+                    continue;
+                }
+
+                if (findMasOrSamDiagonalDownLeft(matrix, i - 1, j + 1) && findMasOrSamDiagonalDownRight(matrix, i - 1, j - 1)) {
+                    sum++;
+                }
+            }
+        }
+
+        return sum;
+    }
+
     private static boolean findXmasRight(char[][] matrix, int i, int j) {
         if (matrix[i].length <= j + 3) {
             return false;
@@ -118,5 +143,15 @@ public class Day4 extends Day {
         }
 
         return matrix[i + 1][j + 1] == 'M' && matrix[i + 2][j + 2] == 'A' && matrix[i + 3][j + 3] == 'S';
+    }
+
+    private static boolean findMasOrSamDiagonalDownRight(char[][] matrix, int i, int j) {
+        return matrix[i][j] == 'M' && matrix[i + 2][j + 2] == 'S' ||
+                matrix[i][j] == 'S' && matrix[i + 2][j + 2] == 'M';
+    }
+
+    private static boolean findMasOrSamDiagonalDownLeft(char[][] matrix, int i, int j) {
+        return matrix[i][j] == 'M' && matrix[i + 2][j - 2] == 'S' ||
+                matrix[i][j] == 'S' && matrix[i + 2][j - 2] == 'M';
     }
 }
