@@ -1,14 +1,14 @@
 package year2024;
 
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimaps;
 import com.google.common.collect.SetMultimap;
 import lib.Day;
 import lib.Parse;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -16,11 +16,8 @@ import java.util.stream.Stream;
 @SuppressWarnings("unused")
 public class Day5 extends Day {
 
-    private List<Rule> rules;
     private SetMultimap<Integer, Integer> rulePerNumber;
-
-    private List<List<Integer>> invalidUpdates;
-    private List<List<Integer>> validUpdates;
+    private List<List<Integer>> updates;
 
     @Override
     protected Mode mode() {
@@ -28,96 +25,65 @@ public class Day5 extends Day {
     }
 
     @Override
-    protected void prepare(Stream<String> input) throws Exception {
+    protected void prepare(Stream<String> input) {
         List<String> fullInput = input.toList();
 
-        rules = fullInput.stream()
+        rulePerNumber = fullInput.stream()
                 .takeWhile(line -> !line.isEmpty())
                 .map(line -> line.split("\\|"))
                 .map(pair -> new Rule(Integer.parseInt(pair[0]), Integer.parseInt(pair[1])))
-                .toList();
+                .collect(Multimaps.toMultimap(Rule::before, Rule::after, HashMultimap::create));
 
-        rulePerNumber = HashMultimap.create();
-        for (Rule rule : rules) {
-            rulePerNumber.put(rule.before(), rule.after());
-        }
-
-        List<List<Integer>> updateLines = fullInput.stream()
+        updates = fullInput.stream()
                 .dropWhile(line -> !line.isEmpty())
                 .filter(line -> !line.isEmpty())
                 .map(Parse::commaSeparatedInts)
                 .collect(Collectors.toList());
-
-        List<List<Integer>> invalidUpdates = new ArrayList<>();
-
-        Iterator<List<Integer>> iterator = updateLines.iterator();
-        while (iterator.hasNext()) {
-            List<Integer> updateLine = iterator.next();
-            Set<Integer> seen = new HashSet<>();
-
-            outer:
-            for (Integer n : updateLine) {
-                Set<Integer> shouldComeAfter = rulePerNumber.get(n);
-
-                for (Integer s : seen) {
-                    if (shouldComeAfter.contains(s)) {
-                        invalidUpdates.add(updateLine);
-                        iterator.remove();
-                        break outer;
-                    }
-                }
-
-                seen.add(n);
-            }
-        }
-
-        this.invalidUpdates = List.copyOf(invalidUpdates);
-        validUpdates = List.copyOf(updateLines);
     }
 
     @Override
     protected Object part1(Stream<String> input) {
-        int sum = 0;
-        for (List<Integer> updateLine : validUpdates) {
-            int middleIndex = updateLine.size() / 2;
-            sum += updateLine.get(middleIndex);
-        }
-
-        return sum; // Your puzzle answer was 4766
+        return updates.stream()
+                .filter(update -> update.stream()
+                        .sorted(new RuleComparator(rulePerNumber))
+                        .toList()
+                        .equals(update)
+                )
+                .mapToInt(update -> update.get(update.size() / 2))
+                .sum(); // Your puzzle answer was 4766
     }
 
     @Override
     protected Object part2(Stream<String> input) {
-        int sum = 0;
-        for (List<Integer> invalidUpdate : invalidUpdates) {
-            List<Integer> updateLine = new ArrayList<>(invalidUpdate);
-            Set<Integer> seen = new HashSet<>();
+        return updates.stream()
+                .filter(update -> !update.stream()
+                        .sorted(new RuleComparator(rulePerNumber))
+                        .toList()
+                        .equals(update)
+                )
+                .map(update -> update.stream()
+                        .sorted(new RuleComparator(rulePerNumber))
+                        .toList()
+                )
+                .mapToInt(update -> update.get(update.size() / 2))
+                .sum(); // Your puzzle answer was 6257
+    }
 
-            outer:
-            while (true) {
-                for (int i = 0; i < updateLine.size(); i++) {
-                    Integer n = updateLine.get(i);
-                    Set<Integer> shouldComeAfter = rulePerNumber.get(n);
+    private record RuleComparator(SetMultimap<Integer, Integer> rulePerNumber) implements Comparator<Integer> {
 
-                    for (Integer s : seen) {
-                        if (shouldComeAfter.contains(s)) {
-                            Integer previous = updateLine.get(i - 1);
-                            updateLine.set(i - 1, n);
-                            updateLine.set(i, previous);
-                            seen.clear();
-                            continue outer;
-                        }
-                    }
-                    seen.add(n);
-                }
+        @Override
+        public int compare(Integer n1, Integer n2) {
+            if (Objects.equals(n1, n2)) {
+                return 0;
+            }
 
-                int middleIndex = updateLine.size() / 2;
-                sum += updateLine.get(middleIndex);
-                break;
+            Set<Integer> shouldComeAfter = rulePerNumber.get(n1);
+            if (!shouldComeAfter.contains(n2)) {
+                return 1;
+            } else {
+                return -1;
             }
         }
-
-        return sum; // Your puzzle answer was 6257
     }
 
     private record Rule(int before, int after) {
