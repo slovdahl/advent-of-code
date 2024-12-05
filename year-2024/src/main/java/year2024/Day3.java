@@ -10,8 +10,7 @@ import java.util.stream.Stream;
 public class Day3 extends Day {
 
     private static final Pattern DIGIT_PATTERN = Pattern.compile("mul\\(([0-9]{1,3}),([0-9]{1,3})\\)");
-    private static final Pattern DO_PATTERN = Pattern.compile("do\\(\\)");
-    private static final Pattern DONT_PATTERN = Pattern.compile("don't\\(\\)");
+    private static final Pattern FULL_PATTERN = Pattern.compile("(do\\(\\)|don't\\(\\)|mul\\(([0-9]{1,3}),([0-9]{1,3})\\))");
 
     @Override
     protected Mode mode() {
@@ -25,13 +24,11 @@ public class Day3 extends Day {
         for (String line : input.toList()) {
             Matcher matcher = DIGIT_PATTERN.matcher(line);
             while (matcher.find()) {
-                int n1 = Integer.parseInt(matcher.group(1));
-                int n2 = Integer.parseInt(matcher.group(2));
-                sum += n1 * n2;
+                sum += Integer.parseInt(matcher.group(1)) * Integer.parseInt(matcher.group(2));
             }
         }
 
-        return sum;
+        return sum; // Your puzzle answer was 182619815
     }
 
     @Override
@@ -40,36 +37,19 @@ public class Day3 extends Day {
 
         boolean enabled = true;
         for (String line : input.toList()) {
-            String current = line;
+            Matcher matcher = FULL_PATTERN.matcher(line);
 
-            while (true) {
-                Matcher matcher = DIGIT_PATTERN.matcher(current);
-                if (!matcher.find()) {
-                    break;
+            while (matcher.find()) {
+                if (matcher.group(1).equals("do()")) {
+                    enabled = true;
+                } else if (matcher.group(1).equals("don't()")) {
+                    enabled = false;
+                } else if (enabled) {
+                    sum += Integer.parseInt(matcher.group(2)) * Integer.parseInt(matcher.group(3));
                 }
-
-                int start = matcher.start();
-                String pre = current.substring(0, start);
-                if (enabled) {
-                    if (DONT_PATTERN.matcher(pre).find()) {
-                        enabled = false;
-                    }
-                } else {
-                    if (DO_PATTERN.matcher(pre).find()) {
-                        enabled = true;
-                    }
-                }
-
-                if (enabled) {
-                    int n1 = Integer.parseInt(matcher.group(1));
-                    int n2 = Integer.parseInt(matcher.group(2));
-                    sum += n1 * n2;
-                }
-
-                current = current.substring(matcher.end());
             }
         }
 
-        return sum;
+        return sum; // Your puzzle answer was 80747545
     }
 }
