@@ -5,6 +5,15 @@ import lib.Matrix;
 
 import java.util.stream.Stream;
 
+import static lib.Matrix.findDiagonalDownLeft;
+import static lib.Matrix.findDiagonalDownRight;
+import static lib.Matrix.findDiagonalUpLeft;
+import static lib.Matrix.findDiagonalUpRight;
+import static lib.Matrix.findDown;
+import static lib.Matrix.findLeft;
+import static lib.Matrix.findRight;
+import static lib.Matrix.findUp;
+
 @SuppressWarnings("unused")
 public class Day4 extends Day {
 
@@ -26,28 +35,28 @@ public class Day4 extends Day {
                     continue;
                 }
 
-                if (findXmasRight(matrix, i, j)) {
+                if (findRight("XMAS", matrix, i, j)) {
                     sum++;
                 }
-                if (findXmasLeft(matrix, i, j)) {
+                if (findLeft("XMAS", matrix, i, j)) {
                     sum++;
                 }
-                if (findXmasUp(matrix, i, j)) {
+                if (findUp("XMAS", matrix, i, j)) {
                     sum++;
                 }
-                if (findXmasDown(matrix, i, j)) {
+                if (findDown("XMAS", matrix, i, j)) {
                     sum++;
                 }
-                if (findXmasDiagonalDownLeft(matrix, i, j)) {
+                if (findDiagonalDownLeft("XMAS", matrix, i, j)) {
                     sum++;
                 }
-                if (findXmasDiagonalDownRight(matrix, i, j)) {
+                if (findDiagonalDownRight("XMAS", matrix, i, j)) {
                     sum++;
                 }
-                if (findXmasDiagonalUpLeft(matrix, i, j)) {
+                if (findDiagonalUpLeft("XMAS", matrix, i, j)) {
                     sum++;
                 }
-                if (findXmasDiagonalUpRight(matrix, i, j)) {
+                if (findDiagonalUpRight("XMAS", matrix, i, j)) {
                     sum++;
                 }
             }
@@ -64,94 +73,21 @@ public class Day4 extends Day {
 
         for (int i = 0; i < matrix.length; i++) {
             for (int j = 0; j < matrix[i].length; j++) {
-                char ch = matrix[i][j];
-                if (ch != 'A' ||
+                if (matrix[i][j] != 'A' ||
                         i == 0 || j == 0 ||
                         i == matrix.length - 1 || j == matrix[i].length - 1) {
 
                     continue;
                 }
 
-                if (findMasOrSamDiagonalDownLeft(matrix, i - 1, j + 1) && findMasOrSamDiagonalDownRight(matrix, i - 1, j - 1)) {
+                if ((findDiagonalDownLeft("MAS", matrix, i - 1, j + 1) || findDiagonalDownLeft("SAM", matrix, i - 1, j + 1)) &&
+                        (findDiagonalDownRight("MAS", matrix, i - 1, j - 1) || findDiagonalDownRight("SAM", matrix, i - 1, j - 1))) {
+
                     sum++;
                 }
             }
         }
 
-        return sum;
-    }
-
-    private static boolean findXmasRight(char[][] matrix, int i, int j) {
-        if (matrix[i].length <= j + 3) {
-            return false;
-        }
-
-        return matrix[i][j + 1] == 'M' && matrix[i][j + 2] == 'A' && matrix[i][j + 3] == 'S';
-    }
-
-    private static boolean findXmasLeft(char[][] matrix, int i, int j) {
-        if (j < 3) {
-            return false;
-        }
-
-        return matrix[i][j - 1] == 'M' && matrix[i][j - 2] == 'A' && matrix[i][j - 3] == 'S';
-    }
-
-    private static boolean findXmasUp(char[][] matrix, int i, int j) {
-        if (i < 3) {
-            return false;
-        }
-
-        return matrix[i - 1][j] == 'M' && matrix[i - 2][j] == 'A' && matrix[i - 3][j] == 'S';
-    }
-
-    private static boolean findXmasDown(char[][] matrix, int i, int j) {
-        if (matrix.length <= i + 3) {
-            return false;
-        }
-
-        return matrix[i + 1][j] == 'M' && matrix[i + 2][j] == 'A' && matrix[i + 3][j] == 'S';
-    }
-
-    private static boolean findXmasDiagonalUpLeft(char[][] matrix, int i, int j) {
-        if (i < 3 || j < 3) {
-            return false;
-        }
-
-        return matrix[i - 1][j - 1] == 'M' && matrix[i - 2][j - 2] == 'A' && matrix[i - 3][j - 3] == 'S';
-    }
-
-    private static boolean findXmasDiagonalUpRight(char[][] matrix, int i, int j) {
-        if (i < 3 || matrix[i].length <= j + 3) {
-            return false;
-        }
-
-        return matrix[i - 1][j + 1] == 'M' && matrix[i - 2][j + 2] == 'A' && matrix[i - 3][j + 3] == 'S';
-    }
-
-    private static boolean findXmasDiagonalDownLeft(char[][] matrix, int i, int j) {
-        if (matrix.length <= i + 3 || j < 3) {
-            return false;
-        }
-
-        return matrix[i + 1][j - 1] == 'M' && matrix[i + 2][j - 2] == 'A' && matrix[i + 3][j - 3] == 'S';
-    }
-
-    private static boolean findXmasDiagonalDownRight(char[][] matrix, int i, int j) {
-        if (matrix.length <= i + 3 || matrix[i].length <= j + 3) {
-            return false;
-        }
-
-        return matrix[i + 1][j + 1] == 'M' && matrix[i + 2][j + 2] == 'A' && matrix[i + 3][j + 3] == 'S';
-    }
-
-    private static boolean findMasOrSamDiagonalDownRight(char[][] matrix, int i, int j) {
-        return matrix[i][j] == 'M' && matrix[i + 2][j + 2] == 'S' ||
-                matrix[i][j] == 'S' && matrix[i + 2][j + 2] == 'M';
-    }
-
-    private static boolean findMasOrSamDiagonalDownLeft(char[][] matrix, int i, int j) {
-        return matrix[i][j] == 'M' && matrix[i + 2][j - 2] == 'S' ||
-                matrix[i][j] == 'S' && matrix[i + 2][j - 2] == 'M';
+        return sum; // Your puzzle answer was 1992
     }
 }

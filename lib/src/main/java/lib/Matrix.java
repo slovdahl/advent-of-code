@@ -85,6 +85,118 @@ public class Matrix {
         throw new IllegalStateException("No " + needle + " found in matrix");
     }
 
+    public static boolean findRight(String needle, char[][] matrix, int i, int j) {
+        if (matrix[i].length <= j + (needle.length() - 1)) {
+            return false;
+        }
+
+        for (int n = 0; n < needle.length(); n++) {
+            if (matrix[i][j + n] != needle.charAt(n)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public static boolean findLeft(String needle, char[][] matrix, int i, int j) {
+        if (j < needle.length() - 1) {
+            return false;
+        }
+
+        for (int n = 0; n < needle.length(); n++) {
+            if (matrix[i][j - n] != needle.charAt(n)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public static boolean findUp(String needle, char[][] matrix, int i, int j) {
+        if (i < needle.length() - 1) {
+            return false;
+        }
+
+        for (int n = 0; n < needle.length(); n++) {
+            if (matrix[i - n][j] != needle.charAt(n)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public static boolean findDown(String needle, char[][] matrix, int i, int j) {
+        if (matrix.length <= i + (needle.length() - 1)) {
+            return false;
+        }
+
+        for (int n = 0; n < needle.length(); n++) {
+            if (matrix[i + n][j] != needle.charAt(n)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public static boolean findDiagonalUpLeft(String needle, char[][] matrix, int i, int j) {
+        if (i < needle.length() - 1 || j < needle.length() - 1) {
+            return false;
+        }
+
+        for (int n = 0; n < needle.length(); n++) {
+            if (matrix[i - n][j - n] != needle.charAt(n)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public static boolean findDiagonalUpRight(String needle, char[][] matrix, int i, int j) {
+        if (i < needle.length() - 1 || matrix[i].length <= j + (needle.length() - 1)) {
+            return false;
+        }
+
+        for (int n = 0; n < needle.length(); n++) {
+            if (matrix[i - n][j + n] != needle.charAt(n)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public static boolean findDiagonalDownLeft(String needle, char[][] matrix, int i, int j) {
+        if (matrix.length <= i + (needle.length() - 1) || j < needle.length() - 1) {
+            return false;
+        }
+
+        for (int n = 0; n < needle.length(); n++) {
+            if (matrix[i + n][j - n] != needle.charAt(n)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public static boolean findDiagonalDownRight(String needle, char[][] matrix, int i, int j) {
+        if (matrix.length <= i + (needle.length() - 1) || matrix[i].length <= j + (needle.length() - 1)) {
+            return false;
+        }
+
+        for (int n = 0; n < needle.length(); n++) {
+            if (matrix[i + n][j + n] != needle.charAt(n)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     public static char[][] deepClone(char[][] input) {
         char[][] result = new char[input.length][];
         for (int i = 0; i < input.length; i++) {
