@@ -20,10 +20,11 @@ public abstract class Day {
         System.out.printf("""
                 ==================
                 |                |
+                |  Year %4d     |
                 |  Day %2d        |
                 |                |
                 ==================%n
-                """, day);
+                """, year, day);
 
         runPrepare(getInput(year, day));
         runPart1(getInput(year, day));

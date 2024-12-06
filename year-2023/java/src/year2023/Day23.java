@@ -40,7 +40,7 @@ public class Day23 extends Day {
                 visited
         );
 
-        return forkJoinPool.invoke(visitorTask) - 1;
+        return forkJoinPool.invoke(visitorTask) - 1; // Your puzzle answer was 2174
     }
 
     private static class VisitorTask extends RecursiveTask<Integer> {
@@ -115,7 +115,6 @@ public class Day23 extends Day {
                     throw new IllegalStateException("Unexpected state");
                 } else {
                     List<VisitorTask> tasks = new ArrayList<>();
-                    int longestHikeLength;
 
                     if (depth < ForkJoinPool.getCommonPoolParallelism()) {
                         for (int i = 1; i < candidates.size(); i++) {
@@ -126,21 +125,21 @@ public class Day23 extends Day {
                         }
 
                         CandidateCoordinate firstCandidate = candidates.getFirst();
-                        longestHikeLength = new VisitorTask(map, end, firstCandidate.coordinate(), firstCandidate.direction(), visited, depth).compute();
+                        int longestHikeLength = new VisitorTask(map, end, firstCandidate.coordinate(), firstCandidate.direction(), visited, depth).compute();
+                        for (VisitorTask task : tasks) {
+                            longestHikeLength = Math.max(longestHikeLength, task.join());
+                        }
+                        return longestHikeLength;
+
                     } else {
+                        int longestHikeLength = 0;
                         for (CandidateCoordinate candidate : candidates) {
-                            VisitorTask task = new VisitorTask(map, end, candidate.coordinate(), candidate.direction(), new HashSet<>(visited), depth + 1);
-                            tasks.add(task);
-                            task.fork();
+                            VisitorTask task = new VisitorTask(map, end, candidate.coordinate(), candidate.direction(), visited, depth);
+                            longestHikeLength = Math.max(longestHikeLength, task.compute());
                         }
 
-                        longestHikeLength = 0;
+                        return longestHikeLength;
                     }
-
-                    for (VisitorTask task : tasks) {
-                        longestHikeLength = Math.max(longestHikeLength, task.join());
-                    }
-                    return longestHikeLength;
                 }
             }
         }
