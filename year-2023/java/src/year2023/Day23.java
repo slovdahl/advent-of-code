@@ -49,18 +49,19 @@ public class Day23 extends Day {
         private final Coordinate current;
         private final Direction move;
         private final Set<Coordinate> visited;
+        private final int depth;
 
-        VisitorTask(char[][] map,
-                    Coordinate end,
-                    Coordinate current,
-                    Direction move,
-                    Set<Coordinate> visited) {
+        VisitorTask(char[][] map, Coordinate end, Coordinate current, Direction move, Set<Coordinate> visited) {
+            this(map, end, current, move, visited, 0);
+        }
 
+        VisitorTask(char[][] map, Coordinate end, Coordinate current, Direction move, Set<Coordinate> visited, int depth) {
+            this.map = map;
             this.end = end;
             this.current = current;
             this.move = move;
-            this.map = map;
             this.visited = visited;
+            this.depth = depth;
         }
 
         @Override
@@ -77,15 +78,15 @@ public class Day23 extends Day {
             }
 
             if (ch == '>') {
-                return new VisitorTask(map, end, current.move(Direction.RIGHT), Direction.RIGHT, visited).compute();
+                return new VisitorTask(map, end, current.move(Direction.RIGHT), Direction.RIGHT, visited, depth).compute();
             } else if (ch == '<') {
-                return new VisitorTask(map, end, current.move(Direction.LEFT), Direction.LEFT, visited).compute();
+                return new VisitorTask(map, end, current.move(Direction.LEFT), Direction.LEFT, visited, depth).compute();
             } else if (ch == '^') {
-                return new VisitorTask(map, end, current.move(Direction.UP), Direction.UP, visited).compute();
+                return new VisitorTask(map, end, current.move(Direction.UP), Direction.UP, visited, depth).compute();
             } else if (ch == 'v') {
-                return new VisitorTask(map, end, current.move(Direction.DOWN), Direction.DOWN, visited).compute();
+                return new VisitorTask(map, end, current.move(Direction.DOWN), Direction.DOWN, visited, depth).compute();
             } else {
-                List<VisitorTask> tasks = new ArrayList<>();
+                List<CandidateCoordinate> candidates = new ArrayList<>();
                 for (Direction direction : Direction.ALL) {
                     if (move.opposite() == direction) {
                         continue;
@@ -93,35 +94,58 @@ public class Day23 extends Day {
 
                     Coordinate candidate = current.tryMove(map, direction);
                     if (candidate != null && !visited.contains(candidate)) {
+                        char next = candidate.at(map);
                         boolean valid = switch (direction) {
-                            case UP -> candidate.at(map) != 'v';
-                            case RIGHT -> candidate.at(map) != '<';
-                            case DOWN -> candidate.at(map) != '^';
-                            case LEFT -> candidate.at(map) != '>';
+                            case UP -> next != 'v' && next != '#';
+                            case RIGHT -> next != '<' && next != '#';
+                            case DOWN -> next != '^' && next != '#';
+                            case LEFT -> next != '>' && next != '#';
                         };
 
                         if (valid) {
-                            tasks.add(new VisitorTask(map, end, candidate, direction, new HashSet<>(visited)));
+                            candidates.add(new CandidateCoordinate(candidate, direction));
                         }
                     }
                 }
 
-                if (tasks.size() == 1) {
-                    return tasks.getFirst().compute();
-                } else if (tasks.isEmpty()) {
-                    return visited.size();
+                if (candidates.size() == 1) {
+                    CandidateCoordinate candidate = candidates.getFirst();
+                    return new VisitorTask(map, end, candidate.coordinate(), candidate.direction(), visited, depth).compute();
+                } else if (candidates.isEmpty()) {
+                    throw new IllegalStateException("Unexpected state");
                 } else {
-                    for (int i = 1; i < tasks.size(); i++) {
-                        tasks.get(i).fork();
+                    List<VisitorTask> tasks = new ArrayList<>();
+                    int longestHikeLength;
+
+                    if (depth < ForkJoinPool.getCommonPoolParallelism()) {
+                        for (int i = 1; i < candidates.size(); i++) {
+                            CandidateCoordinate candidate = candidates.get(i);
+                            VisitorTask task = new VisitorTask(map, end, candidate.coordinate(), candidate.direction(), new HashSet<>(visited), depth + 1);
+                            tasks.add(task);
+                            task.fork();
+                        }
+
+                        CandidateCoordinate firstCandidate = candidates.getFirst();
+                        longestHikeLength = new VisitorTask(map, end, firstCandidate.coordinate(), firstCandidate.direction(), visited, depth).compute();
+                    } else {
+                        for (CandidateCoordinate candidate : candidates) {
+                            VisitorTask task = new VisitorTask(map, end, candidate.coordinate(), candidate.direction(), new HashSet<>(visited), depth + 1);
+                            tasks.add(task);
+                            task.fork();
+                        }
+
+                        longestHikeLength = 0;
                     }
 
-                    int longestHikeLength = tasks.getFirst().compute();
                     for (VisitorTask task : tasks) {
                         longestHikeLength = Math.max(longestHikeLength, task.join());
                     }
                     return longestHikeLength;
                 }
             }
+        }
+
+        private record CandidateCoordinate(Coordinate coordinate, Direction direction) {
         }
     }
 }

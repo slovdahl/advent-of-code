@@ -21,4 +21,7 @@ java {
 
 application {
     mainClass = 'year2023.App'
+
+    // For day 23 ForkJoinPool
+    applicationDefaultJvmArgs = ['-Xss2m']
 }
