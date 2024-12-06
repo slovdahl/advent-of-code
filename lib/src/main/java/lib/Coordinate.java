@@ -12,6 +12,10 @@ public record Coordinate(int row, int column) {
         return fallback;
     }
 
+    public void set(char[][] matrix, char ch) {
+        matrix[row][column] = ch;
+    }
+
     public char north(char[][] matrix) {
         return matrix[row - 1][column];
     }
