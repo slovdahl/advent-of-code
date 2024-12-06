@@ -2,6 +2,16 @@ package lib;
 
 public record Coordinate(int row, int column) {
 
+    public char at(char[][] matrix, char fallback) {
+        if (row >= 0 && row < matrix.length &&
+                column >= 0 && column < matrix[0].length) {
+
+            return matrix[row][column];
+        }
+
+        return fallback;
+    }
+
     public char north(char[][] matrix) {
         return matrix[row - 1][column];
     }
