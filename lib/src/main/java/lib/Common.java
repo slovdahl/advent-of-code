@@ -36,13 +36,17 @@ public class Common {
             tokenPath = userDir.getParent().resolve(".aoc-token");
         }
 
-        path = path.resolve("input/" + day + "/input");
-
-        if (!path.toFile().exists()) {
-            Downloader.download(year, day, path, Files.readString(tokenPath).trim());
+        Path filePath = path.resolve("input/" + day + "/input");
+        if (!filePath.toFile().exists()) {
+            Downloader.download(year, day, filePath, Files.readString(tokenPath).trim());
         }
 
-        return Files.lines(path);
+        Path samplePath = path.resolve("input/" + day + "/sample");
+        if (!samplePath.toFile().exists()) {
+            Files.createFile(samplePath);
+        }
+
+        return Files.lines(filePath);
     }
 
     public static Stream<String> splitOnComma(String input) {
