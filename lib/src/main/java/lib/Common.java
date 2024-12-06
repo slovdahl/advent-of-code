@@ -3,54 +3,24 @@ package lib;
 import com.google.common.graph.EndpointPair;
 import com.google.common.graph.Graph;
 
-import java.io.IOException;
 import java.io.PrintStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
+import static java.util.stream.Collectors.joining;
+
 public class Common {
-
-    public static Stream<String> readSampleInputLinesFor(int year, int day) throws IOException {
-        Path path = Path.of(System.getProperty("user.dir"))
-                .resolve("input/" + day + "/sample");
-
-        if (!path.toFile().exists()) {
-            throw new IllegalStateException("Sample file not found for " + year + "/ " + day + ": " + path);
-        }
-
-        return Files.lines(path);
-    }
-
-    public static Stream<String> readInputLinesFor(int year, int day) throws IOException, InterruptedException {
-        Path userDir = Path.of(System.getProperty("user.dir"));
-        Path path = userDir;
-        Path tokenPath;
-        if (Files.exists(userDir.resolve("settings.gradle"))) {
-            path = path.resolve("year-" + year);
-            tokenPath = userDir.resolve(".aoc-token");
-        } else {
-            tokenPath = userDir.getParent().resolve(".aoc-token");
-        }
-
-        Path filePath = path.resolve("input/" + day + "/input");
-        if (!filePath.toFile().exists()) {
-            Downloader.download(year, day, filePath, Files.readString(tokenPath).trim());
-        }
-
-        Path samplePath = path.resolve("input/" + day + "/sample");
-        if (!samplePath.toFile().exists()) {
-            Files.createFile(samplePath);
-        }
-
-        return Files.lines(filePath);
-    }
 
     public static Stream<String> splitOnComma(String input) {
         return Arrays.stream(input.split(","));
+    }
+
+    public static String repeatWithDelimiter(String needle, int n, String delimiter) {
+        return Stream.generate(() -> needle)
+                .limit(n)
+                .collect(joining(delimiter));
     }
 
     public static long lcm(long number1, long number2) {
