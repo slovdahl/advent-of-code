@@ -1,7 +1,7 @@
 package year2024;
 
-import com.google.common.collect.HashMultiset;
-import com.google.common.collect.Multiset;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.SetMultimap;
 import lib.Coordinate;
 import lib.Day;
 import lib.Direction;
@@ -14,20 +14,24 @@ import java.util.stream.Stream;
 @SuppressWarnings("unused")
 public class Day6 extends Day {
 
+    private char[][] map;
+    private Coordinate startingPoint;
+    private Set<Coordinate> visited;
+
     @Override
     protected Mode mode() {
         return Mode.REAL_INPUT;
     }
 
     @Override
-    protected Object part1(Stream<String> input) {
-        char[][] map = Matrix.matrix(input.toList());
+    protected void prepare(Stream<String> input) {
+        map = Matrix.matrix(input.toList());
+        startingPoint = Matrix.findChar(map, '^');
 
-        Coordinate startingPoint = Matrix.findChar(map, '^');
         Direction direction = Direction.UP;
 
         Coordinate current = startingPoint;
-        Set<Coordinate> visited = new HashSet<>();
+        visited = new HashSet<>();
 
         while (true) {
             visited.add(current);
@@ -42,37 +46,15 @@ public class Day6 extends Day {
                 current = next;
             }
         }
+    }
 
+    @Override
+    protected Object part1(Stream<String> input) {
         return visited.size(); // Your puzzle answer was 4883
     }
 
     @Override
     protected Object part2(Stream<String> input) {
-        char[][] map = Matrix.matrix(input.toList());
-
-        Coordinate startingPoint = Matrix.findChar(map, '^');
-        Direction direction = Direction.UP;
-
-        Coordinate current = startingPoint;
-        Set<Coordinate> visited = new HashSet<>();
-
-        while (true) {
-            visited.add(current);
-            current.set(map, 'X');
-
-            Coordinate next = current.move(direction);
-            char ch = next.at(map, 'G');
-            if (ch == 'G') {
-                break;
-            } else if (ch == '#') {
-                direction = direction.turnRight();
-            } else {
-                current = next;
-            }
-        }
-
-        Matrix.print(System.out, map);
-
         int obstaclePositions = 0;
         for (Coordinate coordinate : visited) {
             if (coordinate.equals(startingPoint)) {
@@ -83,25 +65,24 @@ public class Day6 extends Day {
 
             coordinate.set(mapCopy, '#');
 
-            Direction direction2 = Direction.UP;
-            Coordinate current2 = startingPoint;
-            Multiset<Coordinate> visited2 = HashMultiset.create();
+            Direction direction = Direction.UP;
+            Coordinate current = startingPoint;
+            SetMultimap<Coordinate, Direction> visitedDirections = HashMultimap.create();
 
             while (true) {
-                visited2.add(current2);
-                if (visited2.count(current2) > 20) {
+                if (!visitedDirections.put(current, direction)) {
                     obstaclePositions++;
                     break;
                 }
 
-                Coordinate next = current2.move(direction2);
+                Coordinate next = current.move(direction);
                 char ch = next.at(mapCopy, 'G');
                 if (ch == 'G') {
                     break;
                 } else if (ch == '#') {
-                    direction2 = direction2.turnRight();
+                    direction = direction.turnRight();
                 } else {
-                    current2 = next;
+                    current = next;
                 }
             }
         }
