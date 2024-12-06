@@ -1,6 +1,19 @@
 package lib;
 
+import javax.annotation.Nullable;
+import java.util.NoSuchElementException;
+
 public record Coordinate(int row, int column) {
+
+    public char at(char[][] matrix) {
+        if (row >= 0 && row < matrix.length &&
+                column >= 0 && column < matrix[0].length) {
+
+            return matrix[row][column];
+        }
+
+        throw new NoSuchElementException("Coordinate " + this + " out of bounds in matrix");
+    }
 
     public char at(char[][] matrix, char fallback) {
         if (row >= 0 && row < matrix.length &&
@@ -110,6 +123,40 @@ public record Coordinate(int row, int column) {
             case DOWN -> moveDown();
             case LEFT -> moveLeft();
             case RIGHT -> moveRight();
+        };
+    }
+
+    @Nullable
+    public Coordinate tryMove(char[][] matrix, Direction direction) {
+        return switch (direction) {
+            case UP -> {
+                if (row > 0) {
+                    yield moveUp();
+                } else {
+                    yield null;
+                }
+            }
+            case DOWN -> {
+                if (row < matrix.length - 1) {
+                    yield moveDown();
+                } else {
+                    yield null;
+                }
+            }
+            case LEFT -> {
+                if (column > 0) {
+                    yield moveLeft();
+                } else {
+                    yield null;
+                }
+            }
+            case RIGHT -> {
+                if (column < matrix[row].length - 1) {
+                    yield moveRight();
+                } else {
+                    yield null;
+                }
+            }
         };
     }
 

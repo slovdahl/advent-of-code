@@ -85,6 +85,17 @@ public class Matrix {
         throw new IllegalStateException("No " + needle + " found in matrix");
     }
 
+    /** @return the index of the column where needle is found */
+    public static int findChar(char[] haystack, char needle) {
+        for (int column = 0; column < haystack.length; column++) {
+            if (haystack[column] == needle) {
+                return column;
+            }
+        }
+
+        throw new IllegalStateException("No " + needle + " found in matrix");
+    }
+
     public static boolean findRight(String needle, char[][] matrix, int i, int j) {
         if (matrix[i].length <= j + (needle.length() - 1)) {
             return false;
