@@ -1,5 +1,7 @@
 package lib;
 
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
+
 import javax.annotation.Nullable;
 import java.util.NoSuchElementException;
 
@@ -25,8 +27,11 @@ public record Coordinate(int row, int column) {
         return fallback;
     }
 
-    public void set(char[][] matrix, char ch) {
+    @CanIgnoreReturnValue
+    public char set(char[][] matrix, char ch) {
+        char old = matrix[row][column];
         matrix[row][column] = ch;
+        return old;
     }
 
     public char north(char[][] matrix) {

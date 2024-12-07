@@ -55,15 +55,13 @@ public class Day6 extends Day {
 
     @Override
     protected Object part2(Stream<String> input) {
+        // We can't put an obstacle at the starting point
+        visited.remove(startingPoint);
+
         int obstaclePositions = 0;
+
         for (Coordinate coordinate : visited) {
-            if (coordinate.equals(startingPoint)) {
-                continue;
-            }
-
-            char[][] mapCopy = Matrix.deepClone(map);
-
-            coordinate.set(mapCopy, '#');
+            char old = coordinate.set(map, '#');
 
             Direction direction = Direction.UP;
             Coordinate current = startingPoint;
@@ -76,7 +74,7 @@ public class Day6 extends Day {
                 }
 
                 Coordinate next = current.move(direction);
-                char ch = next.at(mapCopy, 'G');
+                char ch = next.at(map, 'G');
                 if (ch == 'G') {
                     break;
                 } else if (ch == '#') {
@@ -85,6 +83,8 @@ public class Day6 extends Day {
                     current = next;
                 }
             }
+
+            coordinate.set(map, old);
         }
 
         return obstaclePositions; // Your puzzle answer was 1655
