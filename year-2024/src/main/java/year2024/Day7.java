@@ -1,5 +1,8 @@
 package year2024;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import lib.Common;
 import lib.Day;
 import lib.Parse;
@@ -12,6 +15,22 @@ public class Day7 extends Day {
 
     public static final char[] OPERATORS_PART_1 = {'+', '*'};
     public static final char[] OPERATORS_PART_2 = {'+', '*', '|'};
+
+    private static final LoadingCache<Integer, List<String>> OPERATORS_1_CACHE = CacheBuilder.newBuilder()
+            .build(new CacheLoader<>() {
+                @Override
+                public List<String> load(Integer length) {
+                    return Common.generate(OPERATORS_PART_1, length - 1);
+                }
+            });
+
+    private static final LoadingCache<Integer, List<String>> OPERATORS_2_CACHE = CacheBuilder.newBuilder()
+            .build(new CacheLoader<>() {
+                @Override
+                public List<String> load(Integer length) {
+                    return Common.generate(OPERATORS_PART_2, length - 1);
+                }
+            });
 
     @Override
     protected Mode mode() {
@@ -26,7 +45,7 @@ public class Day7 extends Day {
                 .map(pair -> {
                     long result = Long.parseLong(pair[0]);
                     List<Long> numbers = Parse.longs(pair[1]);
-                    return new ResultAndNumbers(result, numbers, Common.generate(OPERATORS_PART_1, numbers.size() - 1));
+                    return new ResultAndNumbers(result, numbers, OPERATORS_1_CACHE.getUnchecked(numbers.size()));
                 })
                 .filter(r -> {
                     for (String operator : r.operators()) {
@@ -37,6 +56,11 @@ public class Day7 extends Day {
                                 case '*' -> sum * r.numbers().get(i);
                                 default -> throw new IllegalStateException("Unexpected value: " + operator);
                             };
+
+                            if (sum > r.result()) {
+                                // Short-circuiting this combination of operators if we're already above the expected result.
+                                break;
+                            }
                         }
 
                         if (sum == r.result()) {
@@ -58,7 +82,7 @@ public class Day7 extends Day {
                 .map(pair -> {
                     long result = Long.parseLong(pair[0]);
                     List<Long> numbers = Parse.longs(pair[1]);
-                    return new ResultAndNumbers(result, numbers, Common.generate(OPERATORS_PART_2, numbers.size() - 1));
+                    return new ResultAndNumbers(result, numbers, OPERATORS_2_CACHE.getUnchecked(numbers.size()));
                 })
                 .filter(r -> {
                     for (String operator : r.operators()) {
