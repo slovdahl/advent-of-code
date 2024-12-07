@@ -84,7 +84,7 @@ public class Day7 extends Day {
                     List<Long> numbers = Parse.longs(pair[1]);
                     return new ResultAndNumbers(result, numbers, OPERATORS_2_CACHE.getUnchecked(numbers.size()));
                 })
-                .filter(r -> {
+                .mapToLong(r -> {
                     for (String operator : r.operators()) {
                         long sum = r.numbers().getFirst();
                         for (int i = 1; i < r.numbers().size(); i++) {
@@ -108,13 +108,12 @@ public class Day7 extends Day {
                         }
 
                         if (sum == r.result()) {
-                            return true;
+                            return sum;
                         }
                     }
 
-                    return false;
+                    return 0L;
                 })
-                .mapToLong(ResultAndNumbers::result)
                 .sum(); // Your puzzle answer was 70597497486371
     }
 
