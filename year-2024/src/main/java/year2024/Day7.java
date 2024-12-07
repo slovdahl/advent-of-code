@@ -77,9 +77,9 @@ public class Day7 extends Day {
     @Override
     protected Object part2(Stream<String> input) {
         return input
-                .map(line -> line.split(":"))
                 .parallel()
-                .map(pair -> {
+                .map(line -> {
+                    String[] pair = line.split(":");
                     long result = Long.parseLong(pair[0]);
                     List<Long> numbers = Parse.longs(pair[1]);
                     return new ResultAndNumbers(result, numbers, OPERATORS_2_CACHE.getUnchecked(numbers.size()));
