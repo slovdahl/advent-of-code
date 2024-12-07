@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id 'application'
+    id 'org.graalvm.buildtools.native' version '0.10.4'
 }
 
 dependencies {
@@ -10,6 +11,16 @@ dependencies {
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(23)
+    }
+}
+
+graalvmNative {
+    toolchainDetection = true
+
+    binaries.all {
+        buildArgs.add("-O3")
+        buildArgs.add("-march=native")
+        resources.autodetect()
     }
 }
 

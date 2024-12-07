@@ -2,12 +2,26 @@ package year2023;
 
 import lib.Runner;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class App {
 
-    public static void main(String[] args) throws Exception {
-        ClassLoader classLoader = App.class.getClassLoader();
-        String packageName = "year2023";
+    private static final List<? extends Class<?>> DAY_CLASSES;
 
-        Runner.run(args, classLoader, packageName);
+    static {
+        List<Class<?>> classes = new ArrayList<>();
+        for (int i = 25; i > 0; i--) {
+            try {
+                classes.add(Class.forName("year2023.Day" + i));
+            } catch (ClassNotFoundException ignored) {
+            }
+        }
+        classes.sort(Runner.DAY_CLASS_COMPARATOR);
+        DAY_CLASSES = List.copyOf(classes);
+    }
+
+    public static void main(String[] args) throws Exception {
+        Runner.run(args, DAY_CLASSES);
     }
 }

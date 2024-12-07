@@ -1,9 +1,6 @@
 package lib;
 
-import com.google.common.reflect.ClassPath;
-
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Modifier;
 import java.util.Comparator;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -11,29 +8,22 @@ import java.util.regex.Pattern;
 
 public class Runner {
 
+    public static final Comparator<Class<?>> DAY_CLASS_COMPARATOR = Comparator
+            // Hack to get sorting of Day1, Day2, .., Day10, Day 11 to work as expected
+            // without actually comparing the integers.
+            .<Class<?>, Integer>comparing(cls -> cls.getSimpleName().length())
+            .thenComparing(Class::getName);
+
     private static final Pattern CLASS_NAME_PATTERN = Pattern.compile("Day(\\d+)");
 
-    public static void run(String[] args, ClassLoader classLoader, String packageName) throws Exception {
-        Comparator<Class<?>> comparator = Comparator
-                // Hack to get sorting of Day1, Day2, .., Day10, Day 11 to work as expected
-                // without actually comparing the integers.
-                .<Class<?>, Integer>comparing(cls -> cls.getSimpleName().length())
-                .thenComparing(Class::getName);
-
-        List<? extends Class<?>> dayClasses = ClassPath.from(classLoader).getTopLevelClasses(packageName).stream()
-                .map(ClassPath.ClassInfo::load)
-                .filter(Day.class::isAssignableFrom)
-                .filter(clazz -> !Modifier.isAbstract(clazz.getModifiers()))
-                .sorted(comparator)
-                .toList();
-
+    public static void run(String[] args, List<? extends Class<?>> dayClasses) throws Exception {
         Class<?> clazz;
         if (args.length > 0) {
-            clazz = dayClasses
-                    .stream()
-                    .filter(cls -> cls.getSimpleName().endsWith("Day" + args[0]))
+            int day = Integer.parseInt(args[0]);
+            clazz = dayClasses.stream()
+                    .filter(cls -> cls.getSimpleName().equals("Day" + day))
                     .findFirst()
-                    .orElseThrow(() -> new IllegalArgumentException("No such day: " + args[0]));
+                    .orElseThrow();
         } else {
             clazz = dayClasses.getLast();
         }
