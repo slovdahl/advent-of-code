@@ -44,6 +44,13 @@ public class Common {
         }
     }
 
+    public static int numberOfDigits(long n) {
+        if (n == 0) {
+            return 1;
+        }
+        return (int) (Math.log10(n) + 1);
+    }
+
     public static <T> List<List<T>> permutations(List<List<T>> input) {
         List<List<T>> permutations = new ArrayList<>();
         int length = input.size();

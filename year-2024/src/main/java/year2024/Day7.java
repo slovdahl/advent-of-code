@@ -67,9 +67,20 @@ public class Day7 extends Day {
                             sum = switch (operator.charAt(i - 1)) {
                                 case '+' -> sum + r.numbers().get(i);
                                 case '*' -> sum * r.numbers().get(i);
-                                case '|' -> Long.parseLong(String.valueOf(sum) + r.numbers().get(i));
+                                case '|' -> {
+                                    // Doing concatenation of two numbers like this:
+                                    // (first operand * 10^[number of digits in second operand]) + second operand
+                                    Long secondOperand = r.numbers().get(i);
+                                    sum *= (long)Math.pow(10, Common.numberOfDigits(secondOperand));
+                                    yield sum + secondOperand;
+                                }
                                 default -> throw new IllegalStateException("Unexpected value: " + operator);
                             };
+
+                            if (sum > r.result()) {
+                                // Short-circuiting this combination of operators if we're already above the expected result.
+                                break;
+                            }
                         }
 
                         if (sum == r.result()) {
