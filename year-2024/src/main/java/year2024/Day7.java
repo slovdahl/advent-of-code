@@ -1,9 +1,9 @@
 package year2024;
 
+import lib.Common;
 import lib.Day;
 import lib.Parse;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -26,7 +26,7 @@ public class Day7 extends Day {
                 .map(pair -> {
                     long result = Long.parseLong(pair[0]);
                     List<Long> numbers = Parse.longs(pair[1]);
-                    return new ResultAndNumbers(result, numbers, generate(OPERATORS_PART_1, numbers.size() - 1));
+                    return new ResultAndNumbers(result, numbers, Common.generate(OPERATORS_PART_1, numbers.size() - 1));
                 })
                 .filter(r -> {
                     for (String operator : r.operators()) {
@@ -51,14 +51,14 @@ public class Day7 extends Day {
     }
 
     @Override
-    protected Object part2(Stream<String> input) throws Exception {
+    protected Object part2(Stream<String> input) {
         return input
                 .map(line -> line.split(":"))
                 .parallel()
                 .map(pair -> {
                     long result = Long.parseLong(pair[0]);
                     List<Long> numbers = Parse.longs(pair[1]);
-                    return new ResultAndNumbers(result, numbers, generate(OPERATORS_PART_2, numbers.size() - 1));
+                    return new ResultAndNumbers(result, numbers, Common.generate(OPERATORS_PART_2, numbers.size() - 1));
                 })
                 .filter(r -> {
                     for (String operator : r.operators()) {
@@ -81,24 +81,6 @@ public class Day7 extends Day {
                 })
                 .mapToLong(ResultAndNumbers::result)
                 .sum(); // Your puzzle answer was 70597497486371
-    }
-
-    public static List<String> generate(char[] chars, int length) {
-        List<String> result = new ArrayList<>((int) Math.pow(chars.length, length));
-        generate(chars, result, "", length);
-        return result;
-    }
-
-    private static void generate(char[] chars, List<String> values, String current, int length) {
-        if (length == 0) {
-            values.add(current);
-            return;
-        }
-
-        for (char c : chars) {
-            String newPrefix = current + c;
-            generate(chars, values, newPrefix, length - 1);
-        }
     }
 
     private record ResultAndNumbers(long result, List<Long> numbers, List<String> operators) {

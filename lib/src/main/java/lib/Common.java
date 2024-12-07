@@ -78,6 +78,27 @@ public class Common {
         return permutations;
     }
 
+    /**
+     * Generates strings of the given length with all combinations of the given input characters.
+     */
+    public static List<String> generate(char[] chars, int length) {
+        List<String> result = new ArrayList<>((int) Math.pow(chars.length, length));
+        generate(chars, result, "", length);
+        return result;
+    }
+
+    private static void generate(char[] chars, List<String> values, String current, int length) {
+        if (length == 0) {
+            values.add(current);
+            return;
+        }
+
+        for (char c : chars) {
+            String newPrefix = current + c;
+            generate(chars, values, newPrefix, length - 1);
+        }
+    }
+
     public static final void swap(char[] a, int i, int j) {
         swap(a, a, i, j);
     }
