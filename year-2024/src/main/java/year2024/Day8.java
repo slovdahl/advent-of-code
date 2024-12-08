@@ -15,17 +15,19 @@ import java.util.stream.Stream;
 @SuppressWarnings("unused")
 public class Day8 extends Day {
 
+    private char[][] map;
+    private SetMultimap<Character, Coordinate> antennas;
+
     @Override
     protected Mode mode() {
         return Mode.REAL_INPUT;
     }
 
     @Override
-    protected Object part1(Stream<String> input) {
-        char[][] map = Matrix.matrix(input.toList());
+    protected void prepare(Stream<String> input) {
+        map = Matrix.matrix(input.toList());
 
-        SetMultimap<Character, Coordinate> antennas = HashMultimap.create();
-        Set<Coordinate> antiNodes = new HashSet<>();
+        antennas = HashMultimap.create();
 
         for (int row = 0; row < map.length; row++) {
             for (int col = 0; col < map[row].length; col++) {
@@ -34,6 +36,11 @@ public class Day8 extends Day {
                 }
             }
         }
+    }
+
+    @Override
+    protected Object part1(Stream<String> input) {
+        Set<Coordinate> antiNodes = new HashSet<>();
 
         for (Map.Entry<Character, Collection<Coordinate>> entry : antennas.asMap().entrySet()) {
             Collection<Coordinate> signalAntennas = entry.getValue();
@@ -47,13 +54,13 @@ public class Day8 extends Day {
                     int rowDiff = antenna2.row() - antenna1.row();
                     int colDiff = antenna2.column() - antenna1.column();
 
-                    Coordinate antiNode1 = new Coordinate(antenna1.row() - rowDiff, antenna1.column() - colDiff);
-                    if (antiNode1.in(map)) {
+                    Coordinate antiNode1 = antenna1.tryMove(map, -rowDiff, -colDiff);
+                    if (antiNode1 != null) {
                         antiNodes.add(antiNode1);
                     }
 
-                    Coordinate antiNode2 = new Coordinate(antenna2.row() + rowDiff, antenna2.column() + colDiff);
-                    if (antiNode2.in(map)) {
+                    Coordinate antiNode2 = antenna2.tryMove(map, rowDiff, colDiff);
+                    if (antiNode2 != null) {
                         antiNodes.add(antiNode2);
                     }
                 }
@@ -65,18 +72,7 @@ public class Day8 extends Day {
 
     @Override
     protected Object part2(Stream<String> input) {
-        char[][] map = Matrix.matrix(input.toList());
-
-        SetMultimap<Character, Coordinate> antennas = HashMultimap.create();
         Set<Coordinate> antiNodes = new HashSet<>();
-
-        for (int row = 0; row < map.length; row++) {
-            for (int col = 0; col < map[row].length; col++) {
-                if (map[row][col] != '.') {
-                    antennas.put(map[row][col], new Coordinate(row, col));
-                }
-            }
-        }
 
         for (Map.Entry<Character, Collection<Coordinate>> entry : antennas.asMap().entrySet()) {
             Collection<Coordinate> signalAntennas = entry.getValue();
@@ -93,24 +89,18 @@ public class Day8 extends Day {
                     int rowDiff = antenna2.row() - antenna1.row();
                     int colDiff = antenna2.column() - antenna1.column();
 
-                    int count = 1;
-                    while (true) {
-                        Coordinate antiNode = new Coordinate(antenna1.row() - (rowDiff * count), antenna1.column() - (colDiff * count));
-                        if (antiNode.in(map)) {
-                            antiNodes.add(antiNode);
-                            count++;
-                        } else {
-                            break;
-                        }
-                    }
+                    for (int i = 1; i < Integer.MAX_VALUE; i++) {
+                        Coordinate antiNode1 = antenna1.tryMove(map, -(rowDiff * i), -(colDiff * i));
+                        Coordinate antiNode2 = antenna2.tryMove(map, rowDiff * i, colDiff * i);
 
-                    count = 1;
-                    while (true) {
-                        Coordinate antiNode = new Coordinate(antenna2.row() + (rowDiff * count), antenna2.column() + (colDiff * count));
-                        if (antiNode.in(map)) {
-                            antiNodes.add(antiNode);
-                            count++;
-                        } else {
+                        if (antiNode1 != null) {
+                            antiNodes.add(antiNode1);
+                        }
+                        if (antiNode2 != null) {
+                            antiNodes.add(antiNode2);
+                        }
+
+                        if (antiNode1 == null && antiNode2 == null) {
                             break;
                         }
                     }

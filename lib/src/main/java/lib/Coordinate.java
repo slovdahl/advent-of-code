@@ -165,6 +165,16 @@ public record Coordinate(int row, int column) {
         };
     }
 
+    @Nullable
+    public Coordinate tryMove(char[][] matrix, int rowDelta, int columnDelta) {
+        Coordinate newCoordinate = new Coordinate(row + rowDelta, column + columnDelta);
+        if (newCoordinate.in(matrix)) {
+            return newCoordinate;
+        } else {
+            return null;
+        }
+    }
+
     public static Direction from(String d) {
         return switch (d) {
             case "U" -> Direction.UP;
