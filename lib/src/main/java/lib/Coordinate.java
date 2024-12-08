@@ -174,4 +174,9 @@ public record Coordinate(int row, int column) {
             default -> throw new IllegalStateException();
         };
     }
+
+    public boolean in(char[][] map) {
+        return row >= 0 && row < map.length &&
+                column >= 0 && column < map[row].length;
+    }
 }

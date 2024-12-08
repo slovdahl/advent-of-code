@@ -272,4 +272,10 @@ public class Matrix {
         return Math.abs(row1 - row2) +
                 Math.abs(column1 - column2);
     }
+
+    public static int manhattanDistance(Coordinate coordinate1,
+                                        Coordinate coordinate2) {
+        return Math.abs(coordinate1.row() - coordinate2.row()) +
+                Math.abs(coordinate1.column() - coordinate2.column());
+    }
 }

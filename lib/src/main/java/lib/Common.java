@@ -6,6 +6,7 @@ import com.google.common.graph.Graph;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -103,6 +104,29 @@ public class Common {
         for (char c : chars) {
             String newPrefix = current + c;
             generate(chars, values, newPrefix, length - 1);
+        }
+    }
+
+    /**
+     * Generates lists of the given length with all combinations of the given input characters.
+     */
+    public static <T> List<List<T>> cartesianProduct(Collection<T> options, int length) {
+        List<List<T>> result = new ArrayList<>((int) Math.pow(options.size(), length));
+        cartesianProduct(options, result, new ArrayList<>(length), length);
+        return result;
+    }
+
+    private static <T> void cartesianProduct(Collection<T> options, List<List<T>> values, List<T> current, int length) {
+        if (length == 0) {
+            values.add(current);
+            return;
+        }
+
+        for (T c : options) {
+            List<T> list = new ArrayList<>(length);
+            list.addAll(current);
+            list.add(c);
+            cartesianProduct(options, values, list, length - 1);
         }
     }
 
