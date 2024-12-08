@@ -62,4 +62,62 @@ public class Day8 extends Day {
 
         return antiNodes.size(); // Your puzzle answer was 320
     }
+
+    @Override
+    protected Object part2(Stream<String> input) {
+        char[][] map = Matrix.matrix(input.toList());
+
+        SetMultimap<Character, Coordinate> antennas = HashMultimap.create();
+        Set<Coordinate> antiNodes = new HashSet<>();
+
+        for (int row = 0; row < map.length; row++) {
+            for (int col = 0; col < map[row].length; col++) {
+                if (map[row][col] != '.') {
+                    antennas.put(map[row][col], new Coordinate(row, col));
+                }
+            }
+        }
+
+        for (Map.Entry<Character, Collection<Coordinate>> entry : antennas.asMap().entrySet()) {
+            Collection<Coordinate> signalAntennas = entry.getValue();
+
+            for (Coordinate antenna1 : signalAntennas) {
+                for (Coordinate antenna2 : signalAntennas) {
+                    if (antenna1.equals(antenna2)) {
+                        continue;
+                    }
+
+                    antiNodes.add(antenna1);
+                    antiNodes.add(antenna2);
+
+                    int rowDiff = antenna2.row() - antenna1.row();
+                    int colDiff = antenna2.column() - antenna1.column();
+
+                    int count = 1;
+                    while (true) {
+                        Coordinate antiNode = new Coordinate(antenna1.row() - (rowDiff * count), antenna1.column() - (colDiff * count));
+                        if (antiNode.in(map)) {
+                            antiNodes.add(antiNode);
+                            count++;
+                        } else {
+                            break;
+                        }
+                    }
+
+                    count = 1;
+                    while (true) {
+                        Coordinate antiNode = new Coordinate(antenna2.row() + (rowDiff * count), antenna2.column() + (colDiff * count));
+                        if (antiNode.in(map)) {
+                            antiNodes.add(antiNode);
+                            count++;
+                        } else {
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        return antiNodes.size(); // Your puzzle answer was 1157
+    }
 }
