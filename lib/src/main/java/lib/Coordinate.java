@@ -37,6 +37,24 @@ public record Coordinate(int row, int column) {
         return fallback;
     }
 
+    public char atDirection(char[][] matrix, Direction direction, char fallback) {
+        return switch (direction) {
+            case UP -> upOr(matrix, fallback);
+            case RIGHT -> rightOr(matrix, fallback);
+            case DOWN -> downOr(matrix, fallback);
+            case LEFT -> leftOr(matrix, fallback);
+        };
+    }
+
+    public int atDirection(int[][] matrix, Direction direction, int fallback) {
+        return switch (direction) {
+            case UP -> upOr(matrix, fallback);
+            case RIGHT -> rightOr(matrix, fallback);
+            case DOWN -> downOr(matrix, fallback);
+            case LEFT -> leftOr(matrix, fallback);
+        };
+    }
+
     @CanIgnoreReturnValue
     public char set(char[][] matrix, char ch) {
         char old = matrix[row][column];
