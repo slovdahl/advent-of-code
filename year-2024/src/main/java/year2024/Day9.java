@@ -15,16 +15,22 @@ import java.util.stream.Stream;
 @SuppressWarnings("unused")
 public class Day9 extends Day {
 
+    private String diskMap;
+    private char[] charArray;
+
     @Override
     protected Mode mode() {
         return Mode.REAL_INPUT;
     }
 
     @Override
-    protected Object part1(Stream<String> input) {
-        String diskMap = input.findFirst().orElseThrow();
-        char[] charArray = diskMap.toCharArray();
+    protected void prepare(Stream<String> input) {
+        diskMap = input.findFirst().orElseThrow();
+        charArray = diskMap.toCharArray();
+    }
 
+    @Override
+    protected Object part1(Stream<String> input) {
         int fileId = 0;
         List<Block> blocks = new ArrayList<>();
         for (int i = 0; i < charArray.length; i++) {
@@ -64,9 +70,6 @@ public class Day9 extends Day {
 
     @Override
     protected Object part2(Stream<String> input) {
-        String diskMap = input.findFirst().orElseThrow();
-        char[] charArray = diskMap.toCharArray();
-
         int fileId = 0;
         List<Block> blocks = new ArrayList<>();
         Map<Integer, EmptySpace> freeBlocks = new TreeMap<>();
