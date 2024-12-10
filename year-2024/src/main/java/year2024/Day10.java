@@ -32,6 +32,20 @@ public class Day10 extends Day {
         return topsReached.size(); // Your puzzle answer was 430
     }
 
+    @Override
+    protected Object part2(Stream<String> input) {
+        int[][] map = Matrix.intMatrix(input.toList());
+
+        Set<Coordinate> startingPoints = Matrix.findInts(map, 0);
+        Multimap<Coordinate, Coordinate> topsReached = ArrayListMultimap.create();
+
+        for (Coordinate startingPoint : startingPoints) {
+            visit(startingPoint, startingPoint, map, topsReached);
+        }
+
+        return topsReached.size(); // Your puzzle answer was 928
+    }
+
     private static void visit(Coordinate startingPoint, Coordinate coordinate, int[][] map, Multimap<Coordinate, Coordinate> topsReached) {
         int current = coordinate.at(map);
 
