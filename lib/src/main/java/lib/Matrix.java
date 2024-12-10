@@ -2,7 +2,9 @@ package lib;
 
 import java.io.PrintStream;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class Matrix {
     /**
@@ -83,6 +85,32 @@ public class Matrix {
         }
 
         throw new IllegalStateException("No " + needle + " found in matrix");
+    }
+
+    public static Set<Coordinate> findChars(char[][] haystack, char needle) {
+        Set<Coordinate> result = new HashSet<>();
+        for (int row = 0; row < haystack.length; row++) {
+            for (int column = 0; column < haystack[row].length; column++) {
+                if (haystack[row][column] == needle) {
+                    result.add(new Coordinate(row, column));
+                }
+            }
+        }
+
+        return Set.copyOf(result);
+    }
+
+    public static Set<Coordinate> findInts(int[][] haystack, int needle) {
+        Set<Coordinate> result = new HashSet<>();
+        for (int row = 0; row < haystack.length; row++) {
+            for (int column = 0; column < haystack[row].length; column++) {
+                if (haystack[row][column] == needle) {
+                    result.add(new Coordinate(row, column));
+                }
+            }
+        }
+
+        return Set.copyOf(result);
     }
 
     /** @return the index of the column where needle is found */

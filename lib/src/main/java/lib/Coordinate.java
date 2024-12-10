@@ -17,6 +17,16 @@ public record Coordinate(int row, int column) {
         throw new NoSuchElementException("Coordinate " + this + " out of bounds in matrix");
     }
 
+    public int at(int[][] matrix) {
+        if (row >= 0 && row < matrix.length &&
+                column >= 0 && column < matrix[0].length) {
+
+            return matrix[row][column];
+        }
+
+        throw new NoSuchElementException("Coordinate " + this + " out of bounds in matrix");
+    }
+
     public char at(char[][] matrix, char fallback) {
         if (row >= 0 && row < matrix.length &&
                 column >= 0 && column < matrix[0].length) {
@@ -46,11 +56,27 @@ public record Coordinate(int row, int column) {
         }
     }
 
+    public int upOr(int[][] matrix, int fallback) {
+        if (row >= 1) {
+            return matrix[row - 1][column];
+        } else {
+            return fallback;
+        }
+    }
+
     public char east(char[][] matrix) {
         return matrix[row][column + 1];
     }
 
     public char rightOr(char[][] matrix, char fallback) {
+        if (column + 1 < matrix[row].length) {
+            return matrix[row][column + 1];
+        } else {
+            return fallback;
+        }
+    }
+
+    public int rightOr(int[][] matrix, int fallback) {
         if (column + 1 < matrix[row].length) {
             return matrix[row][column + 1];
         } else {
@@ -70,11 +96,27 @@ public record Coordinate(int row, int column) {
         }
     }
 
+    public int downOr(int[][] matrix, int fallback) {
+        if (row + 1 < matrix.length) {
+            return matrix[row + 1][column];
+        } else {
+            return fallback;
+        }
+    }
+
     public char west(char[][] matrix) {
         return matrix[row][column - 1];
     }
 
     public char leftOr(char[][] matrix, char fallback) {
+        if (column >= 1) {
+            return matrix[row][column - 1];
+        } else {
+            return fallback;
+        }
+    }
+
+    public int leftOr(int[][] matrix, int fallback) {
         if (column >= 1) {
             return matrix[row][column - 1];
         } else {
