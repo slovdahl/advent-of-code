@@ -2,12 +2,11 @@ package year2024;
 
 import lib.Common;
 import lib.Day;
+import lib.Pair;
 import lib.Parse;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Stream;
 
 @SuppressWarnings("unused")
@@ -20,31 +19,35 @@ public class Day11 extends Day {
 
     @Override
     protected Object part1(Stream<String> input) {
-        List<Long> stones = Parse.longs(input.findFirst().orElseThrow());
+        ArrayList<Long> stones = new ArrayList<>(Parse.longs(input.findFirst().orElseThrow()));
 
         int blinks = 25;
 
         while (blinks > 0) {
-            Map<Integer, Long> stonesToAdd = new LinkedHashMap<>();
+            List<Pair<Integer, Long>> stonesToAdd = new ArrayList<>();
             for (int i = 0; i < stones.size(); i++) {
                 Long stone = stones.get(i);
 
                 if (stone == 0L) {
                     stones.set(i, 1L);
-                } else if (Common.numberOfDigits(stone) % 2 == 0) {
-                    String oldValue = String.valueOf(stone);
-                    long leftHalf = Long.parseLong(oldValue.substring(0, oldValue.length() / 2));
-                    long rightHalf = Long.parseLong(oldValue.substring(oldValue.length() / 2));
-                    stones.set(i, leftHalf);
-                    stonesToAdd.put(i, rightHalf);
                 } else {
-                    stones.set(i, stone * 2024L);
+                    int numberOfDigits = Common.numberOfDigits(stone);
+                    if (numberOfDigits % 2 == 0) {
+                        long pow = (long) Math.pow(10, numberOfDigits / 2.0);
+                        long leftHalf = stone / pow;
+                        long rightHalf = stone - (leftHalf * pow);
+                        stones.set(i, leftHalf);
+                        stonesToAdd.add(Pair.of(i, rightHalf));
+                    } else {
+                        stones.set(i, stone * 2024L);
+                    }
                 }
             }
 
-            for (Map.Entry<Integer, Long> entry : new ArrayList<>(stonesToAdd.entrySet()).reversed()) {
-                Integer index = entry.getKey();
-                Long stone = entry.getValue();
+            stones.ensureCapacity(stones.size() + stonesToAdd.size());
+            for (Pair<Integer, Long> entry : stonesToAdd.reversed()) {
+                Integer index = entry.first();
+                Long stone = entry.second();
 
                 stones.add(index + 1, stone);
             }
