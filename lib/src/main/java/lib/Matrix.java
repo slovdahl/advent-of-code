@@ -75,6 +75,16 @@ public class Matrix {
         return arr;
     }
 
+    public static Set<Coordinate> toCoordinates(char[][] matrix) {
+        Set<Coordinate> coordinates = new HashSet<>(matrix.length * matrix[0].length);
+        for (int i = 0; i < matrix.length; i++) {
+            for (int j = 0; j < matrix[0].length; j++) {
+                coordinates.add(new Coordinate(i, j));
+            }
+        }
+        return coordinates;
+    }
+
     public static Coordinate findChar(char[][] haystack, char needle) {
         for (int row = 0; row < haystack.length; row++) {
             for (int column = 0; column < haystack[row].length; column++) {
