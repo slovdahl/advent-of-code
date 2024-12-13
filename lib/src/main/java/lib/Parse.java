@@ -2,7 +2,11 @@ package lib;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
+import static java.util.stream.Gatherers.windowFixed;
+
+@SuppressWarnings("preview")
 public class Parse {
 
     /**
@@ -39,5 +43,19 @@ public class Parse {
             result.add(Long.parseLong(str.trim()));
         }
         return result;
+    }
+
+    /**
+     * Parses the input as sections optionally separated by empty lines.
+     *
+     * @param input the input stream to consume
+     * @param size the size of each section
+     * @return a list of each section
+     */
+    public static List<List<String>> sectionsOfSize(Stream<String> input, int size) {
+        return input
+                .filter(s -> !s.isEmpty())
+                .gather(windowFixed(size))
+                .toList();
     }
 }
