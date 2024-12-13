@@ -4,9 +4,7 @@ import lib.Day;
 import lib.Parse;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -19,13 +17,15 @@ public class Day13 extends Day {
     private static final Pattern BUTTON_PATTERN = Pattern.compile("Button [AB]: X\\+([0-9]+), Y\\+([0-9]+)");
     private static final Pattern PRIZE_PATTERN = Pattern.compile("Prize: X=([0-9]+), Y=([0-9]+)");
 
+    private List<ClawMachine> machines;
+
     @Override
     protected Mode mode() {
-        return Mode.SAMPLE_INPUT;
+        return Mode.REAL_INPUT;
     }
 
     @Override
-    protected Object part1(Stream<String> input) {
+    protected void prepare(Stream<String> input) {
         List<List<String>> sections = Parse.sectionsOfSize(input, 3);
 
         List<ClawMachine> machines = new ArrayList<>();
@@ -51,30 +51,34 @@ public class Day13 extends Day {
             machines.add(clawMachine);
         }
 
-        Map<ClawMachine, Integer> lowestCosts = new HashMap<>();
-        for (ClawMachine m : machines) {
-            int lowestCost = Integer.MAX_VALUE;
+        this.machines = List.copyOf(machines);
+    }
 
-            for (int a = 0; a <= 100; a++) {
-                for (int b = 0; b <= 100; b++) {
-                    int xResult = m.buttonAX * a + m.buttonBX * b;
-                    int yResult = m.buttonAY * a + m.buttonBY * b;
-                    if (xResult == m.prizeX && yResult == m.prizeY) {
-                        lowestCost = Math.min(lowestCost, a * 3 + b);
-                    }
-                }
-            }
+    @Override
+    protected Object part1(Stream<String> input) {
+        return machines.stream()
+                .mapToLong(m -> calculateLowestCost(m, 0))
+                .sum(); // Your puzzle answer was 33921
+    }
 
-            if (lowestCost < Integer.MAX_VALUE) {
-                lowestCosts.put(m, lowestCost);
-            }
+    @Override
+    protected Object part2(Stream<String> input) {
+        return machines.stream()
+                .mapToLong(m -> calculateLowestCost(m, 10_000_000_000_000L))
+                .sum(); // Your puzzle answer was 82261957837868
+    }
+
+    private static long calculateLowestCost(ClawMachine m, long extraDistance) {
+        // Cramer's rule https://en.wikipedia.org/wiki/Cramer%27s_rule#Explicit_formulas_for_small_systems
+        int denominator = m.buttonAX * m.buttonBY - m.buttonAY * m.buttonBX;
+        double a = ((double) (m.prizeX + extraDistance) * m.buttonBY - (m.prizeY + extraDistance) * m.buttonBX) / denominator;
+        double b = ((double) m.buttonAX * (m.prizeY + extraDistance) - m.buttonAY * (m.prizeX + extraDistance)) / denominator;
+
+        if (a != (long) a || b != (long) b) {
+            return 0;
+        } else {
+            return (long) a * 3 + (long) b;
         }
-
-        return lowestCosts
-                .values()
-                .stream()
-                .mapToLong(cost -> cost)
-                .sum();
     }
 
     record ClawMachine(int buttonAX, int buttonAY, int buttonBX, int buttonBY, long prizeX, long prizeY) {
