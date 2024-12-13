@@ -226,6 +226,40 @@ public record Coordinate(int row, int column) {
     }
 
     @Nullable
+    public Coordinate tryMove(int[][] matrix, Direction direction) {
+        return switch (direction) {
+            case UP -> {
+                if (row > 0) {
+                    yield moveUp();
+                } else {
+                    yield null;
+                }
+            }
+            case DOWN -> {
+                if (row < matrix.length - 1) {
+                    yield moveDown();
+                } else {
+                    yield null;
+                }
+            }
+            case LEFT -> {
+                if (column > 0) {
+                    yield moveLeft();
+                } else {
+                    yield null;
+                }
+            }
+            case RIGHT -> {
+                if (column < matrix[row].length - 1) {
+                    yield moveRight();
+                } else {
+                    yield null;
+                }
+            }
+        };
+    }
+
+    @Nullable
     public Coordinate tryMove(char[][] matrix, int rowDelta, int columnDelta) {
         Coordinate newCoordinate = new Coordinate(row + rowDelta, column + columnDelta);
         if (newCoordinate.in(matrix)) {

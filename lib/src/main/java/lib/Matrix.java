@@ -254,6 +254,25 @@ public class Matrix {
         return result;
     }
 
+    public static int[][] deepClone(int[][] input) {
+        int[][] result = new int[input.length][];
+        for (int i = 0; i < input.length; i++) {
+            result[i] = input[i].clone();
+        }
+        return result;
+    }
+
+    public static char[][] toCharArray(int[][] matrix) {
+        char[][] result = new char[matrix.length][];
+        for (int i = 0; i < matrix.length; i++) {
+            result[i] = new char[matrix[i].length];
+            for (int j = 0; j < matrix[i].length; j++) {
+                result[i][j] = Character.forDigit(matrix[i][j], 10);
+            }
+        }
+        return result;
+    }
+
     public static void print(PrintStream s, char[][]... matrices) {
         if (matrices.length == 0) {
             return;
@@ -264,6 +283,15 @@ public class Matrix {
                 for (int column = 0; column < matrix[row].length; column++) {
                     s.print(matrix[row][column]);
                 }
+            }
+            s.println();
+        }
+    }
+
+    public static void print(PrintStream s, int[][] matrix) {
+        for (int[] row : matrix) {
+            for (int column : row) {
+                s.print(column);
             }
             s.println();
         }
