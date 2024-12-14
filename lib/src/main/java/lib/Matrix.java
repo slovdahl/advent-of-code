@@ -44,6 +44,19 @@ public class Matrix {
         return arr;
     }
 
+    public static Object[][] objectMatrix(int rows, int columns, Object filler) {
+        Object[][] arr = new Object[rows][columns];
+
+        for (int i = 0; i < rows; i++) {
+            arr[i] = new Object[columns];
+            for (int j = 0; j < columns; j++) {
+                arr[i][j] = filler;
+            }
+        }
+
+        return arr;
+    }
+
     /**
      * Creates a char matrix from the input that has an extra row/column on all
      * sides. Every line of the input is assumed to have the same length.
@@ -73,6 +86,12 @@ public class Matrix {
         }
 
         return arr;
+    }
+
+    public static void fill(Object[][] matrix, Object filler) {
+        for (Object[] objects : matrix) {
+            Arrays.fill(objects, filler);
+        }
     }
 
     public static Set<Coordinate> toCoordinates(char[][] matrix) {
@@ -291,6 +310,15 @@ public class Matrix {
     public static void print(PrintStream s, int[][] matrix) {
         for (int[] row : matrix) {
             for (int column : row) {
+                s.print(column);
+            }
+            s.println();
+        }
+    }
+
+    public static void print(PrintStream s, Object[][] matrix) {
+        for (Object[] row : matrix) {
+            for (Object column : row) {
                 s.print(column);
             }
             s.println();

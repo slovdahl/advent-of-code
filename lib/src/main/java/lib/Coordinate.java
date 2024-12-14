@@ -191,6 +191,20 @@ public record Coordinate(int row, int column) {
         };
     }
 
+    public Coordinate moveWithWraparound(Object[][] matrix, int times, int deltaRow, int deltaColumn) {
+        int newRow = (row + (times * deltaRow)) % matrix.length;
+        if (newRow < 0) {
+            newRow = matrix.length - Math.abs(newRow);
+        }
+
+        int newColumn = (column + (times * deltaColumn)) % matrix[row].length;
+        if (newColumn < 0) {
+            newColumn = matrix[row].length - Math.abs(newColumn);
+        }
+
+        return new Coordinate(newRow, newColumn);
+    }
+
     @Nullable
     public Coordinate tryMove(char[][] matrix, Direction direction) {
         return switch (direction) {
