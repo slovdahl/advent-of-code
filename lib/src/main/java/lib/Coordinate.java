@@ -191,13 +191,17 @@ public record Coordinate(int row, int column) {
         };
     }
 
-    public Coordinate moveWithWraparound(Object[][] matrix, int times, int deltaRow, int deltaColumn) {
-        int newRow = (row + (times * deltaRow)) % matrix.length;
+    public Coordinate moveWithWraparound(Object[][] matrix, long times, int deltaRow, int deltaColumn) {
+        if (times == 0) {
+            return this;
+        }
+
+        int newRow = (int)((row + (times * deltaRow)) % (long)matrix.length);
         if (newRow < 0) {
             newRow = matrix.length - Math.abs(newRow);
         }
 
-        int newColumn = (column + (times * deltaColumn)) % matrix[row].length;
+        int newColumn = (int)((column + (times * deltaColumn)) % (long)matrix[row].length);
         if (newColumn < 0) {
             newColumn = matrix[row].length - Math.abs(newColumn);
         }
