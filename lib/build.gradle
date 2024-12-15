@@ -4,6 +4,7 @@ plugins {
 
 dependencies {
     api 'com.google.guava:guava:33.3.1-jre'
+    api 'org.fusesource.jansi:jansi:2.4.1'
 }
 
 tasks.withType(JavaCompile).configureEach {

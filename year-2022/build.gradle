@@ -20,4 +20,17 @@ java {
 
 application {
     mainClass = 'eu.lovdahl.advent.of.code.App'
+    applicationDefaultJvmArgs = ['-Djansi.passthrough=true']
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.compilerArgs += "--enable-preview"
+}
+
+tasks.withType(Test).configureEach {
+    jvmArgs += "--enable-preview"
+}
+
+tasks.withType(JavaExec).configureEach {
+    jvmArgs += '--enable-preview'
 }

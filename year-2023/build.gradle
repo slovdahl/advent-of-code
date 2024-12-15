@@ -22,6 +22,23 @@ java {
 application {
     mainClass = 'year2023.App'
 
-    // For day 23 ForkJoinPool
-    applicationDefaultJvmArgs = ['-Xss2m']
+    applicationDefaultJvmArgs = [
+            // Working jansi colors/progress bars through `gw run`
+            '-Djansi.passthrough=true',
+
+            // For day 23 ForkJoinPool
+            '-Xss2m',
+    ]
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.compilerArgs += "--enable-preview"
+}
+
+tasks.withType(Test).configureEach {
+    jvmArgs += "--enable-preview"
+}
+
+tasks.withType(JavaExec).configureEach {
+    jvmArgs += '--enable-preview'
 }
