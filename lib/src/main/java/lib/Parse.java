@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
+import static java.util.Collections.emptyList;
 import static java.util.stream.Gatherers.windowFixed;
 
 @SuppressWarnings("preview")
@@ -57,5 +58,30 @@ public class Parse {
                 .filter(s -> !s.isEmpty())
                 .gather(windowFixed(size))
                 .toList();
+    }
+
+    /**
+     * Parses the input as sections optionally separated by empty lines.
+     *
+     * @param input the input stream to consume
+     * @return a list of each section
+     */
+    public static List<List<String>> sections(Stream<String> input) {
+        List<List<String>> initial = new ArrayList<>();
+        initial.add(new ArrayList<>());
+
+        return input
+                .reduce(
+                        initial,
+                        (List<List<String>> subtotal, String element) -> {
+                            if (element.trim().isEmpty()) {
+                                subtotal.add(new ArrayList<>());
+                            } else {
+                                subtotal.getLast().add(element);
+                            }
+                            return subtotal;
+                        },
+                        (_, _) -> emptyList()
+                );
     }
 }
