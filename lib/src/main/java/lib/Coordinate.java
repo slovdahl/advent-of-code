@@ -196,12 +196,12 @@ public record Coordinate(int row, int column) {
             return this;
         }
 
-        int newRow = (int)((row + (times * deltaRow)) % (long)matrix.length);
+        int newRow = (int) ((row + (times * deltaRow)) % (long) matrix.length);
         if (newRow < 0) {
             newRow = matrix.length - Math.abs(newRow);
         }
 
-        int newColumn = (int)((column + (times * deltaColumn)) % (long)matrix[row].length);
+        int newColumn = (int) ((column + (times * deltaColumn)) % (long) matrix[row].length);
         if (newColumn < 0) {
             newColumn = matrix[row].length - Math.abs(newColumn);
         }
@@ -287,6 +287,38 @@ public record Coordinate(int row, int column) {
         }
     }
 
+    public Direction directionTo(Coordinate other) {
+        if (row == other.row && column == other.column) {
+            throw new IllegalStateException("no direction, same coordinate");
+        }
+
+        if (row == other.row) {
+            if (other.column > column) {
+                return Direction.RIGHT;
+            } else {
+                return Direction.LEFT;
+            }
+        } else if (column == other.column) {
+            if (other.row > row) {
+                return Direction.DOWN;
+            } else {
+                return Direction.UP;
+            }
+        } else {
+            throw new IllegalStateException("diagonal directions unsupported");
+        }
+    }
+
+    public boolean in(char[][] map) {
+        return row >= 0 && row < map.length &&
+                column >= 0 && column < map[row].length;
+    }
+
+    public boolean in(int[][] map) {
+        return row >= 0 && row < map.length &&
+                column >= 0 && column < map[row].length;
+    }
+
     public static Direction from(String d) {
         return switch (d) {
             case "U" -> Direction.UP;
@@ -295,10 +327,5 @@ public record Coordinate(int row, int column) {
             case "L" -> Direction.LEFT;
             default -> throw new IllegalStateException();
         };
-    }
-
-    public boolean in(char[][] map) {
-        return row >= 0 && row < map.length &&
-                column >= 0 && column < map[row].length;
     }
 }
