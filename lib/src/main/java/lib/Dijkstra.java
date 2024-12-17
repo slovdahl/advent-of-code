@@ -6,6 +6,7 @@ import org.jspecify.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -136,6 +137,35 @@ public class Dijkstra<T extends Dijkstra.MatrixType> {
         }
     }
 
+    public Set<Coordinate> getAllPaths() {
+        Set<Coordinate> allPaths = new HashSet<>();
+
+        Node targetNode = visitedNodes.get(target);
+        traverseAllPaths(allPaths, targetNode, visitedNodes.get(this.start));
+
+        return allPaths;
+    }
+
+    private void traverseAllPaths(Set<Coordinate> allPaths, Node current, Node target) {
+        allPaths.add(current.coordinate);
+
+        if (current.equals(target)) {
+            return;
+        }
+
+        for (Node previous : current.previous.values()) {
+            if (allPaths.contains(previous.coordinate)) {
+                continue;
+            }
+
+            if (!visitedNodes.containsKey(previous.coordinate)) {
+                continue;
+            }
+
+            traverseAllPaths(allPaths, previous, target);
+        }
+    }
+
     public List<Coordinate> getLowestCostPath() {
         Set<Coordinate> bestPath = new LinkedHashSet<>();
 
@@ -186,6 +216,16 @@ public class Dijkstra<T extends Dijkstra.MatrixType> {
         char[][] m = matrix.toCharArray();
 
         for (Coordinate coordinate : getLowestCostPath()) {
+            m[coordinate.row()][coordinate.column()] = pathCharacter;
+        }
+
+        Matrix.print(System.out, m);
+    }
+
+    public void visualizeAllPaths(char pathCharacter) {
+        char[][] m = matrix.toCharArray();
+
+        for (Coordinate coordinate : getAllPaths()) {
             m[coordinate.row()][coordinate.column()] = pathCharacter;
         }
 
