@@ -197,12 +197,12 @@ public class Dijkstra<T extends Dijkstra.MatrixType> {
 
         Node traverseStart = visitedNodes.get(target);
         Node traverseTarget = visitedNodes.get(start);
-        traverseAllLowestCostPaths(allPaths, new LinkedHashSet<>(), traverseStart, null, traverseTarget);
+        traverseAllLowestCostPaths(allPaths, new LinkedHashSet<>(), traverseStart, traverseTarget);
 
         return List.copyOf(allPaths);
     }
 
-    private void traverseAllLowestCostPaths(List<List<Coordinate>> allPaths, Set<Coordinate> bestPath, Node current, @Nullable Node previous, Node target) {
+    private void traverseAllLowestCostPaths(List<List<Coordinate>> allPaths, Set<Coordinate> bestPath, Node current, Node target) {
         bestPath.add(current.coordinate);
 
         if (current.equals(target)) {
@@ -232,7 +232,7 @@ public class Dijkstra<T extends Dijkstra.MatrixType> {
         for (Node node : allPreviousOfSameCost) {
             if (!bestPath.contains(node.coordinate) && visitedNodes.containsKey(node.coordinate)) {
                 Set<Coordinate> newPath = new LinkedHashSet<>(bestPath);
-                traverseAllLowestCostPaths(allPaths, newPath, node, current, target);
+                traverseAllLowestCostPaths(allPaths, newPath, node, target);
             }
         }
 
@@ -244,7 +244,73 @@ public class Dijkstra<T extends Dijkstra.MatrixType> {
             return;
         }
 
-        traverseAllLowestCostPaths(allPaths, bestPath, next, current, target);
+        traverseAllLowestCostPaths(allPaths, bestPath, next, target);
+    }
+
+    public List<List<Coordinate>> getAllPaths() {
+        List<List<Coordinate>> allPaths = new ArrayList<>();
+
+        Node traverseStart = visitedNodes.get(target);
+        Node traverseTarget = visitedNodes.get(start);
+        traverseAllPaths(allPaths, new LinkedHashSet<>(), traverseStart, null, traverseTarget);
+
+        return List.copyOf(allPaths);
+    }
+
+    private void traverseAllPaths(List<List<Coordinate>> allPaths, Set<Coordinate> bestPath, Node current, @Nullable Node previous, Node target) {
+        bestPath.add(current.coordinate);
+
+        if (current.equals(target)) {
+            List<Coordinate> copy = new ArrayList<>(bestPath);
+            allPaths.add(List.copyOf(copy.reversed()));
+            return;
+        }
+
+        List<Node> allPreviousOfSameCost;
+        if (current instanceof BestPathNode) {
+            allPreviousOfSameCost = new ArrayList<>(current.previous.values());
+        } else {
+            int previousCostToCompareAgainst = (previous != null ? previous : current)
+                    .lowestCost()
+                    .orElseThrow();
+
+            int currentLowestCost = current
+                    .lowestCost()
+                    .orElseThrow();
+
+            allPreviousOfSameCost = new ArrayList<>();
+            for (var entry : current.previous.entrySet()) {
+                Node node = entry.getValue();
+                int nodeLowestCost = node.lowestCost().orElseThrow();
+
+                if (nodeLowestCost <= previousCostToCompareAgainst || nodeLowestCost < currentLowestCost) {
+                    allPreviousOfSameCost.add(node);
+                }
+            }
+        }
+
+        if (allPreviousOfSameCost.isEmpty()) {
+            return;
+        }
+
+        Node next = allPreviousOfSameCost.removeFirst();
+
+        for (Node node : allPreviousOfSameCost) {
+            if (!bestPath.contains(node.coordinate) && visitedNodes.containsKey(node.coordinate)) {
+                Set<Coordinate> newPath = new LinkedHashSet<>(bestPath);
+                traverseAllPaths(allPaths, newPath, node, current, target);
+            }
+        }
+
+        if (bestPath.contains(next.coordinate)) {
+            return;
+        }
+
+        if (!visitedNodes.containsKey(next.coordinate)) {
+            return;
+        }
+
+        traverseAllPaths(allPaths, bestPath, next, current, target);
     }
 
     public void visualizeLowestCostPath(char pathCharacter) {
@@ -252,6 +318,18 @@ public class Dijkstra<T extends Dijkstra.MatrixType> {
 
         for (Coordinate coordinate : getLowestCostPath()) {
             m[coordinate.row()][coordinate.column()] = pathCharacter;
+        }
+
+        Matrix.print(System.out, m);
+    }
+
+    public void visualizeAllPaths(char pathCharacter) {
+        char[][] m = matrix.toCharArray();
+
+        for (List<Coordinate> path : getAllPaths()) {
+            for (Coordinate coordinate : path) {
+                m[coordinate.row()][coordinate.column()] = pathCharacter;
+            }
         }
 
         Matrix.print(System.out, m);

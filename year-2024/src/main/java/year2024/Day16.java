@@ -7,14 +7,14 @@ import lib.Dijkstra.CharMatrix;
 import lib.Direction;
 import lib.Matrix;
 
+import java.util.List;
 import java.util.stream.Stream;
 
 @SuppressWarnings("unused")
 public class Day16 extends Day {
 
     private char[][] map;
-    private Coordinate start;
-    private Coordinate end;
+    private Dijkstra<CharMatrix> dijkstra;
 
     @Override
     protected Mode mode() {
@@ -24,13 +24,10 @@ public class Day16 extends Day {
     @Override
     protected void prepare(Stream<String> input) {
         map = Matrix.matrix(input.toList());
-        start = Matrix.findChar(map, 'S');
-        end = Matrix.findChar(map, 'E');
-    }
+        Coordinate start = Matrix.findChar(map, 'S');
+        Coordinate end = Matrix.findChar(map, 'E');
 
-    @Override
-    protected Object part1(Stream<String> input) {
-        Dijkstra<CharMatrix> dijkstra = new Dijkstra<>(
+        dijkstra = new Dijkstra<>(
                 new CharMatrix(map, coordinate -> coordinate.at(map) != '#'),
                 start,
                 end,
@@ -42,7 +39,19 @@ public class Day16 extends Day {
                     return 1 + (direction == current.directionTo(next) ? 0 : 1_000);
                 }
         );
+    }
 
-        return dijkstra.findShortestPath().orElseThrow(); // Your puzzle answer was 83444
+    @Override
+    protected Object part1(Stream<String> input) {
+        return dijkstra.findAllShortestPaths().orElseThrow(); // Your puzzle answer was 83444
+    }
+
+    @Override
+    protected Object part2(Stream<String> input) throws Exception {
+        return dijkstra.getAllPaths()
+                .stream()
+                .flatMap(List::stream)
+                .distinct()
+                .count(); // Your puzzle answer was 483
     }
 }
