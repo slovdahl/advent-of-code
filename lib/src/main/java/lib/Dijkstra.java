@@ -1,7 +1,6 @@
 package lib;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Preconditions;
 import org.jspecify.annotations.Nullable;
 
 import java.util.EnumMap;
@@ -9,6 +8,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
+import java.util.OptionalInt;
 import java.util.function.Function;
 
 import static com.google.common.base.Preconditions.checkState;
@@ -36,7 +36,7 @@ public class Dijkstra<T extends Dijkstra.MatrixType> {
     }
 
     /** @return the cost to reach the target */
-    public int traverse() {
+    public OptionalInt traverse() {
         unvisited.put(start, new Node(start, null, null, 0));
 
         while (!unvisited.isEmpty()) {
@@ -84,7 +84,12 @@ public class Dijkstra<T extends Dijkstra.MatrixType> {
             }
         }
 
-        return visitedNodes.get(target).cost;
+        Node targetNode = visitedNodes.get(target);
+        if (targetNode != null) {
+            return OptionalInt.of(targetNode.cost);
+        } else {
+            return OptionalInt.empty();
+        }
     }
 
     public void visualize(char pathCharacter) {
