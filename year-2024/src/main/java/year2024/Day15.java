@@ -14,17 +14,24 @@ import static com.google.common.base.Preconditions.checkNotNull;
 @SuppressWarnings("unused")
 public class Day15 extends Day {
 
+    private char[][] map;
+    private String moves;
+
     @Override
     protected Mode mode() {
         return Mode.REAL_INPUT;
     }
 
     @Override
-    protected Object part1(Stream<String> input) {
+    protected void prepare(Stream<String> input) {
         List<List<String>> sections = Parse.sections(input);
-        char[][] map = Matrix.matrix(sections.getFirst());
-        String moves = String.join("", sections.getLast());
+        map = Matrix.matrix(sections.getFirst());
+        moves = String.join("", sections.getLast());
+    }
 
+    @Override
+    protected Object part1(Stream<String> input) {
+        char[][] map = Matrix.deepClone(this.map);
         Coordinate position = Matrix.findChar(map, '@');
         checkNotNull(position);
 
@@ -41,7 +48,7 @@ public class Day15 extends Day {
         return Matrix.findChars(map, 'O')
                 .stream()
                 .mapToLong(c -> c.row() * 100L + c.column())
-                .sum();
+                .sum(); // Your puzzle answer was 1429911
     }
 
     private static Coordinate moveToNextPosition(Coordinate robotPosition, char[][] map, Direction direction) {
@@ -52,12 +59,12 @@ public class Day15 extends Day {
 
         Coordinate newPosition = robotPosition.move(direction);
         Coordinate current = newPosition;
-        Coordinate lastFreeSpot = null;
+        Coordinate freeSpot = null;
         int boxes = 0;
 
         while (ch != '#') {
             if (ch == '.') {
-                lastFreeSpot = current;
+                freeSpot = current;
                 break;
             } else if (ch == 'O') {
                 boxes++;
@@ -69,10 +76,10 @@ public class Day15 extends Day {
             ch = current.at(map);
         }
 
-        if (lastFreeSpot != null) {
+        if (freeSpot != null) {
             for (int i = 0; i < boxes; i++) {
-                lastFreeSpot.set(map, 'O');
-                lastFreeSpot = lastFreeSpot.move(direction.opposite());
+                freeSpot.set(map, 'O');
+                freeSpot = freeSpot.move(direction.opposite());
             }
 
             newPosition.set(map, '@');
