@@ -1,6 +1,7 @@
 package lib;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Preconditions;
 import org.jspecify.annotations.Nullable;
 
 import java.util.EnumMap;
@@ -9,6 +10,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
+
+import static com.google.common.base.Preconditions.checkState;
 
 public class Dijkstra<T extends Dijkstra.MatrixType> {
 
@@ -20,6 +23,9 @@ public class Dijkstra<T extends Dijkstra.MatrixType> {
     private final Map<Coordinate, Node> visitedNodes;
 
     public Dijkstra(T matrix, Coordinate start, Coordinate target, QuadFunction<T, @Nullable Direction, Coordinate, Coordinate, Integer> costFunction) {
+        checkState(start.in(matrix.toCharArray()), "start outside matrix");
+        checkState(target.in(matrix.toCharArray()), "target outside matrix");
+
         this.matrix = matrix;
         this.start = start;
         this.target = target;
@@ -177,7 +183,7 @@ public class Dijkstra<T extends Dijkstra.MatrixType> {
         @Nullable
         public Coordinate tryMove(Coordinate current, Direction direction) {
             Coordinate next = current.tryMove(matrix, direction);
-            if (validMoveFunction.apply(next)) {
+            if (next != null && validMoveFunction.apply(next)) {
                 return next;
             } else {
                 return null;

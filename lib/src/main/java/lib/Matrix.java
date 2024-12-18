@@ -44,6 +44,18 @@ public class Matrix {
         return arr;
     }
 
+    public static char[][] matrix(int rows, int columns, char filler) {
+        char[][] arr = new char[rows][columns];
+
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < columns; j++) {
+                arr[i][j] = filler;
+            }
+        }
+
+        return arr;
+    }
+
     public static Object[][] objectMatrix(int rows, int columns, Object filler) {
         Object[][] arr = new Object[rows][columns];
 

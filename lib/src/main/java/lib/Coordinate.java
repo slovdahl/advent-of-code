@@ -7,6 +7,10 @@ import java.util.NoSuchElementException;
 
 public record Coordinate(int row, int column) {
 
+    public Coordinate(String rows, String columns) {
+        this(Integer.parseInt(rows), Integer.parseInt(columns));
+    }
+
     public char at(char[][] matrix) {
         if (row >= 0 && row < matrix.length &&
                 column >= 0 && column < matrix[0].length) {
