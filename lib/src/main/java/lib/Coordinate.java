@@ -153,7 +153,11 @@ public record Coordinate(int row, int column) {
     }
 
     public Coordinate moveUp() {
-        return new Coordinate(row - 1, column);
+        return moveUp(1);
+    }
+
+    public Coordinate moveUp(int steps) {
+        return new Coordinate(row - steps, column);
     }
 
     public Coordinate toEast() {
@@ -161,7 +165,11 @@ public record Coordinate(int row, int column) {
     }
 
     public Coordinate moveRight() {
-        return new Coordinate(row, column + 1);
+        return moveRight(1);
+    }
+
+    public Coordinate moveRight(int steps) {
+        return new Coordinate(row, column + steps);
     }
 
     public Coordinate toSouth() {
@@ -169,7 +177,11 @@ public record Coordinate(int row, int column) {
     }
 
     public Coordinate moveDown() {
-        return new Coordinate(row + 1, column);
+        return moveDown(1);
+    }
+
+    public Coordinate moveDown(int steps) {
+        return new Coordinate(row + steps, column);
     }
 
     public Coordinate toWest() {
@@ -177,7 +189,11 @@ public record Coordinate(int row, int column) {
     }
 
     public Coordinate moveLeft() {
-        return new Coordinate(row, column - 1);
+        return moveLeft(1);
+    }
+
+    public Coordinate moveLeft(int steps) {
+        return new Coordinate(row, column - steps);
     }
 
     public Coordinate withRow(int row) {
@@ -189,11 +205,15 @@ public record Coordinate(int row, int column) {
     }
 
     public Coordinate move(Direction direction) {
+        return move(direction, 1);
+    }
+
+    public Coordinate move(Direction direction, int steps) {
         return switch (direction) {
-            case UP -> moveUp();
-            case DOWN -> moveDown();
-            case LEFT -> moveLeft();
-            case RIGHT -> moveRight();
+            case UP -> moveUp(steps);
+            case DOWN -> moveDown(steps);
+            case LEFT -> moveLeft(steps);
+            case RIGHT -> moveRight(steps);
         };
     }
 
