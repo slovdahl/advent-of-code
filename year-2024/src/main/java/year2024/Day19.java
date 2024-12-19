@@ -6,18 +6,14 @@ import lib.Day;
 import lib.Parse;
 
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Stream;
-
-import static java.util.Comparator.comparing;
-import static java.util.stream.Collectors.groupingBy;
 
 @SuppressWarnings("unused")
 public class Day19 extends Day {
 
-    private Map<Character, List<String>> availablePatterns;
+    private List<String> availablePatterns;
     private List<String> designs;
-    private Cache<String, Boolean> cachedMatches;
+    private Cache<String, Long> cachedMatches;
 
     @Override
     protected Mode mode() {
@@ -28,46 +24,51 @@ public class Day19 extends Day {
     protected void prepare(Stream<String> input) throws Exception {
         List<List<String>> sections = Parse.sections(input);
 
-        availablePatterns = Parse.splitOnComma(sections.getFirst().getFirst()).toList().stream()
-                .filter(p -> p.length() > 1)
-                .sorted(comparing(String::length).reversed())
-                .collect(groupingBy(p -> p.charAt(0)));
+        availablePatterns = Parse.splitOnComma(sections.getFirst().getFirst()).toList();
 
         designs = sections.get(1);
 
         cachedMatches = Caffeine.newBuilder()
-                .maximumSize(10_000)
+                .maximumSize(50)
                 .build();
     }
 
     @Override
     protected Object part1(Stream<String> input) {
         return designs.stream()
-                .filter(this::matchAgainstPatterns)
+                .filter(needle -> matchAgainstPatterns(needle, false) > 0)
                 .count(); // Your puzzle answer was 317
     }
 
-    private boolean matchAgainstPatterns(String needle) {
+    @Override
+    protected Object part2(Stream<String> input) throws Exception {
+        cachedMatches.invalidateAll();
+        return designs.stream()
+                .mapToLong(needle -> matchAgainstPatterns(needle, true))
+                .sum(); // Your puzzle answer was 883443544805484
+    }
+
+    private long matchAgainstPatterns(String needle, boolean matchAll) {
         if (needle.isEmpty()) {
-            return true;
+            return 1L;
         }
 
-        Boolean cached = cachedMatches.getIfPresent(needle);
+        Long cached = cachedMatches.getIfPresent(needle);
         if (cached != null) {
             return cached;
         }
 
-        char firstChar = needle.charAt(0);
-        for (String availablePattern : availablePatterns.getOrDefault(firstChar, List.of())) {
+        long count = 0L;
+        for (String availablePattern : availablePatterns) {
             if (needle.startsWith(availablePattern)) {
-                if (matchAgainstPatterns(needle.substring(availablePattern.length()))) {
-                    cachedMatches.put(needle, Boolean.TRUE);
-                    return true;
+                count += matchAgainstPatterns(needle.substring(availablePattern.length()), matchAll);
+                if (count > 0L && !matchAll) {
+                    break;
                 }
             }
         }
 
-        cachedMatches.put(needle, Boolean.FALSE);
-        return false;
+        cachedMatches.put(needle, count);
+        return count;
     }
 }
