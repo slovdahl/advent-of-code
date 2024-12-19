@@ -1,6 +1,7 @@
 package lib;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -9,6 +10,10 @@ import static java.util.stream.Gatherers.windowFixed;
 
 @SuppressWarnings("preview")
 public class Parse {
+
+    public static Stream<String> splitOnComma(String input) {
+        return Arrays.stream(input.split(",")).map(String::trim);
+    }
 
     /**
      * Parses the input as space-separated integers.

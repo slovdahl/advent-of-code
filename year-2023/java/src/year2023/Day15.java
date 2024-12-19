@@ -11,7 +11,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toMap;
-import static lib.Common.splitOnComma;
+import static lib.Parse.splitOnComma;
 
 @SuppressWarnings("unused")
 public class Day15 extends Day {

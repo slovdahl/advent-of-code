@@ -5,7 +5,6 @@ import com.google.common.graph.Graph;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Stream;
@@ -13,10 +12,6 @@ import java.util.stream.Stream;
 import static java.util.stream.Collectors.joining;
 
 public class Common {
-
-    public static Stream<String> splitOnComma(String input) {
-        return Arrays.stream(input.split(","));
-    }
 
     public static String repeatWithDelimiter(String needle, int n, String delimiter) {
         return Stream.generate(() -> needle)
