@@ -170,8 +170,6 @@ public class Day17 extends Day {
         2751 output : [2, 4, 1, 3]
         6816 output : [2, 4, 1, 3, 7]
         6847 output : [2, 4, 1, 3, 7]
-        A: 470000000
-        A: 60000000
         105995885 output : [2, 4, 1, 3, 7, 5, 1, 5, 0]
         105995967 output : [2, 4, 1, 3, 7, 5, 1, 5, 0]
         106126957 output : [2, 4, 1, 3, 7, 5, 1, 5, 0]
@@ -182,7 +180,8 @@ public class Day17 extends Day {
         // tested until 14080000000
         // tested until 20000000000
         // tested until 35300000000
-        return LongStream.iterate(35_300_000_000L, i -> i + 1)
+        // tested until 42400000000
+        return LongStream.iterate(42_400_000_000L, i -> i + 1)
                 .parallel()
                 .map(i -> {
                             if (i % 100_000_000 == 0) {
