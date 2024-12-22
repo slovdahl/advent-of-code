@@ -3,6 +3,8 @@ package lib;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.NoSuchElementException;
 
 public record Coordinate(int row, int column) {
@@ -331,5 +333,18 @@ public record Coordinate(int row, int column) {
             case "L", "<" -> Direction.LEFT;
             default -> throw new IllegalStateException();
         };
+    }
+
+    public static List<Direction> toDirections(List<Coordinate> coordinates) {
+        List<Direction> directions = new ArrayList<>(coordinates.size() - 1);
+
+        List<Coordinate> c = new ArrayList<>(coordinates);
+        Coordinate previous = c.removeFirst();
+        for (Coordinate coordinate : c) {
+            directions.add(previous.directionTo(coordinate));
+            previous = coordinate;
+        }
+
+        return directions;
     }
 }

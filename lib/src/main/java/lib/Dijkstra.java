@@ -3,12 +3,16 @@ package lib;
 import com.google.common.base.MoreObjects;
 import org.jspecify.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.OptionalInt;
+import java.util.Set;
 import java.util.function.Function;
 
 import static com.google.common.base.Preconditions.checkState;
@@ -30,7 +34,7 @@ public class Dijkstra<T extends Dijkstra.MatrixType> {
                 matrix,
                 start,
                 target,
-                (t, d, c1, c2) -> 1
+                (_, _, _, _) -> 1
         );
     }
 
@@ -123,6 +127,49 @@ public class Dijkstra<T extends Dijkstra.MatrixType> {
         }
 
         Matrix.print(System.out, m);
+    }
+
+    public List<Coordinate> getLowestCostPath() {
+        Set<Coordinate> bestPath = new LinkedHashSet<>();
+
+        Node targetNode = visitedNodes.get(target);
+        traverseLowestCostPath(bestPath, targetNode, null, visitedNodes.get(this.start));
+
+        List<Coordinate> list = new ArrayList<>(bestPath);
+        return List.copyOf(list.reversed());
+    }
+
+    private void traverseLowestCostPath(Set<Coordinate> bestPath, Node current, @Nullable Node previous, Node target) {
+        bestPath.add(current.coordinate);
+
+        if (current.equals(target)) {
+            return;
+        }
+
+        // Prefer paths that continue in the same direction as far as possible
+        Node next = null;
+        if (previous != null) {
+            next = current.previous.get(previous.coordinate.directionTo(current.coordinate).opposite());
+        }
+
+        if (next == null) {
+            Iterator<Node> iterator = current.previous.values().iterator();
+            if (!iterator.hasNext()) {
+                throw new IllegalStateException();
+            }
+
+            next = iterator.next();
+        }
+
+        if (bestPath.contains(next.coordinate)) {
+            return;
+        }
+
+        if (!visitedNodes.containsKey(next.coordinate)) {
+            return;
+        }
+
+        traverseLowestCostPath(bestPath, next, current, target);
     }
 
     public static class Node implements Comparable<Node> {
