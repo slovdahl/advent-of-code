@@ -3,6 +3,7 @@ package year2024;
 import lib.Coordinate;
 import lib.Day;
 import lib.Dijkstra;
+import lib.Dijkstra.CharMatrix;
 import lib.Direction;
 import lib.Matrix;
 import lib.QuadFunction;
@@ -23,6 +24,7 @@ public class Day21 extends Day {
     private Coordinate directionalStart;
     private Coordinate numericInvalidPoint;
     private Coordinate numericStart;
+    private Map<Character, Coordinate> directionCharacterPositions;
 
     @Override
     protected Mode mode() {
@@ -67,18 +69,26 @@ public class Day21 extends Day {
         directionalStart = Matrix.findChar(directionalKeypad, 'A');
         numericInvalidPoint = Matrix.findChar(numericKeypad, 'X');
         numericStart = Matrix.findChar(numericKeypad, 'A');
-    }
 
-    @Override
-    protected Object part1(Stream<String> input) {
-        QuadFunction<Dijkstra.CharMatrix, Direction, Coordinate, Coordinate, Integer> costFunction = (charMatrix, direction, current, next) -> {
+        directionCharacterPositions = Map.of(
+                '^', Matrix.findChar(directionalKeypad, '^'),
+                'A', Matrix.findChar(directionalKeypad, 'A'),
+                '<', Matrix.findChar(directionalKeypad, '<'),
+                'v', Matrix.findChar(directionalKeypad, 'v'),
+                '>', Matrix.findChar(directionalKeypad, '>')
+        );
+
+        costFunction = (charMatrix, direction, current, next) -> {
             if (direction != null && current.directionTo(next) == direction) {
                 return 1;
             } else {
                 return 2;
             }
         };
+    }
 
+    @Override
+    protected Object part1(Stream<String> input) {
         Coordinate numericPosition = numericStart;
         Coordinate directionalPosition1 = directionalStart;
         Coordinate directionalPosition2 = directionalStart;
@@ -95,7 +105,7 @@ public class Day21 extends Day {
                 }
                 Coordinate target = Matrix.findChar(numericKeypad, c);
                 var numpadDijkstra = new Dijkstra<>(
-                        new Dijkstra.CharMatrix(numericKeypad, coordinate -> !coordinate.equals(numericInvalidPoint)),
+                        new CharMatrix(numericKeypad, coordinate -> !coordinate.equals(numericInvalidPoint)),
                         numericPosition,
                         target,
                         costFunction
@@ -117,9 +127,9 @@ public class Day21 extends Day {
                     continue;
                 }
 
-                Coordinate targetDirectionChar = Matrix.findChar(directionalKeypad, directionChar);
+                Coordinate targetDirectionChar = directionCharacterPositions.get(directionChar);
                 var directionalDijkstra = new Dijkstra<>(
-                        new Dijkstra.CharMatrix(directionalKeypad, coordinate -> !coordinate.equals(directionalInvalidPoint)),
+                        new CharMatrix(directionalKeypad, coordinate -> !coordinate.equals(directionalInvalidPoint)),
                         directionalPosition1,
                         targetDirectionChar,
                         costFunction
@@ -141,9 +151,9 @@ public class Day21 extends Day {
                     continue;
                 }
 
-                Coordinate targetDirectionChar = Matrix.findChar(directionalKeypad, directionChar);
+                Coordinate targetDirectionChar = directionCharacterPositions.get(directionChar);
                 var directionalDijkstra = new Dijkstra<>(
-                        new Dijkstra.CharMatrix(directionalKeypad, coordinate -> !coordinate.equals(directionalInvalidPoint)),
+                        new CharMatrix(directionalKeypad, coordinate -> !coordinate.equals(directionalInvalidPoint)),
                         directionalPosition2,
                         targetDirectionChar,
                         costFunction
@@ -162,7 +172,7 @@ public class Day21 extends Day {
         }
 
         return result.entrySet().stream()
-                .mapToLong(e -> (long) Integer.parseInt(e.getKey().substring(0, 3)) * e.getValue())
+                .mapToLong(e -> Long.parseLong(e.getKey().substring(0, 3)) * e.getValue())
                 .sum(); // Your puzzle answer was 211930
     }
 
