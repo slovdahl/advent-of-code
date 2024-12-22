@@ -22,7 +22,23 @@ public class Dijkstra<T extends Dijkstra.MatrixType> {
     private final Map<Coordinate, Node> unvisited;
     private final Map<Coordinate, Node> visitedNodes;
 
-    public Dijkstra(T matrix, Coordinate start, Coordinate target, QuadFunction<T, @Nullable Direction, Coordinate, Coordinate, Integer> costFunction) {
+    public Dijkstra(T matrix,
+                    Coordinate start,
+                    Coordinate target) {
+
+        this(
+                matrix,
+                start,
+                target,
+                (t, d, c1, c2) -> 1
+        );
+    }
+
+    public Dijkstra(T matrix,
+                    Coordinate start,
+                    Coordinate target,
+                    QuadFunction<T, @Nullable Direction, Coordinate, Coordinate, Integer> costFunction) {
+
         checkState(start.in(matrix.toCharArray()), "start outside matrix");
         checkState(target.in(matrix.toCharArray()), "target outside matrix");
 
@@ -57,9 +73,9 @@ public class Dijkstra<T extends Dijkstra.MatrixType> {
                     continue;
                 }
 
-                Node from = current.inFrom.get(direction);
-                if (from == null && !current.inFrom.isEmpty()) {
-                    from = current.inFrom.values().stream().findFirst().orElseThrow();
+                Node from = current.previous.get(direction);
+                if (from == null && !current.previous.isEmpty()) {
+                    from = current.previous.values().stream().findFirst().orElseThrow();
                 }
 
                 // Figure out which way we got to the current coordinate
@@ -98,7 +114,7 @@ public class Dijkstra<T extends Dijkstra.MatrixType> {
         Node current = visitedNodes.get(target);
         while (current != null) {
             m[current.coordinate.row()][current.coordinate.column()] = pathCharacter;
-            Iterator<Map.Entry<Direction, Node>> iterator = current.inFrom.entrySet().iterator();
+            Iterator<Map.Entry<Direction, Node>> iterator = current.previous.entrySet().iterator();
             if (iterator.hasNext()) {
                 current = iterator.next().getValue();
             } else {
@@ -112,26 +128,26 @@ public class Dijkstra<T extends Dijkstra.MatrixType> {
     public static class Node implements Comparable<Node> {
 
         private final Coordinate coordinate;
-        private final Map<Direction, Node> inFrom;
+        private final Map<Direction, Node> previous;
         private int cost;
 
         Node(Coordinate coordinate, Node from, Direction inDirection, int cost) {
             this.coordinate = coordinate;
             this.cost = cost;
 
-            inFrom = new EnumMap<>(Direction.class);
+            previous = new EnumMap<>(Direction.class);
             if (from != null && inDirection != null) {
-                inFrom.put(inDirection, from);
+                previous.put(inDirection, from);
             }
         }
 
         void updateCost(Node from, Direction inDirection, int cost) {
             if (cost < this.cost) {
                 this.cost = cost;
-                inFrom.clear();
-                inFrom.put(inDirection, from);
+                previous.clear();
+                previous.put(inDirection, from);
             } else if (cost == this.cost) {
-                inFrom.put(inDirection, from);
+                previous.put(inDirection, from);
             }
         }
 
@@ -156,9 +172,9 @@ public class Dijkstra<T extends Dijkstra.MatrixType> {
         @Override
         public String toString() {
             return MoreObjects.toStringHelper(this)
-                    .add("coordinate", coordinate)
-                    .add("inFrom", inFrom.keySet())
                     .add("cost", cost)
+                    .add("coordinate", coordinate)
+                    .add("previous", previous.keySet())
                     .toString();
         }
     }

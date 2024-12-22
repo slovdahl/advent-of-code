@@ -309,7 +309,7 @@ public record Coordinate(int row, int column) {
                 return Direction.UP;
             }
         } else {
-            throw new IllegalStateException("diagonal directions unsupported");
+            throw new IllegalStateException("diagonal directions unsupported (from " + this + " to " + other + ")");
         }
     }
 
@@ -325,10 +325,10 @@ public record Coordinate(int row, int column) {
 
     public static Direction from(String d) {
         return switch (d) {
-            case "U" -> Direction.UP;
-            case "R" -> Direction.RIGHT;
-            case "D" -> Direction.DOWN;
-            case "L" -> Direction.LEFT;
+            case "U", "^" -> Direction.UP;
+            case "R", ">" -> Direction.RIGHT;
+            case "D", "v" -> Direction.DOWN;
+            case "L", "<" -> Direction.LEFT;
             default -> throw new IllegalStateException();
         };
     }
