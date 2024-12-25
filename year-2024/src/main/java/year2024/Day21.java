@@ -25,6 +25,7 @@ public class Day21 extends Day {
     private Coordinate numericInvalidPoint;
     private Coordinate numericStart;
     private Map<Character, Coordinate> directionCharacterPositions;
+    private QuadFunction<CharMatrix, Direction, Coordinate, Coordinate, Integer> costFunction;
 
     @Override
     protected Mode mode() {
