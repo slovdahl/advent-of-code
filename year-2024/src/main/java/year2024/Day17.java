@@ -1,6 +1,5 @@
 package year2024;
 
-import com.google.common.primitives.Ints;
 import lib.Day;
 import lib.Parse;
 
@@ -10,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
 
@@ -107,7 +105,7 @@ public class Day17 extends Day {
                 // out
                 case 5 -> {
                     // TODO: fix
-                    out.add((int)(comboOperand(operand, registerA, registerB, registerC) % 8));
+                    out.add((int) (comboOperand(operand, registerA, registerB, registerC) % 8));
                     instructionPointer += 2;
                 }
 
@@ -181,10 +179,13 @@ public class Day17 extends Day {
         // tested until 20000000000
         // tested until 35300000000
         // tested until 42400000000
-        return LongStream.iterate(42_400_000_000L, i -> i + 1)
+        // tested until 84400000000
+        // tested until 132200000000
+        // tested until 137400000000
+        return LongStream.iterate(137_400_000_000L, i -> i + 1)
                 .parallel()
                 .map(i -> {
-                            if (i % 100_000_000 == 0) {
+                            if (i % 100_000_000L == 0) {
                                 System.out.println("A: " + i);
                             }
 
@@ -192,7 +193,7 @@ public class Day17 extends Day {
                             long registerB = initialRegisterB;
                             long registerC = initialRegisterC;
                             int instructionPointer = 0;
-                            List<Integer> out = new ArrayList<>();
+                            List<Integer> out = new ArrayList<>(program.size());
 
                             while (true) {
                                 if (instructionPointer >= program.size()) {
@@ -240,9 +241,19 @@ public class Day17 extends Day {
                                         long comboOperand = comboOperand(operand, registerA, registerB, registerC);
                                         out.add((int) (comboOperand % 8));
 
-                                        if (!program.subList(0, out.size()).equals(out) || out.size() > program.size()) {
-                                            // We can fail fast, this output does not match the wanted program
+                                        if (!program.subList(0, out.size()).equals(out)) {
+                                            // We can fail fast, this output will never match the wanted program
                                             return -1;
+                                        }
+
+                                        if (out.size() == program.size() && out.equals(program)) {
+                                            System.out.println(i + " output : " + out);
+                                            return i;
+                                        } else if (out.size() >= program.size()) {
+                                            // We can fail fast, this output will never match the wanted program
+                                            return -1;
+                                        } else if (out.size() > 12) {
+                                            System.out.println(i + " output : " + out);
                                         }
 
                                         instructionPointer += 2;
@@ -264,15 +275,7 @@ public class Day17 extends Day {
                                 }
                             }
 
-                            System.out.println(i + " output : " + out);
-                            if (out.equals(program)) {
-                                return i;
-                            } else {
-                                //if (out.size() > 1) {
-                                //System.out.println("Out: " + out);
-                                //}
-                                return -1;
-                            }
+                            return -1;
                         }
                 )
                 .filter(i -> i >= 0)
