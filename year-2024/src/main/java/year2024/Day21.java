@@ -1,31 +1,39 @@
 package year2024;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import lib.Coordinate;
 import lib.Day;
 import lib.Dijkstra;
 import lib.Dijkstra.CharMatrix;
 import lib.Direction;
 import lib.Matrix;
+import lib.Pair;
 import lib.QuadFunction;
+import lib.Triple;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
+
+import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 
 @SuppressWarnings("unused")
 public class Day21 extends Day {
 
     private List<String> codes;
     private char[][] directionalKeypad;
-    private char[][] numericKeypad;
     private Coordinate directionalInvalidPoint;
     private Coordinate directionalStart;
-    private Coordinate numericInvalidPoint;
-    private Coordinate numericStart;
-    private Map<Character, Coordinate> directionCharacterPositions;
+    private Map<String, Map<Character, List<String>>> numericKeypadMovesPerCode;
     private QuadFunction<CharMatrix, Direction, Coordinate, Coordinate, Integer> costFunction;
+    private Cache<Triple<Integer, Character, List<Coordinate>>, Pair<Long, List<Coordinate>>> cache;
 
     @Override
     protected Mode mode() {
@@ -59,7 +67,7 @@ public class Day21 extends Day {
             | 0 | A |
             +---+---+
          */
-        numericKeypad = new char[][]{
+        char[][] numericKeypad = new char[][]{
                 new char[]{'7', '8', '9'},
                 new char[]{'4', '5', '6'},
                 new char[]{'1', '2', '3'},
@@ -68,16 +76,6 @@ public class Day21 extends Day {
 
         directionalInvalidPoint = Matrix.findChar(directionalKeypad, 'X');
         directionalStart = Matrix.findChar(directionalKeypad, 'A');
-        numericInvalidPoint = Matrix.findChar(numericKeypad, 'X');
-        numericStart = Matrix.findChar(numericKeypad, 'A');
-
-        directionCharacterPositions = Map.of(
-                '^', Matrix.findChar(directionalKeypad, '^'),
-                'A', Matrix.findChar(directionalKeypad, 'A'),
-                '<', Matrix.findChar(directionalKeypad, '<'),
-                'v', Matrix.findChar(directionalKeypad, 'v'),
-                '>', Matrix.findChar(directionalKeypad, '>')
-        );
 
         costFunction = (charMatrix, direction, current, next) -> {
             if (direction != null && current.directionTo(next) == direction) {
@@ -86,22 +84,18 @@ public class Day21 extends Day {
                 return 2;
             }
         };
-    }
 
-    @Override
-    protected Object part1(Stream<String> input) {
-        Coordinate numericPosition = numericStart;
-        Coordinate directionalPosition1 = directionalStart;
-        Coordinate directionalPosition2 = directionalStart;
-
-        Map<String, Integer> result = new HashMap<>();
+        numericKeypadMovesPerCode = new HashMap<>();
+        Coordinate numericPosition = Matrix.findChar(numericKeypad, 'A');
+        Coordinate numericInvalidPoint = Matrix.findChar(numericKeypad, 'X');
 
         for (String code : codes) {
-            List<Character> numericKeypadMoves = new ArrayList<>();
+            Map<Character, List<String>> numericKeypadMoves = new LinkedHashMap<>();
 
             for (char c : code.toCharArray()) {
                 if (numericPosition.at(numericKeypad) == c) {
-                    numericKeypadMoves.add('A');
+                    numericKeypadMoves.computeIfAbsent(c, _ -> new ArrayList<>())
+                            .add("A");
                     continue;
                 }
                 Coordinate target = Matrix.findChar(numericKeypad, c);
@@ -113,73 +107,141 @@ public class Day21 extends Day {
                 );
 
                 numpadDijkstra.findShortestPath().orElseThrow();
-                List<Coordinate> lowestCostPath = numpadDijkstra.getLowestCostPath();
-                List<Character> directionChars = toDirectionChars(Coordinate.toDirections(lowestCostPath));
-                numericKeypadMoves.addAll(directionChars);
-                numericKeypadMoves.add('A');
+
+                for (List<Coordinate> lowestCostPath : numpadDijkstra.getAllLowestCostPaths()) {
+                    List<Character> moves = toDirectionChars(Coordinate.toDirections(lowestCostPath));
+                    moves.add('A');
+
+                    numericKeypadMoves.computeIfAbsent(c, _ -> new ArrayList<>())
+                            .add(moves.stream().map(String::valueOf).collect(joining()));
+                }
 
                 numericPosition = target;
             }
 
-            List<Character> directionalMoves1 = new ArrayList<>();
-            for (Character directionChar : numericKeypadMoves) {
-                if (directionalPosition1.at(directionalKeypad) == directionChar) {
-                    directionalMoves1.add('A');
-                    continue;
-                }
-
-                Coordinate targetDirectionChar = directionCharacterPositions.get(directionChar);
-                var directionalDijkstra = new Dijkstra<>(
-                        new CharMatrix(directionalKeypad, coordinate -> !coordinate.equals(directionalInvalidPoint)),
-                        directionalPosition1,
-                        targetDirectionChar,
-                        costFunction
-                );
-
-                directionalDijkstra.findShortestPath().orElseThrow();
-                List<Coordinate> lowestCostPath = directionalDijkstra.getLowestCostPath();
-                List<Character> directionChars = toDirectionChars(Coordinate.toDirections(lowestCostPath));
-                directionalMoves1.addAll(directionChars);
-                directionalMoves1.add('A');
-
-                directionalPosition1 = targetDirectionChar;
-            }
-
-            List<Character> directionalMoves2 = new ArrayList<>();
-            for (Character directionChar : directionalMoves1) {
-                if (directionalPosition2.at(directionalKeypad) == directionChar) {
-                    directionalMoves2.add('A');
-                    continue;
-                }
-
-                Coordinate targetDirectionChar = directionCharacterPositions.get(directionChar);
-                var directionalDijkstra = new Dijkstra<>(
-                        new CharMatrix(directionalKeypad, coordinate -> !coordinate.equals(directionalInvalidPoint)),
-                        directionalPosition2,
-                        targetDirectionChar,
-                        costFunction
-                );
-
-                directionalDijkstra.findShortestPath().orElseThrow();
-                List<Coordinate> lowestCostPath = directionalDijkstra.getLowestCostPath();
-                List<Character> directionChars = toDirectionChars(Coordinate.toDirections(lowestCostPath));
-                directionalMoves2.addAll(directionChars);
-                directionalMoves2.add('A');
-
-                directionalPosition2 = targetDirectionChar;
-            }
-
-            result.put(code, directionalMoves2.size());
+            numericKeypadMovesPerCode.put(code, numericKeypadMoves);
         }
+
+        cache = Caffeine.newBuilder()
+                .build();
+    }
+
+    @Override
+    protected Object part1(Stream<String> input) {
+        return countSteps(2); // Your puzzle answer was 211930
+    }
+
+    @Override
+    protected Object part2(Stream<String> input) throws Exception {
+        return countSteps(25); // Your puzzle answer was 263492840501566
+    }
+
+    private long countSteps(int keypadsUsedByRobots) {
+        Map<String, Long> result = codes.stream()
+                .map(code -> {
+                    List<Coordinate> robotPositions = IntStream.range(0, keypadsUsedByRobots)
+                            .mapToObj(_ -> directionalStart)
+                            .collect(toList());
+
+                    long steps = 0;
+
+                    for (var entry : numericKeypadMovesPerCode.get(code).entrySet()) {
+                        Character numericKeypadKey = entry.getKey();
+                        List<String> candidatesForMove = entry.getValue();
+
+                        long lowestSteps = Long.MAX_VALUE;
+
+                        for (String candidate : candidatesForMove) {
+                            long candidateSteps = 0L;
+                            for (char numericKeypadMove : candidate.toCharArray()) {
+                                candidateSteps += recurse(keypadsUsedByRobots, numericKeypadMove, robotPositions);
+                            }
+                            lowestSteps = Math.min(lowestSteps, candidateSteps);
+                        }
+
+                        steps += lowestSteps;
+                    }
+
+                    return Pair.of(code, steps);
+                })
+                .collect(toMap(Pair::first, Pair::second));
 
         return result.entrySet().stream()
                 .mapToLong(e -> Long.parseLong(e.getKey().substring(0, 3)) * e.getValue())
-                .sum(); // Your puzzle answer was 211930
+                .sum();
+    }
+
+    private long recurse(int n, Character move, List<Coordinate> positions) {
+        // Cannot use LoadingCache or cache.get(key, function) because of the recursive nature
+        // of the algorithm.
+        List<Coordinate> positionsForN = List.copyOf(positions.subList(0, n));
+        Triple<Integer, Character, List<Coordinate>> cacheKey = Triple.of(n, move, positionsForN);
+        Pair<Long, List<Coordinate>> result = cache.getIfPresent(cacheKey);
+
+        long steps;
+        List<Coordinate> updatedPositions;
+        if (result != null) {
+            steps = result.first();
+            updatedPositions = result.second();
+        } else {
+            updatedPositions = new ArrayList<>(positionsForN);
+            steps = doRecurse(n, move, updatedPositions);
+            cache.put(cacheKey, Pair.of(steps, List.copyOf(updatedPositions)));
+        }
+
+        for (int i = 0; i < updatedPositions.size(); i++) {
+            positions.set(i, updatedPositions.get(i));
+        }
+
+        return steps;
+    }
+
+    private long doRecurse(int n, Character move, List<Coordinate> positions) {
+        if (move == null) {
+            throw new IllegalArgumentException("Move must not be null");
+        }
+        if (n == 0) {
+            return 1L;
+        }
+
+        Coordinate position = positions.get(n - 1);
+
+        if (position.at(directionalKeypad) == move) {
+            return recurse(n - 1, 'A', positions);
+        }
+
+        Coordinate targetDirectionChar = Matrix.findChar(directionalKeypad, move);
+        var dijkstra = new Dijkstra<>(
+                new CharMatrix(directionalKeypad, coordinate -> !coordinate.equals(directionalInvalidPoint)),
+                position,
+                targetDirectionChar,
+                costFunction
+        );
+
+        dijkstra.findAllShortestPaths().orElseThrow();
+
+        long lowestSteps = Long.MAX_VALUE;
+
+        for (List<Coordinate> lowestCostPath : dijkstra.getAllLowestCostPaths()) {
+            List<Character> directionChars = toDirectionChars(Coordinate.toDirections(lowestCostPath));
+            directionChars.add('A');
+
+            long steps = 0;
+            for (Character ch : directionChars) {
+                steps += recurse(n - 1, ch, positions);
+            }
+
+            lowestSteps = Math.min(lowestSteps, steps);
+        }
+
+        positions.set(n - 1, targetDirectionChar);
+
+        return lowestSteps;
     }
 
     private static List<Character> toDirectionChars(List<Direction> directions) {
         return directions.stream()
                 .map(Direction::toChar)
-                .toList();
+                .collect(toList());
     }
 }
