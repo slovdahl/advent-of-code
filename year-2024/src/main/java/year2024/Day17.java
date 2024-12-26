@@ -182,7 +182,9 @@ public class Day17 extends Day {
         // tested until 84400000000
         // tested until 132200000000
         // tested until 137400000000
-        return LongStream.iterate(137_400_000_000L, i -> i + 1)
+        // tested until 169800000000
+        // tested until 283800000000
+        return LongStream.iterate(283_800_000_000L, i -> i + 1)
                 .parallel()
                 .map(i -> {
                             if (i % 100_000_000L == 0) {
@@ -286,9 +288,10 @@ public class Day17 extends Day {
     private static long comboOperand(int operand, long registerA, long registerB, long registerC) {
         return switch (operand) {
             case 0, 1, 2, 3 -> operand;
-            case 4 -> BigInteger.valueOf(registerA).longValueExact();
-            case 5 -> BigInteger.valueOf(registerB).longValueExact();
-            case 6 -> BigInteger.valueOf(registerC).longValueExact();
+            //case 4 -> BigInteger.valueOf(registerA).longValueExact();
+            case 4 -> registerA;
+            case 5 -> registerB;
+            case 6 -> registerC;
             default -> throw new IllegalStateException("Unexpected value: " + operand);
         };
     }
