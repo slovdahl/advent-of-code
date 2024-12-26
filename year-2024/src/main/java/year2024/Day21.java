@@ -13,7 +13,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -147,8 +146,8 @@ public class Day21 extends Day {
                 .collect(toList());
 
         // Moves after an A press on the numeric keypad will always be the same,
-        // because the directional keypads are all lines up on A.
-        Map<Character, Long> firstMoveCache = new HashMap<>();
+        // because the directional keypads are all lined up on A.
+        Map<Character, Pair<Long, List<Coordinate>>> firstMoveCache = new HashMap<>();
 
         Map<String, Long> result = new HashMap<>();
 
@@ -156,27 +155,23 @@ public class Day21 extends Day {
             long steps = 0;
             char previous = 'X';
             for (Character numericKeypadMove : numericKeypadMovesPerCode.get(code)) {
-                Long cachedSteps = null;
+                Pair<Long, List<Coordinate>> cachedSteps = null;
                 if (previous == 'A') {
                     cachedSteps = firstMoveCache.get(numericKeypadMove);
-                    System.out.println("Cache: " + cachedSteps);
                 }
 
-                long moveSteps = Objects.requireNonNullElseGet(
-                        cachedSteps,
-                        () -> recurse(keypadsUsedByRobots, numericKeypadMove, robotPositions)
-                );
+                long moveSteps;
+                if (cachedSteps != null) {
+                    moveSteps = cachedSteps.first();
+                    robotPositions = cachedSteps.second();
+                } else {
+                    moveSteps = recurse(keypadsUsedByRobots, numericKeypadMove, robotPositions);
+                }
 
                 steps += moveSteps;
                 System.out.println("Code: " + code + " move " + numericKeypadMove + " steps " + moveSteps + " total " + steps);
                 if (cachedSteps == null && (previous == 'A' || previous == 'X')) {
-                    firstMoveCache.put(numericKeypadMove, moveSteps);
-                }
-
-                if (numericKeypadMove == 'A') {
-                    // TODO: at this point, shouldn't each directional keypad robot point at A?
-                    // TODO: because we want the numeric keypad button activated, every single one
-                    // TODO: should be lined up at A. but doesn't seem to be the case.. bug?
+                    firstMoveCache.put(numericKeypadMove, Pair.of(moveSteps, new ArrayList<>(robotPositions)));
                 }
 
                 previous = numericKeypadMove;
