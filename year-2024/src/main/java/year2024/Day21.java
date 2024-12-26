@@ -13,10 +13,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 
 @SuppressWarnings("unused")
 public class Day21 extends Day {
@@ -121,30 +124,6 @@ public class Day21 extends Day {
                 .mapToObj(_ -> directionalStart)
                 .collect(toList());
 
-        Map<String, Long> result = new HashMap<>();
-
-        for (String code : codes) {
-            long steps = 0;
-            for (Character numericKeypadMove : numericKeypadMovesPerCode.get(code)) {
-                steps += recurse(keypadsUsedByRobots, numericKeypadMove, robotPositions);
-            }
-
-            result.put(code, steps);
-        }
-
-        return result.entrySet().stream()
-                .mapToLong(e -> Long.parseLong(e.getKey().substring(0, 3)) * e.getValue())
-                .sum(); // Your puzzle answer was 211930
-    }
-
-    @Override
-    protected Object part2(Stream<String> input) throws Exception {
-        int keypadsUsedByRobots = 25;
-
-        List<Coordinate> robotPositions = IntStream.range(0, keypadsUsedByRobots)
-                .mapToObj(_ -> directionalStart)
-                .collect(toList());
-
         // Moves after an A press on the numeric keypad will always be the same,
         // because the directional keypads are all lined up on A.
         Map<Character, Pair<Long, List<Coordinate>>> firstMoveCache = new HashMap<>();
@@ -163,15 +142,16 @@ public class Day21 extends Day {
                 long moveSteps;
                 if (cachedSteps != null) {
                     moveSteps = cachedSteps.first();
-                    robotPositions = cachedSteps.second();
+                    robotPositions.clear();
+                    robotPositions.addAll(cachedSteps.second());
                 } else {
                     moveSteps = recurse(keypadsUsedByRobots, numericKeypadMove, robotPositions);
                 }
 
                 steps += moveSteps;
-                System.out.println("Code: " + code + " move " + numericKeypadMove + " steps " + moveSteps + " total " + steps);
+                //System.out.println("Code: " + code + " move " + numericKeypadMove + " steps " + moveSteps + " total " + steps);
                 if (cachedSteps == null && (previous == 'A' || previous == 'X')) {
-                    firstMoveCache.put(numericKeypadMove, Pair.of(moveSteps, new ArrayList<>(robotPositions)));
+                    firstMoveCache.put(numericKeypadMove, Pair.of(moveSteps, List.copyOf(robotPositions)));
                 }
 
                 previous = numericKeypadMove;
@@ -180,6 +160,56 @@ public class Day21 extends Day {
             System.out.println("Code: " + code + ", steps: " + steps);
             result.put(code, steps);
         }
+
+        return result.entrySet().stream()
+                .mapToLong(e -> Long.parseLong(e.getKey().substring(0, 3)) * e.getValue())
+                .sum(); // Your puzzle answer was 211930
+    }
+
+    @Override
+    protected Object part2(Stream<String> input) throws Exception {
+        int keypadsUsedByRobots = 25;
+
+        // Moves after an A press on the numeric keypad will always be the same,
+        // because the directional keypads are all lined up on A.
+        ConcurrentMap<Character, Pair<Long, List<Coordinate>>> firstMoveCache = new ConcurrentHashMap<>();
+
+        Map<String, Long> result = codes.parallelStream()
+                .map(code -> {
+                    List<Coordinate> robotPositions = IntStream.range(0, keypadsUsedByRobots)
+                            .mapToObj(_ -> directionalStart)
+                            .collect(toList());
+
+                    long steps = 0;
+                    char previous = 'X';
+                    for (Character numericKeypadMove : numericKeypadMovesPerCode.get(code)) {
+                        Pair<Long, List<Coordinate>> cachedSteps = null;
+                        if (previous == 'A') {
+                            cachedSteps = firstMoveCache.get(numericKeypadMove);
+                        }
+
+                        long moveSteps;
+                        if (cachedSteps != null) {
+                            moveSteps = cachedSteps.first();
+                            robotPositions.clear();
+                            robotPositions.addAll(cachedSteps.second());
+                        } else {
+                            moveSteps = recurse(keypadsUsedByRobots, numericKeypadMove, robotPositions);
+                        }
+
+                        steps += moveSteps;
+                        System.out.println("Code: " + code + " move " + numericKeypadMove + " steps " + moveSteps + " total " + steps);
+                        if (cachedSteps == null && (previous == 'A' || previous == 'X')) {
+                            firstMoveCache.put(numericKeypadMove, Pair.of(moveSteps, List.copyOf(robotPositions)));
+                        }
+
+                        previous = numericKeypadMove;
+                    }
+
+                    System.out.println("Code: " + code + ", steps: " + steps);
+                    return Pair.of(code, steps);
+                })
+                .collect(toMap(Pair::first, Pair::second));
 
         return result.entrySet().stream()
                 .mapToLong(e -> Long.parseLong(e.getKey().substring(0, 3)) * e.getValue())
