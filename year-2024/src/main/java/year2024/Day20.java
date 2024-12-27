@@ -10,8 +10,9 @@ import lib.Matrix;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static java.util.stream.Collectors.toUnmodifiableSet;
 
 @SuppressWarnings("unused")
 public class Day20 extends Day {
@@ -63,11 +64,11 @@ public class Day20 extends Day {
                         }
                     }
                 })
-                .collect(Collectors.toUnmodifiableSet());
+                .collect(toUnmodifiableSet());
 
         ThreadLocal<char[][]> cheatMaps = ThreadLocal.withInitial(() -> Matrix.deepClone(this.map));
 
-        List<Integer> cheatedRacesFasterThanNormal = cheats.parallelStream()
+        return cheats.parallelStream()
                 .map(cheat -> {
                     char[][] cheatMap = cheatMaps.get();
                     char old = cheat.at(map);
@@ -85,11 +86,6 @@ public class Day20 extends Day {
 
                     return cheatRaceTime;
                 })
-                .filter(cheatRaceTime -> cheatRaceTime < raceTime)
-                .toList();
-
-        return cheatedRacesFasterThanNormal
-                .parallelStream()
                 .filter(cheatRaceTime -> raceTime - cheatRaceTime >= 100)
                 .count(); // Your puzzle answer was 1395
     }
