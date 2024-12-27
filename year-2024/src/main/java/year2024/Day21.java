@@ -298,6 +298,13 @@ public class Day21 extends Day {
         Code: 382A, steps: 98217357614
 
         -> Complexity = 300043033609508
+
+        Parallelized:
+        ==========================================================
+         Part    2
+         Time    23.70 min
+         Result  300043033609508
+        ==========================================================
          */
 
         /*
@@ -407,7 +414,7 @@ public class Day21 extends Day {
             List<Character> directionChars = toDirectionChars(Coordinate.toDirections(lowestCostPath));
             directionChars.add('A');
 
-            return Pair.of(targetDirectionChar, directionChars);
+            return Pair.of(targetDirectionChar, List.copyOf(directionChars));
         });
 
         positions.set(n - 1, r.first());
