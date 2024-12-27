@@ -89,4 +89,13 @@ public class Day20 extends Day {
                 .filter(cheatRaceTime -> raceTime - cheatRaceTime >= 100)
                 .count(); // Your puzzle answer was 1395
     }
+
+    @Override
+    protected Object part2(Stream<String> input) {
+        // TODO: how to figure out cheat candidates?
+        // TODO: loop through all race track coordinates, +-20 row/column and trace the path to
+        // TODO: other coordinates on the race track.
+
+        return 0;
+    }
 }
