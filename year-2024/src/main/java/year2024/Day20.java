@@ -7,16 +7,20 @@ import lib.Dijkstra.CharMatrix;
 import lib.Direction;
 import lib.Matrix;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @SuppressWarnings("unused")
 public class Day20 extends Day {
 
     private char[][] map;
+    private Coordinate start;
+    private Coordinate end;
+    private int raceTime;
+    private List<Coordinate> raceTrack;
 
     @Override
     protected Mode mode() {
@@ -26,12 +30,8 @@ public class Day20 extends Day {
     @Override
     protected void prepare(Stream<String> input) {
         map = Matrix.matrix(input.toList());
-    }
-
-    @Override
-    protected Object part1(Stream<String> input) {
-        Coordinate start = Matrix.findChar(map, 'S');
-        Coordinate end = Matrix.findChar(map, 'E');
+        start = Matrix.findChar(map, 'S');
+        end = Matrix.findChar(map, 'E');
 
         Dijkstra<CharMatrix> dijkstra = new Dijkstra<>(
                 new CharMatrix(map, coordinate -> coordinate.at(map) != '#'),
@@ -39,44 +39,58 @@ public class Day20 extends Day {
                 end
         );
 
-        int normalPicoseconds = dijkstra.traverse().orElseThrow();
-        List<Coordinate> raceTrack = dijkstra.getLowestCostPath();
+        raceTime = dijkstra.traverse().orElseThrow();
+        raceTrack = dijkstra.getLowestCostPath();
+    }
 
-        List<Coordinate> cheats = new ArrayList<>();
-        for (Coordinate c : raceTrack) {
-            for (Direction direction : Direction.ALL) {
-                Coordinate cheatCandidate = c.tryMove(map, direction);
-                if (cheatCandidate == null || cheatCandidate.at(map) != '#') {
-                    continue;
-                }
+    @Override
+    protected Object part1(Stream<String> input) {
+        Set<Coordinate> cheats = raceTrack.parallelStream()
+                .mapMulti((Coordinate c, Consumer<Coordinate> consumer) -> {
+                    for (Direction direction : Direction.ALL) {
+                        Coordinate cheatCandidate = c.tryMove(map, direction);
+                        if (cheatCandidate == null || cheatCandidate.at(map) != '#') {
+                            continue;
+                        }
 
-                Coordinate nextAfterCheatCandidate = cheatCandidate.tryMove(map, direction);
-                if (nextAfterCheatCandidate != null && nextAfterCheatCandidate.at(map) == '.') {
-                    cheats.add(cheatCandidate);
-                }
-            }
-        }
+                        Coordinate nextAfterCheatCandidate = cheatCandidate.tryMove(map, direction);
+                        if (nextAfterCheatCandidate == null) {
+                            continue;
+                        }
 
-        Map<Coordinate, Integer> savedTimePerCheat = new HashMap<>();
-        for (Coordinate cheat : cheats) {
-            char[][] cheatMap = Matrix.deepClone(this.map);
-            cheat.set(cheatMap, '.');
+                        if (nextAfterCheatCandidate.at(map) == '.' || nextAfterCheatCandidate.at(map) == 'E') {
+                            consumer.accept(cheatCandidate);
+                        }
+                    }
+                })
+                .collect(Collectors.toUnmodifiableSet());
 
-            Dijkstra<CharMatrix> cheatDijkstra = new Dijkstra<>(
-                    new CharMatrix(cheatMap, coordinate -> coordinate.at(cheatMap) != '#'),
-                    start,
-                    end
-            );
+        ThreadLocal<char[][]> cheatMaps = ThreadLocal.withInitial(() -> Matrix.deepClone(this.map));
 
-            int cheatPicoseconds = cheatDijkstra.traverse().orElseThrow();
+        List<Integer> cheatedRacesFasterThanNormal = cheats.parallelStream()
+                .map(cheat -> {
+                    char[][] cheatMap = cheatMaps.get();
+                    char old = cheat.at(map);
+                    cheat.set(cheatMap, '.');
 
-            if (cheatPicoseconds < normalPicoseconds) {
-                savedTimePerCheat.put(cheat, normalPicoseconds - cheatPicoseconds);
-            }
-        }
+                    Dijkstra<CharMatrix> cheatDijkstra = new Dijkstra<>(
+                            new CharMatrix(cheatMap, coordinate -> coordinate.at(cheatMap) != '#'),
+                            start,
+                            end
+                    );
 
-        return savedTimePerCheat.values().stream()
-                .filter(savedTime -> savedTime >= 100)
+                    int cheatRaceTime = cheatDijkstra.traverse().orElseThrow();
+
+                    cheat.set(cheatMap, old);
+
+                    return cheatRaceTime;
+                })
+                .filter(cheatRaceTime -> cheatRaceTime < raceTime)
+                .toList();
+
+        return cheatedRacesFasterThanNormal
+                .parallelStream()
+                .filter(cheatRaceTime -> raceTime - cheatRaceTime >= 100)
                 .count(); // Your puzzle answer was 1395
     }
 }
