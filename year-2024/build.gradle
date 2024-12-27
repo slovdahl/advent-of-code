@@ -15,7 +15,12 @@ java {
 
 application {
     mainClass = 'year2024.App'
-    applicationDefaultJvmArgs = ['-Djansi.passthrough=true']
+    applicationDefaultJvmArgs = [
+            '-Djansi.passthrough=true',
+
+            // For day 20 Dijkstra recursion
+            '-Xss8m',
+    ]
 }
 
 tasks.withType(JavaCompile).configureEach {
