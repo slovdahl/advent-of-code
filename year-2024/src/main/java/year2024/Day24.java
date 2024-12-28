@@ -2,11 +2,14 @@ package year2024;
 
 import lib.Day;
 import lib.Parse;
+import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -81,7 +84,20 @@ public class Day24 extends Day {
         long expectedZ = initialValue("x") + initialValue("y");
 
         // TODO: compare with zOutputs
-        for (char c : Long.toBinaryString(expectedZ).toCharArray()) {
+        List<Integer> reversedZ = zOutputs.reversed();
+        char[] expectedZBinary = Long.toBinaryString(expectedZ).toCharArray();
+        List<Integer> differingBits = new ArrayList<>();
+        for (int i = 0; i < reversedZ.size(); i++) {
+            if (reversedZ.get(i) != Character.digit(expectedZBinary[i], 10)) {
+                differingBits.add(i);
+            }
+        }
+
+        Set<Gate> candidateGates = new LinkedHashSet<>();
+        for (Integer differingBit : differingBits) {
+            Gate gate = outputToGate.get("z%02d".formatted(differingBit));
+
+            findConnectionsRecursively(gate, candidateGates);
         }
 
         return 0;
@@ -120,6 +136,17 @@ public class Day24 extends Day {
         int result = gate.op.invoke(input1, input2);
         wireValues.put(gate.output, result);
         return result;
+    }
+
+    private void findConnectionsRecursively(@Nullable Gate gate, Set<Gate> gates) {
+        if (gate == null) {
+            return;
+        }
+
+        gates.add(gate);
+
+        findConnectionsRecursively(outputToGate.get(gate.input1), gates);
+        findConnectionsRecursively(outputToGate.get(gate.input2), gates);
     }
 
     private static long littleEndianBitsToLong(List<Integer> bits) {
