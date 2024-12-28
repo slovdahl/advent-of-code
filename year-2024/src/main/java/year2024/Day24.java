@@ -22,6 +22,7 @@ public class Day24 extends Day {
 
     private Map<String, Gate> outputToGate;
     private Map<String, Integer> wireValues;
+    private List<Integer> zOutputs;
 
     @Override
     protected Mode mode() {
@@ -62,24 +63,42 @@ public class Day24 extends Day {
 
     @Override
     protected Object part1(Stream<String> input) {
-        List<Integer> outputs = new ArrayList<>();
+        zOutputs = new ArrayList<>();
         for (int i = 0; i < 64; i++) {
             Gate gate = outputToGate.get("z%02d".formatted(i));
             if (gate == null) {
                 break;
             }
 
-            outputs.add(invokeRecursively(gate));
+            zOutputs.add(invokeRecursively(gate));
         }
 
-        return Long.parseLong(
-                outputs
-                        .reversed()
-                        .stream()
-                        .map(String::valueOf)
-                        .collect(joining("")),
-                2
-        );
+        return littleEndianBitsToLong(zOutputs); // Your puzzle answer was 69201640933606
+    }
+
+    @Override
+    protected Object part2(Stream<String> input) throws Exception {
+        long expectedZ = initialValue("x") + initialValue("y");
+
+        // TODO: compare with zOutputs
+        for (char c : Long.toBinaryString(expectedZ).toCharArray()) {
+        }
+
+        return 0;
+    }
+
+    private long initialValue(String inputVariable) {
+        List<Integer> outputs = new ArrayList<>();
+        for (int i = 0; i < 64; i++) {
+            Integer value = wireValues.get(inputVariable + "%02d".formatted(i));
+            if (value == null) {
+                break;
+            }
+
+            outputs.add(value);
+        }
+
+        return littleEndianBitsToLong(outputs);
     }
 
     private int invokeRecursively(Gate gate) {
@@ -101,6 +120,17 @@ public class Day24 extends Day {
         int result = gate.op.invoke(input1, input2);
         wireValues.put(gate.output, result);
         return result;
+    }
+
+    private static long littleEndianBitsToLong(List<Integer> bits) {
+        return Long.parseLong(
+                bits
+                        .reversed()
+                        .stream()
+                        .map(String::valueOf)
+                        .collect(joining("")),
+                2
+        );
     }
 
     private record Gate(String input1, Op op, String input2, String output) {
