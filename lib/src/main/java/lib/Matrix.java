@@ -165,6 +165,17 @@ public class Matrix {
         throw new IllegalStateException("No " + needle + " found in matrix");
     }
 
+    public static Set<Integer> findChars(char[] haystack, char needle) {
+        Set<Integer> result = new HashSet<>();
+        for (int column = 0; column < haystack.length; column++) {
+            if (haystack[column] == needle) {
+                result.add(column);
+            }
+        }
+
+        return result;
+    }
+
     public static boolean findRight(String needle, char[][] matrix, int i, int j) {
         if (matrix[i].length <= j + (needle.length() - 1)) {
             return false;
@@ -347,30 +358,38 @@ public class Matrix {
         System.out.println();
     }
 
-    public static void rotateRight(char[][] matrix) {
-        // determines the transpose of the matrix
-        for (int i = 0; i < matrix.length; i++) {
-            for (int j = i; j < matrix.length; j++) {
-                char temp = matrix[i][j];
-                matrix[i][j] = matrix[j][i];
-                matrix[j][i] = temp;
+    public static char[][] rotateRight(char[][] matrix, int n) {
+        if (n % 4 == 0) {
+            return matrix;
+        }
+
+        for (int count = 0; count < (n % 4); count++) {
+            // determines the transpose of the matrix
+            for (int i = 0; i < matrix.length; i++) {
+                for (int j = i; j < matrix.length; j++) {
+                    char temp = matrix[i][j];
+                    matrix[i][j] = matrix[j][i];
+                    matrix[j][i] = temp;
+                }
+            }
+
+            // then we reverse the elements of each row
+            for (int i = 0; i < matrix.length; i++) {
+                // logic to reverse each row i.e. 1D Array
+                int low = 0;
+                int high = matrix.length - 1;
+
+                while (low < high) {
+                    char temp = matrix[i][low];
+                    matrix[i][low] = matrix[i][high];
+                    matrix[i][high] = temp;
+                    low++;
+                    high--;
+                }
             }
         }
 
-        // then we reverse the elements of each row
-        for (int i = 0; i < matrix.length; i++) {
-            // logic to reverse each row i.e. 1D Array
-            int low = 0;
-            int high = matrix.length - 1;
-
-            while (low < high) {
-                char temp = matrix[i][low];
-                matrix[i][low] = matrix[i][high];
-                matrix[i][high] = temp;
-                low++;
-                high--;
-            }
-        }
+        return matrix;
     }
 
     public static int manhattanDistance(int row1, int column1,
