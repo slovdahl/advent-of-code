@@ -43,8 +43,8 @@ public class Dijkstra<T extends Dijkstra.MatrixType> {
                     Coordinate target,
                     QuadFunction<T, @Nullable Direction, Coordinate, Coordinate, Integer> costFunction) {
 
-        checkState(start.in(matrix.toCharArray()), "start outside matrix");
-        checkState(target.in(matrix.toCharArray()), "target outside matrix");
+        checkState(matrix.contains(start), "start outside matrix");
+        checkState(matrix.contains(target), "target outside matrix");
 
         this.matrix = matrix;
         this.start = start;
@@ -235,6 +235,8 @@ public class Dijkstra<T extends Dijkstra.MatrixType> {
 
         int columns();
 
+        boolean contains(Coordinate coordinate);
+
         char[][] toCharArray();
     }
 
@@ -266,6 +268,11 @@ public class Dijkstra<T extends Dijkstra.MatrixType> {
         @Override
         public int columns() {
             return matrix[0].length;
+        }
+
+        @Override
+        public boolean contains(Coordinate coordinate) {
+            return coordinate.in(matrix);
         }
 
         @Override
@@ -301,6 +308,11 @@ public class Dijkstra<T extends Dijkstra.MatrixType> {
         @Override
         public int columns() {
             return matrix[0].length;
+        }
+
+        @Override
+        public boolean contains(Coordinate coordinate) {
+            return coordinate.in(matrix);
         }
 
         @Override
