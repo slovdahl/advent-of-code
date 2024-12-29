@@ -1,6 +1,8 @@
 package lib;
 
 import com.google.common.base.Stopwatch;
+import com.google.common.base.Strings;
+import org.jspecify.annotations.Nullable;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -36,20 +38,20 @@ public abstract class Day {
 
         prepare(input);
 
-        result("prepare", "OK");
+        result(Part.PREPARE, "OK");
     }
 
     private void runPart1(Stream<String> input) throws Exception {
         timePart1();
 
-        result("1", part1(input));
+        result(Part.PART_1, part1(input));
     }
 
     private void runPart2(Stream<String> input) throws Exception {
         timePart2();
 
         try {
-            result("2", part2(input));
+            result(Part.PART_2, part2(input));
         } catch (UnsupportedOperationException ignore) {
             // ignore, not yet implemented
         }
@@ -85,21 +87,54 @@ public abstract class Day {
         PART2_TIMING.set(Stopwatch.createStarted());
     }
 
-    private void result(String part, Object result) {
+    private void result(Part part, @Nullable Object result) {
         Stopwatch stopwatch = switch (part) {
-            case "prepare" -> PREPARE_TIMING.get().stop();
-            case "1" -> PART1_TIMING.get().stop();
-            case "2" -> PART2_TIMING.get().stop();
-            default -> throw new IllegalArgumentException("Unknown part: " + part);
+            case PREPARE -> PREPARE_TIMING.get().stop();
+            case PART_1 -> PART1_TIMING.get().stop();
+            case PART_2 -> PART2_TIMING.get().stop();
         };
 
-        System.out.printf("""
-                ==========================================================
-                 Part    %s
-                 Time    %s
-                 Result  %s
-                ==========================================================
-                %n""", part, stopwatch, result);
+        String partString = switch (part) {
+            case PREPARE -> "Preparation";
+            case PART_1 -> "Part 1";
+            case PART_2 -> "Part 2";
+        };
+
+        String resultString = Strings.nullToEmpty(String.valueOf(result));
+
+        int dividerLength = Math.max(19, 10 + resultString.length());
+        int headerPrefixLength = (dividerLength - partString.length() - 2) / 2;
+        int headerPostfixLength = headerPrefixLength;
+        if (headerPrefixLength + headerPostfixLength + partString.length() + 2 < dividerLength) {
+            headerPostfixLength++;
+        }
+
+        if (part == Part.PREPARE) {
+            System.out.printf("""
+                            %4$s %1$s %5$s
+                             Time    %2$s
+                            %6$s
+                            %n""",
+                    partString,
+                    stopwatch,
+                    result,
+                    Strings.repeat("=", headerPrefixLength),
+                    Strings.repeat("=", headerPostfixLength),
+                    Strings.repeat("-", dividerLength));
+        } else {
+            System.out.printf("""
+                            %4$s %1$s %5$s
+                             Time    %2$s
+                             Result  %3$s
+                            %6$s
+                            %n""",
+                    partString,
+                    stopwatch,
+                    result,
+                    Strings.repeat("=", headerPrefixLength),
+                    Strings.repeat("=", headerPostfixLength),
+                    Strings.repeat("-", dividerLength));
+        }
     }
 
     private static Stream<String> readSampleInputLinesFor(int year, int day) throws IOException {
@@ -137,8 +172,14 @@ public abstract class Day {
         return Files.lines(filePath);
     }
 
+    private enum Part {
+        PREPARE,
+        PART_1,
+        PART_2
+    }
+
     public enum Mode {
         SAMPLE_INPUT,
-        REAL_INPUT;
+        REAL_INPUT
     }
 }
