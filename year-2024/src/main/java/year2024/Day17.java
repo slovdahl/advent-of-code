@@ -1,9 +1,9 @@
 package year2024;
 
+import com.google.common.primitives.Ints;
 import lib.Day;
 import lib.Parse;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -71,7 +71,7 @@ public class Day17 extends Day {
             switch (instruction) {
                 // adv
                 case 0 -> {
-                    registerA = registerA / (int) Math.pow(2, comboOperand(operand, registerA, registerB, registerC));
+                    registerA = division(operand, registerA, registerB, registerC);
                     instructionPointer += 2;
                 }
 
@@ -104,20 +104,20 @@ public class Day17 extends Day {
 
                 // out
                 case 5 -> {
-                    // TODO: fix
-                    out.add((int) (comboOperand(operand, registerA, registerB, registerC) % 8));
+                    long comboOperand = comboOperand(operand, registerA, registerB, registerC);
+                    out.add((int) (comboOperand % 8));
                     instructionPointer += 2;
                 }
 
                 // bdv
                 case 6 -> {
-                    registerB = registerA / (int) Math.pow(2, comboOperand(operand, registerA, registerB, registerC));
+                    registerB = division(operand, registerA, registerB, registerC);
                     instructionPointer += 2;
                 }
 
                 // cdv
                 case 7 -> {
-                    registerC = registerA / (int) Math.pow(2, comboOperand(operand, registerA, registerB, registerC));
+                    registerC = division(operand, registerA, registerB, registerC);
                     instructionPointer += 2;
                 }
 
@@ -174,6 +174,57 @@ public class Day17 extends Day {
         106127039 output : [2, 4, 1, 3, 7, 5, 1, 5, 0]
          */
 
+        /*
+        A = 6816
+        B = 0
+        C = 0
+
+        1. B = A % 8        => B = 0
+        2. B = B ^ 3        => B = 3
+        3. C = A / (2^B)    => C = 852
+        4. B = B ^ 5        => B = 6
+        5. A = A / (2^3)    => A = 852
+        6. B = B ^ C        => B = 850
+        7. out B % 8        => 2
+        8. jmp 1
+
+        1. B = A % 8        => B = 4
+        2. B = B ^ 3        => B = 7
+        3. C = A / (2^B)    => C = 6
+        4. B = B ^ 5        => B = 2
+        5. A = A / (2^3)    => A = 106
+        6. B = B ^ C        => B = 4
+        7. out B % 8        => 4
+        8. jmp 1
+
+        1. B = A % 8        => B = 2
+        2. B = B ^ 3        => B = 1
+        3. C = A / (2^B)    => C = 53
+        4. B = B ^ 5        => B = 4
+        5. A = A / (2^3)    => A = 13
+        6. B = B ^ C        => B = 49
+        7. out B % 8        => 1
+        8. jmp 1
+
+        1. B = A % 8        => B = 5
+        2. B = B ^ 3        => B = 6
+        3. C = A / (2^B)    => C = 0
+        4. B = B ^ 5        => B = 3
+        5. A = A / (2^3)    => A = 1
+        6. B = B ^ C        => B = 3
+        7. out B % 8        => 3
+        8. jmp 1
+
+        1. B = A % 8        => B = 1
+        2. B = B ^ 3        => B = 2
+        3. C = A / (2^B)    => C = 0
+        4. B = B ^ 5        => B = 7
+        5. A = A / (2^3)    => A = 0
+        6. B = B ^ C        => B = 7
+        7. out B % 8        => 7
+        8. no jmp           => exit
+         */
+
         // tested until 13180000000
         // tested until 14080000000
         // tested until 20000000000
@@ -184,8 +235,93 @@ public class Day17 extends Day {
         // tested until 137400000000
         // tested until 169800000000
         // tested until 283800000000
-        return LongStream.iterate(283_800_000_000L, i -> i + 1)
+        // tested until 297000000000
+        // tested until 393300000000
+
+        // 100001613696621 output : [2, 4, 1, 3, 7, 5, 1, 5, 0, 3, 4, 1]
+        // 100001613696703 output : [2, 4, 1, 3, 7, 5, 1, 5, 0, 3, 4, 1]
+
+        // with working algorithm
+        // until 91400000000
+
+        // also from 8^(16-1)
+        // until 35313700000000
+        // until 35403000000032
+        // until 35638000000032
+
+        //        long res = LongStream.iterate(0L, i -> i + 64)
+        //                .mapMulti((i, lc) -> {
+        //                    lc.accept(i);
+        //                    for (int j = 1; j <= 7; j++) {
+        //                        lc.accept(i + j);
+        //                    }
+        //                })
+        //
+        //long res = LongStream.iterate((long) Math.pow(8, 16 - 1), i -> i + 1)
+        long res = LongStream.iterate(35638000000032L, i -> i + 1)
+                .mapMulti((a, lc) -> {
+                    int result = (int) (((6 ^ (a / 8))) % 8);
+                    if (result == 2) {
+                        lc.accept(a);
+                    }
+                })
                 .parallel()
+                .map(i -> {
+                    if (i % 1_000_000_000L <= 32) {
+                        System.out.println("A: " + i);
+                    }
+
+                    long registerA = i;
+
+                    List<Integer> out = new ArrayList<>(program.size());
+                    while (registerA != 0L) {
+                        // new attempt
+                        int instruction1 = (int) (registerA % 8);
+                        int instruction2 = instruction1 ^ 3;
+                        int instruction3 = Ints.saturatedCast(registerA / (long) Math.pow(2, Math.min(63, instruction2)));
+                        int instruction4 = instruction2 ^ 5;
+                        long instruction5 = registerA / 8;
+                        int instruction6 = instruction4 ^ instruction3;
+
+                        registerA = instruction5;
+                        out.add(instruction6 % 8);
+
+                        if (!program.subList(0, out.size()).equals(out)) {
+                            // We can fail fast, this output will never match the wanted program
+                            return -1;
+                        }
+
+                        if (out.size() == program.size() && out.equals(program)) {
+                            System.out.println(i + " output : " + out);
+                            return i;
+                        } else if (out.size() >= program.size()) {
+                            // We can fail fast, this output will never match the wanted program
+                            return -1;
+                        } else if (out.size() > 9) {
+                            System.out.println(i + " output : " + out);
+                        }
+                    }
+
+                    return -1;
+                })
+                .filter(i -> i >= 0)
+                .findFirst()
+                .orElseThrow();
+
+        if (true) {
+            return res;
+        }
+
+        // from 1000000000000000
+        // to 1000095500000000
+
+
+        // with fixed division (truncate to int)
+        // until 39200000000
+        // 3978907179 output : [2, 4, 1, 3, 7, 5, 1, 5, 0, 3]
+        return LongStream.iterate(3978907179L, i -> i + 1L)
+                //.parallel()
+                .limit(1)
                 .map(i -> {
                             if (i % 100_000_000L == 0) {
                                 System.out.println("A: " + i);
@@ -254,7 +390,7 @@ public class Day17 extends Day {
                                         } else if (out.size() >= program.size()) {
                                             // We can fail fast, this output will never match the wanted program
                                             return -1;
-                                        } else if (out.size() > 12) {
+                                        } else if (out.size() > 9) {
                                             System.out.println(i + " output : " + out);
                                         }
 
@@ -288,7 +424,6 @@ public class Day17 extends Day {
     private static long comboOperand(int operand, long registerA, long registerB, long registerC) {
         return switch (operand) {
             case 0, 1, 2, 3 -> operand;
-            //case 4 -> BigInteger.valueOf(registerA).longValueExact();
             case 4 -> registerA;
             case 5 -> registerB;
             case 6 -> registerC;
@@ -296,12 +431,12 @@ public class Day17 extends Day {
         };
     }
 
-    private static long division(int operand, long registerA, long registerB, long registerC) {
+    private static int division(int operand, long registerA, long registerB, long registerC) {
         long comboOperand = comboOperand(operand, registerA, registerB, registerC);
         if (comboOperand >= 63) {
-            return 0L;
+            return 0;
         }
 
-        return registerA / (long) Math.pow(2, comboOperand);
+        return Ints.saturatedCast(registerA / (long) Math.pow(2, comboOperand));
     }
 }
