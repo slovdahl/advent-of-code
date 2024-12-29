@@ -59,7 +59,7 @@ public class Day18 extends Day {
                 (charMatrix, direction, current, next) -> 1
         );
 
-        return dijkstra.traverse().orElseThrow(); // Your puzzle answer was 338
+        return dijkstra.findShortestPath().orElseThrow(); // Your puzzle answer was 338
     }
 
     @Override
@@ -72,11 +72,10 @@ public class Day18 extends Day {
             Dijkstra<CharMatrix> dijkstra = new Dijkstra<>(
                     new CharMatrix(map, coordinate -> coordinate.at(map) != '#'),
                     start,
-                    end,
-                    (charMatrix, direction, current, next) -> 1
+                    end
             );
 
-            OptionalInt result = dijkstra.traverse();
+            OptionalInt result = dijkstra.findShortestPath();
             if (result.isEmpty()) {
                 firstBlocking = c;
                 break;

@@ -55,9 +55,18 @@ public class Dijkstra<T extends Dijkstra.MatrixType> {
         visitedNodes = new HashMap<>();
     }
 
-    /** @return the cost to reach the target */
-    public OptionalInt traverse() {
-        unvisited.put(start, new Node(start, null, null, 0));
+    /** @return the cost to reach the target, if it's reachable */
+    public OptionalInt findShortestPath() {
+        return traverse(TraverseMode.BEST_PATH);
+    }
+
+    /** @return the cost to reach the target, if it's reachable */
+    public OptionalInt findAllShortestPaths() {
+        return traverse(TraverseMode.ALL_BEST_PATHS);
+    }
+
+    private OptionalInt traverse(TraverseMode mode) {
+        unvisited.put(start, Node.start(mode, start));
 
         while (!unvisited.isEmpty()) {
             // Find the node with the current lowest cost
@@ -68,15 +77,30 @@ public class Dijkstra<T extends Dijkstra.MatrixType> {
             unvisited.remove(current.coordinate);
 
             // Mark the current node visited
-            visitedNodes.put(current.coordinate, current);
+            Node result = visitedNodes.put(current.coordinate, current);
+            if (result != null && current != result) {
+                throw new IllegalStateException("Tried to mark node " + current.coordinate + " as visited, but it was already marked");
+            }
 
             for (Direction direction : Direction.ALL) {
                 // Check if we can or need to move in this direction
                 Coordinate next = matrix.tryMove(current.coordinate, direction);
-                if (next == null || visitedNodes.containsKey(next)) {
+                if (next == null || next.equals(start)) {
                     continue;
                 }
 
+                Node visited = visitedNodes.get(next);
+                if (mode == TraverseMode.BEST_PATH) {
+                    if (visited != null) {
+                        continue;
+                    }
+                } else {
+                    if (visited != null && visited.previous.containsKey(direction)) {
+                        continue;
+                    }
+                }
+
+                // Find the previous node
                 Node from = current.previous.get(direction);
                 if (from == null && !current.previous.isEmpty()) {
                     from = current.previous.values().stream().findFirst().orElseThrow();
@@ -91,42 +115,26 @@ public class Dijkstra<T extends Dijkstra.MatrixType> {
                 }
 
                 Integer cost = costFunction.apply(matrix, inDirection, current.coordinate, next);
-                int totalCost = current.cost + cost;
+                int totalCost = current.cost(inDirection) + cost;
 
-                unvisited.compute(next, (n, node) -> {
-                    if (node == null) {
-                        return new Node(n, current, direction, totalCost);
-                    } else {
-                        node.updateCost(current, direction, totalCost);
-                        return node;
-                    }
+                unvisited.compute(next, (k, node) -> {
+                    Node n = Objects.requireNonNullElseGet(
+                            node,
+                            () -> visitedNodes.getOrDefault(k, Node.of(k, current, direction))
+                    );
+
+                    n.updateCost(current, direction, totalCost);
+                    return n;
                 });
             }
         }
 
         Node targetNode = visitedNodes.get(target);
         if (targetNode != null) {
-            return OptionalInt.of(targetNode.cost);
+            return targetNode.lowestCost();
         } else {
             return OptionalInt.empty();
         }
-    }
-
-    public void visualize(char pathCharacter) {
-        char[][] m = matrix.toCharArray();
-
-        Node current = visitedNodes.get(target);
-        while (current != null) {
-            m[current.coordinate.row()][current.coordinate.column()] = pathCharacter;
-            Iterator<Map.Entry<Direction, Node>> iterator = current.previous.entrySet().iterator();
-            if (iterator.hasNext()) {
-                current = iterator.next().getValue();
-            } else {
-                current = null;
-            }
-        }
-
-        Matrix.print(System.out, m);
     }
 
     public List<Coordinate> getLowestCostPath() {
@@ -172,36 +180,49 @@ public class Dijkstra<T extends Dijkstra.MatrixType> {
         traverseLowestCostPath(bestPath, next, current, target);
     }
 
-    public static class Node implements Comparable<Node> {
+    public int[][] costMatrix() {
+        int[][] costs = new int[matrix.rows()][matrix.columns()];
 
-        private final Coordinate coordinate;
-        private final Map<Direction, Node> previous;
-        private int cost;
+        for (Node node : visitedNodes.values()) {
+            costs[node.coordinate.row()][node.coordinate.column()] = node.lowestCost().orElse(-1);
+        }
 
-        Node(Coordinate coordinate, Node from, Direction inDirection, int cost) {
+        return costs;
+    }
+
+    private static abstract sealed class Node implements Comparable<Node> {
+
+        static Node start(TraverseMode mode, Coordinate coordinate) {
+            return switch (mode) {
+                case BEST_PATH -> new BestPathNode(coordinate, null, null);
+                case ALL_BEST_PATHS -> new AllPathsNode(coordinate, null, null, true);
+            };
+        }
+
+        static Node of(Coordinate coordinate, Node from, Direction inDirection) {
+            return switch (from) {
+                case BestPathNode _ -> new BestPathNode(coordinate, from, inDirection);
+                case AllPathsNode _ -> new AllPathsNode(coordinate, from, inDirection, false);
+            };
+        }
+
+        protected final Coordinate coordinate;
+        protected final Map<Direction, Node> previous;
+
+        private Node(Coordinate coordinate, @Nullable Node from, @Nullable Direction inDirection) {
             this.coordinate = coordinate;
-            this.cost = cost;
-
             previous = new EnumMap<>(Direction.class);
+
             if (from != null && inDirection != null) {
                 previous.put(inDirection, from);
             }
         }
 
-        void updateCost(Node from, Direction inDirection, int cost) {
-            if (cost < this.cost) {
-                this.cost = cost;
-                previous.clear();
-                previous.put(inDirection, from);
-            } else if (cost == this.cost) {
-                previous.put(inDirection, from);
-            }
-        }
+        abstract void updateCost(Node from, Direction inDirection, int cost);
 
-        @Override
-        public int compareTo(Node o) {
-            return Integer.compare(cost, o.cost);
-        }
+        abstract int cost(@Nullable Direction inDirection);
+
+        abstract OptionalInt lowestCost();
 
         @Override
         public boolean equals(Object o) {
@@ -214,6 +235,134 @@ public class Dijkstra<T extends Dijkstra.MatrixType> {
         @Override
         public int hashCode() {
             return Objects.hash(coordinate);
+        }
+    }
+
+    /**
+     * Note: this class has a natural ordering that is inconsistent with equals.
+     */
+    private static final class BestPathNode extends Node {
+
+        private int cost;
+
+        private BestPathNode(Coordinate coordinate, @Nullable Node from, @Nullable Direction inDirection) {
+            super(coordinate, from, inDirection);
+
+            cost = 0;
+        }
+
+        @Override
+        void updateCost(Node from, Direction inDirection, int cost) {
+            if (cost < this.cost) {
+                this.cost = cost;
+                previous.clear();
+                previous.put(inDirection, from);
+            } else if (cost == this.cost) {
+                previous.put(inDirection, from);
+            }
+        }
+
+        @Override
+        int cost(@Nullable Direction inDirection) {
+            return cost;
+        }
+
+        @Override
+        public OptionalInt lowestCost() {
+            return OptionalInt.of(cost);
+        }
+
+        @Override
+        public int compareTo(Node o) {
+            if (!(o instanceof BestPathNode bpn)) {
+                throw new IllegalStateException();
+            }
+
+            return Integer.compare(
+                    cost,
+                    bpn.cost
+            );
+        }
+
+
+        @Override
+        public String toString() {
+            return MoreObjects.toStringHelper(this)
+                    .add("cost", cost)
+                    .add("coordinate", coordinate)
+                    .add("previous", previous.keySet())
+                    .toString();
+        }
+    }
+
+    /**
+     * Note: this class has a natural ordering that is inconsistent with equals.
+     */
+    private static final class AllPathsNode extends Node {
+
+        private final Map<Direction, Integer> cost;
+
+        private AllPathsNode(Coordinate coordinate, @Nullable Node from, @Nullable Direction inDirection, boolean startNode) {
+            super(coordinate, from, inDirection);
+
+            cost = new EnumMap<>(Direction.class);
+
+            if (startNode) {
+                for (Direction direction : Direction.ALL) {
+                    cost.put(direction, 0);
+                }
+            }
+        }
+
+        @Override
+        void updateCost(Node from, Direction inDirection, int cost) {
+            this.cost.compute(inDirection, (_, oldCost) -> {
+                if (oldCost == null || cost < oldCost) {
+                    return cost;
+                } else {
+                    return oldCost;
+                }
+            });
+
+            previous.put(inDirection, from);
+        }
+
+        @Override
+        int cost(@Nullable Direction inDirection) {
+            Integer currentCost;
+            if (inDirection == null) {
+                // We're most likely trying to get the cost for the start node
+                currentCost = cost.get(Direction.UP);
+            } else {
+                currentCost = cost.get(inDirection);
+            }
+
+            if (currentCost == null) {
+                throw new IllegalStateException();
+            }
+
+            return currentCost;
+        }
+
+        @Override
+        public OptionalInt lowestCost() {
+            return cost
+                    .values()
+                    .stream()
+                    .mapToInt(Integer::intValue)
+                    .min();
+        }
+
+        @Override
+        public int compareTo(Node o) {
+            if (!(o instanceof AllPathsNode apn)) {
+                throw new IllegalStateException();
+            }
+
+            return Integer.compare(
+                    lowestCost().orElse(Integer.MAX_VALUE),
+                    apn.lowestCost().orElse(Integer.MAX_VALUE)
+            );
         }
 
         @Override
@@ -240,14 +389,7 @@ public class Dijkstra<T extends Dijkstra.MatrixType> {
         char[][] toCharArray();
     }
 
-    public static final class CharMatrix implements MatrixType {
-        private final char[][] matrix;
-        private final Function<Coordinate, Boolean> validMoveFunction;
-
-        public CharMatrix(char[][] matrix, Function<Coordinate, Boolean> validMoveFunction) {
-            this.matrix = matrix;
-            this.validMoveFunction = validMoveFunction;
-        }
+    public record CharMatrix(char[][] matrix, Function<Coordinate, Boolean> validMoveFunction) implements MatrixType {
 
         @Override
         @Nullable
@@ -281,14 +423,7 @@ public class Dijkstra<T extends Dijkstra.MatrixType> {
         }
     }
 
-    public static final class IntMatrix implements MatrixType {
-        private final int[][] matrix;
-        private final Function<Coordinate, Boolean> validMoveFunction;
-
-        public IntMatrix(int[][] matrix, Function<Coordinate, Boolean> validMoveFunction) {
-            this.matrix = matrix;
-            this.validMoveFunction = validMoveFunction;
-        }
+    public record IntMatrix(int[][] matrix, Function<Coordinate, Boolean> validMoveFunction) implements MatrixType {
 
         @Override
         public Coordinate tryMove(Coordinate current, Direction direction) {
@@ -319,5 +454,10 @@ public class Dijkstra<T extends Dijkstra.MatrixType> {
         public char[][] toCharArray() {
             return Matrix.toCharArray(matrix);
         }
+    }
+
+    private enum TraverseMode {
+        BEST_PATH,
+        ALL_BEST_PATHS
     }
 }

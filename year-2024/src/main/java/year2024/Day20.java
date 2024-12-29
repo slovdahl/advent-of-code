@@ -40,7 +40,7 @@ public class Day20 extends Day {
                 end
         );
 
-        raceTime = dijkstra.traverse().orElseThrow();
+        raceTime = dijkstra.findShortestPath().orElseThrow();
         raceTrack = dijkstra.getLowestCostPath();
     }
 
@@ -80,7 +80,7 @@ public class Day20 extends Day {
                             end
                     );
 
-                    int cheatRaceTime = cheatDijkstra.traverse().orElseThrow();
+                    int cheatRaceTime = cheatDijkstra.findShortestPath().orElseThrow();
 
                     cheat.set(cheatMap, old);
 

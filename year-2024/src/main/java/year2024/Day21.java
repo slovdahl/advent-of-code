@@ -112,7 +112,7 @@ public class Day21 extends Day {
                         costFunction
                 );
 
-                numpadDijkstra.traverse().orElseThrow();
+                numpadDijkstra.findShortestPath().orElseThrow();
                 List<Coordinate> lowestCostPath = numpadDijkstra.getLowestCostPath();
                 List<Character> directionChars = toDirectionChars(Coordinate.toDirections(lowestCostPath));
                 numericKeypadMoves.addAll(directionChars);
@@ -136,7 +136,7 @@ public class Day21 extends Day {
                         costFunction
                 );
 
-                directionalDijkstra.traverse().orElseThrow();
+                directionalDijkstra.findShortestPath().orElseThrow();
                 List<Coordinate> lowestCostPath = directionalDijkstra.getLowestCostPath();
                 List<Character> directionChars = toDirectionChars(Coordinate.toDirections(lowestCostPath));
                 directionalMoves1.addAll(directionChars);
@@ -160,7 +160,7 @@ public class Day21 extends Day {
                         costFunction
                 );
 
-                directionalDijkstra.traverse().orElseThrow();
+                directionalDijkstra.findShortestPath().orElseThrow();
                 List<Coordinate> lowestCostPath = directionalDijkstra.getLowestCostPath();
                 List<Character> directionChars = toDirectionChars(Coordinate.toDirections(lowestCostPath));
                 directionalMoves2.addAll(directionChars);
