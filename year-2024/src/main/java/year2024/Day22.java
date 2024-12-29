@@ -57,7 +57,7 @@ public class Day22 extends Day {
 
     @Override
     protected Object part2(Stream<String> input) {
-        return allSecretNumbers.stream()
+        return allSecretNumbers.parallelStream()
                 .map(values -> values.stream()
                         .gather(windowSliding(2))
                         .map(elements -> Pair.of(
@@ -93,6 +93,8 @@ public class Day22 extends Day {
                         State::new,
                         Gatherer.Integrator.ofGreedy(
                                 (state, element, downstream) -> {
+                                    // Sum the number of bananas each monkey can sell for a given price
+                                    // change sequence.
                                     if (!element.getKey().equals(state.sequence)) {
                                         if (state.sequence != null) {
                                             downstream.push(state.sum);
