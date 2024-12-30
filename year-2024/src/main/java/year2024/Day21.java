@@ -14,11 +14,13 @@ import lib.Triple;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
@@ -29,7 +31,7 @@ public class Day21 extends Day {
     private char[][] directionalKeypad;
     private Coordinate directionalInvalidPoint;
     private Coordinate directionalStart;
-    private Map<String, List<Character>> numericKeypadMovesPerCode;
+    private Map<String, Map<Character, List<String>>> numericKeypadMovesPerCode;
     private QuadFunction<CharMatrix, Direction, Coordinate, Coordinate, Integer> costFunction;
     private Cache<Triple<Integer, Character, List<Coordinate>>, Pair<Long, List<Coordinate>>> cache;
 
@@ -79,7 +81,7 @@ public class Day21 extends Day {
             if (direction != null && current.directionTo(next) == direction) {
                 return 1;
             } else {
-                return 3;
+                return 2;
             }
         };
 
@@ -88,11 +90,12 @@ public class Day21 extends Day {
         Coordinate numericInvalidPoint = Matrix.findChar(numericKeypad, 'X');
 
         for (String code : codes) {
-            List<Character> numericKeypadMoves = new ArrayList<>();
+            Map<Character, List<String>> numericKeypadMoves = new LinkedHashMap<>();
 
             for (char c : code.toCharArray()) {
                 if (numericPosition.at(numericKeypad) == c) {
-                    numericKeypadMoves.add('A');
+                    numericKeypadMoves.computeIfAbsent(c, _ -> new ArrayList<>())
+                            .add("A");
                     continue;
                 }
                 Coordinate target = Matrix.findChar(numericKeypad, c);
@@ -104,14 +107,19 @@ public class Day21 extends Day {
                 );
 
                 numpadDijkstra.findShortestPath().orElseThrow();
-                List<Coordinate> lowestCostPath = numpadDijkstra.getLowestCostPath();
-                numericKeypadMoves.addAll(toDirectionChars(Coordinate.toDirections(lowestCostPath)));
-                numericKeypadMoves.add('A');
+
+                for (List<Coordinate> lowestCostPath : numpadDijkstra.getAllLowestCostPaths()) {
+                    List<Character> moves = toDirectionChars(Coordinate.toDirections(lowestCostPath));
+                    moves.add('A');
+
+                    numericKeypadMoves.computeIfAbsent(c, _ -> new ArrayList<>())
+                            .add(moves.stream().map(String::valueOf).collect(joining()));
+                }
 
                 numericPosition = target;
             }
 
-            numericKeypadMovesPerCode.put(code, List.copyOf(numericKeypadMoves));
+            numericKeypadMovesPerCode.put(code, numericKeypadMoves);
         }
 
         cache = Caffeine.newBuilder()
@@ -120,60 +128,16 @@ public class Day21 extends Day {
 
     @Override
     protected Object part1(Stream<String> input) {
-        int keypadsUsedByRobots = 2;
-
-        List<Coordinate> robotPositions = IntStream.range(0, keypadsUsedByRobots)
-                .mapToObj(_ -> directionalStart)
-                .collect(toList());
-
-        Map<String, Long> result = new HashMap<>();
-
-        for (String code : codes) {
-            long steps = 0;
-            for (Character numericKeypadMove : numericKeypadMovesPerCode.get(code)) {
-                long moveSteps = doRecurse(keypadsUsedByRobots, numericKeypadMove, robotPositions);
-
-                steps += moveSteps;
-            }
-
-            System.out.println("Code: " + code + ", steps: " + steps);
-            result.put(code, steps);
-        }
-
-        return result.entrySet().stream()
-                .mapToLong(e -> Long.parseLong(e.getKey().substring(0, 3)) * e.getValue())
-                .sum(); // Your puzzle answer was 211930
+        return countSteps(2);
     }
 
     @Override
     protected Object part2(Stream<String> input) throws Exception {
-        int keypadsUsedByRobots = 25;
-
-        Map<String, Long> result = codes.stream()
-                .map(code -> {
-                    List<Coordinate> robotPositions = IntStream.range(0, keypadsUsedByRobots)
-                            .mapToObj(_ -> directionalStart)
-                            .collect(toList());
-
-                    long steps = 0;
-                    for (Character numericKeypadMove : numericKeypadMovesPerCode.get(code)) {
-                        long moveSteps = recurse(keypadsUsedByRobots, numericKeypadMove, robotPositions);
-
-                        steps += moveSteps;
-                        System.out.println("Code: " + code + " move " + numericKeypadMove + " steps " + moveSteps + " total " + steps);
-                    }
-
-                    System.out.println("Code: " + code + ", steps: " + steps);
-                    return Pair.of(code, steps);
-                })
-                .collect(toMap(Pair::first, Pair::second));
-
-        return result.entrySet().stream()
-                .mapToLong(e -> Long.parseLong(e.getKey().substring(0, 3)) * e.getValue())
-                .sum(); // Your puzzle answer was XXX
+        return countSteps(25);
         // 119864263901146 too low
         // 119864263901147 too low
         // 300043033609508 too high
+        // 303327203995280 incorrect
 
         /*
         With robots = 25
@@ -263,82 +227,41 @@ public class Day21 extends Day {
          Result  300043033609508
         ==========================================================
          */
+    }
 
-        /*
-        With robots = 24
-        Code: 985A move ^ steps 4020490168 total 4020490168
-        Code: 985A move ^ steps 1 total 4020490169
-        Code: 985A move ^ steps 1 total 4020490170
-        Code: 985A move A steps 2597502162 total 6617992332
-        Code: 985A move < steps 5464362368 total 12082354700
-        Code: 985A move A steps 4599682888 total 16682037588
-        Code: 985A move v steps 5058166131 total 21740203719
-        Code: 985A move A steps 4599682887 total 26339886606
-        Code: 985A move v steps 5058166131 total 31398052737
-        Code: 985A move v steps 1 total 31398052738
-        Code: 985A move > steps 2597502162 total 33995554900
-        Code: 985A move A steps 2643821116 total 36639376016
-        Code: 985A, steps: 36639376016
-        Code: 540A move < steps 5464362368 total 5464362368
-        Code: 540A move ^ steps 4599682887 total 10064045255
-        Code: 540A move ^ steps 1 total 10064045256
-        Code: 540A move A steps 2597502162 total 12661547418
-        Code: 540A move < steps 5464362368 total 18125909786
-        Code: 540A move A steps 4599682888 total 22725592674
-        Code: 540A move > steps 3858217214 total 26583809888
-        Code: 540A move v steps 4020490168 total 30604300056
-        Code: 540A move v steps 1 total 30604300057
-        Code: 540A move A steps 4599682887 total 35203982944
-        Code: 540A move > steps 3858217214 total 39062200158
-        Code: 540A move A steps 2643821116 total 41706021274
-        Code: 540A, steps: 41706021274
-        Code: 463A move ^ steps 4020490168 total 4020490168
-        Code: 463A move ^ steps 1 total 4020490169
-        Code: 463A move < steps 5464362367 total 9484852536
-        Code: 463A move < steps 1 total 9484852537
-        Code: 463A move A steps 4599682888 total 14084535425
-        Code: 463A move > steps 3858217214 total 17942752639
-        Code: 463A move > steps 1 total 17942752640
-        Code: 463A move A steps 2643821116 total 20586573756
-        Code: 463A move v steps 5058166131 total 25644739887
-        Code: 463A move A steps 4599682887 total 30244422774
-        Code: 463A move v steps 5058166131 total 35302588905
-        Code: 463A move A steps 4599682887 total 39902271792
-        Code: 463A, steps: 39902271792
-        Code: 671A move ^ steps 4020490168 total 4020490168
-        Code: 671A move ^ steps 1 total 4020490169
-        Code: 671A move A steps 2597502162 total 6617992331
-        Code: 671A move < steps 5464362368 total 12082354699
-        Code: 671A move < steps 1 total 12082354700
-        Code: 671A move ^ steps 4599682887 total 16682037587
-        Code: 671A move A steps 2597502162 total 19279539749
-        Code: 671A move v steps 5058166131 total 24337705880
-        Code: 671A move v steps 1 total 24337705881
-        Code: 671A move A steps 4599682887 total 28937388768
-        Code: 671A move > steps 3858217214 total 32795605982
-        Code: 671A move > steps 1 total 32795605983
-        Code: 671A move v steps 4020490168 total 36816096151
-        Code: 671A move A steps 4599682887 total 41415779038
-        Code: 671A, steps: 41415779038
-        Code: 382A move ^ steps 4020490168 total 4020490168
-        Code: 382A move A steps 2597502162 total 6617992330
-        Code: 382A move < steps 5464362368 total 12082354698
-        Code: 382A move ^ steps 4599682887 total 16682037585
-        Code: 382A move ^ steps 1 total 16682037586
-        Code: 382A move A steps 2597502162 total 19279539748
-        Code: 382A move v steps 5058166131 total 24337705879
-        Code: 382A move v steps 1 total 24337705880
-        Code: 382A move A steps 4599682887 total 28937388767
-        Code: 382A move v steps 5058166131 total 33995554898
-        Code: 382A move > steps 2597502162 total 36593057060
-        Code: 382A move A steps 2643821116 total 39236878176
-        Code: 382A, steps: 39236878176
-        ==========================================================
-         Part    2
-         Time    42.26 min
-         Result  119864263901146
-        ==========================================================
-         */
+    private long countSteps(int keypadsUsedByRobots) {
+        Map<String, Long> result = codes.stream()
+                .map(code -> {
+                    List<Coordinate> robotPositions = IntStream.range(0, keypadsUsedByRobots)
+                            .mapToObj(_ -> directionalStart)
+                            .collect(toList());
+
+                    long steps = 0;
+
+                    for (var entry : numericKeypadMovesPerCode.get(code).entrySet()) {
+                        Character numericKeypadKey = entry.getKey();
+                        List<String> candidatesForMove = entry.getValue();
+
+                        long lowestSteps = Long.MAX_VALUE;
+
+                        for (String candidate : candidatesForMove) {
+                            long candidateSteps = 0L;
+                            for (char numericKeypadMove : candidate.toCharArray()) {
+                                candidateSteps += recurse(keypadsUsedByRobots, numericKeypadMove, robotPositions);
+                            }
+                            lowestSteps = Math.min(lowestSteps, candidateSteps);
+                        }
+
+                        steps += lowestSteps;
+                    }
+
+                    return Pair.of(code, steps);
+                })
+                .collect(toMap(Pair::first, Pair::second));
+
+        return result.entrySet().stream()
+                .mapToLong(e -> Long.parseLong(e.getKey().substring(0, 3)) * e.getValue())
+                .sum();
     }
 
     private long recurse(int n, Character move, List<Coordinate> positions) {
@@ -393,7 +316,6 @@ public class Day21 extends Day {
 
         List<Character> directionChars = toDirectionChars(Coordinate.toDirections(lowestCostPath));
         directionChars.add('A');
-
 
         positions.set(n - 1, targetDirectionChar);
 
