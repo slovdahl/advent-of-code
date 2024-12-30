@@ -128,105 +128,12 @@ public class Day21 extends Day {
 
     @Override
     protected Object part1(Stream<String> input) {
-        return countSteps(2);
+        return countSteps(2); // Your puzzle answer was 211930
     }
 
     @Override
     protected Object part2(Stream<String> input) throws Exception {
-        return countSteps(25);
-        // 119864263901146 too low
-        // 119864263901147 too low
-        // 300043033609508 too high
-        // 303327203995280 incorrect
-
-        /*
-        With robots = 25
-        Code: 985A move ^ steps 10064045256
-        Code: 985A move ^ steps 10064045257
-        Code: 985A move ^ steps 10064045258
-        Code: 985A move A steps 16566083588
-        Code: 985A move < steps 30244422776
-         */
-
-        /*
-        With robots = 25
-        Code: 985A move ^ steps 10064045256 total 10064045256
-        Code: 985A move ^ steps 1 total 10064045257
-        Code: 985A move ^ steps 1 total 10064045258
-        Code: 985A move A steps 6502038330 total 16566083588
-        Code: 985A move < steps 13678339188 total 30244422776
-        Code: 985A move A steps 11513885508 total 41758308284
-        Code: 985A move v steps 12661547417 total 54419855701
-        Code: 985A move A steps 11513885507 total 65933741208
-        Code: 985A move v steps 12661547417 total 78595288625
-        Code: 985A move v steps 1 total 78595288626
-        Code: 985A move > steps 6502038330 total 85097326956
-        Code: 985A move A steps 6617992330 total 91715319286
-        Code: 985A, steps: 91715319286
-        Code: 540A move < steps 13678339188 total 13678339188
-        Code: 540A move ^ steps 11513885507 total 25192224695
-        Code: 540A move ^ steps 1 total 25192224696
-        Code: 540A move A steps 6502038330 total 31694263026
-        Code: 540A move < steps 13678339188 total 45372602214
-        Code: 540A move A steps 11513885508 total 56886487722
-        Code: 540A move > steps 9657849018 total 66544336740
-        Code: 540A move v steps 10064045256 total 76608381996
-        Code: 540A move v steps 1 total 76608381997
-        Code: 540A move A steps 11513885507 total 88122267504
-        Code: 540A move > steps 9657849018 total 97780116522
-        Code: 540A move A steps 6617992330 total 104398108852
-        Code: 540A, steps: 104398108852
-        Code: 463A move ^ steps 10064045256 total 10064045256
-        Code: 463A move ^ steps 1 total 10064045257
-        Code: 463A move < steps 13678339187 total 23742384444
-        Code: 463A move < steps 1 total 23742384445
-        Code: 463A move A steps 11513885508 total 35256269953
-        Code: 463A move > steps 9657849018 total 44914118971
-        Code: 463A move > steps 1 total 44914118972
-        Code: 463A move A steps 6617992330 total 51532111302
-        Code: 463A move v steps 12661547417 total 64193658719
-        Code: 463A move A steps 11513885507 total 75707544226
-        Code: 463A move v steps 12661547417 total 88369091643
-        Code: 463A move A steps 11513885507 total 99882977150
-        Code: 463A, steps: 99882977150
-        Code: 671A move ^ steps 10064045256 total 10064045256
-        Code: 671A move ^ steps 1 total 10064045257
-        Code: 671A move A steps 6502038330 total 16566083587
-        Code: 671A move < steps 13678339188 total 30244422775
-        Code: 671A move < steps 1 total 30244422776
-        Code: 671A move ^ steps 11513885507 total 41758308283
-        Code: 671A move A steps 6502038330 total 48260346613
-        Code: 671A move v steps 12661547417 total 60921894030
-        Code: 671A move v steps 1 total 60921894031
-        Code: 671A move A steps 11513885507 total 72435779538
-        Code: 671A move > steps 9657849018 total 82093628556
-        Code: 671A move > steps 1 total 82093628557
-        Code: 671A move v steps 10064045256 total 92157673813
-        Code: 671A move A steps 11513885507 total 103671559320
-        Code: 671A, steps: 103671559320
-        Code: 382A move ^ steps 10064045256 total 10064045256
-        Code: 382A move A steps 6502038330 total 16566083586
-        Code: 382A move < steps 13678339188 total 30244422774
-        Code: 382A move ^ steps 11513885507 total 41758308281
-        Code: 382A move ^ steps 1 total 41758308282
-        Code: 382A move A steps 6502038330 total 48260346612
-        Code: 382A move v steps 12661547417 total 60921894029
-        Code: 382A move v steps 1 total 60921894030
-        Code: 382A move A steps 11513885507 total 72435779537
-        Code: 382A move v steps 12661547417 total 85097326954
-        Code: 382A move > steps 6502038330 total 91599365284
-        Code: 382A move A steps 6617992330 total 98217357614
-        Code: 382A, steps: 98217357614
-
-        -> Complexity = 300043033609508
-
-        Parallelized:
-        ==========================================================
-         Part    2
-         Time    23.70 min
-         Result  300043033609508
-        ==========================================================
-         */
+        return countSteps(25); // Your puzzle answer was 263492840501566
     }
 
     private long countSteps(int keypadsUsedByRobots) {
@@ -311,20 +218,25 @@ public class Day21 extends Day {
                 costFunction
         );
 
-        dijkstra.findShortestPath().orElseThrow();
-        List<Coordinate> lowestCostPath = dijkstra.getLowestCostPath();
+        dijkstra.findAllShortestPaths().orElseThrow();
 
-        List<Character> directionChars = toDirectionChars(Coordinate.toDirections(lowestCostPath));
-        directionChars.add('A');
+        long lowestSteps = Long.MAX_VALUE;
+
+        for (List<Coordinate> lowestCostPath : dijkstra.getAllLowestCostPaths()) {
+            List<Character> directionChars = toDirectionChars(Coordinate.toDirections(lowestCostPath));
+            directionChars.add('A');
+
+            long steps = 0;
+            for (Character ch : directionChars) {
+                steps += recurse(n - 1, ch, positions);
+            }
+
+            lowestSteps = Math.min(lowestSteps, steps);
+        }
 
         positions.set(n - 1, targetDirectionChar);
 
-        long steps = 0;
-        for (Character ch : directionChars) {
-            steps += recurse(n - 1, ch, positions);
-        }
-
-        return steps;
+        return lowestSteps;
     }
 
     private static List<Character> toDirectionChars(List<Direction> directions) {
