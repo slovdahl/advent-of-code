@@ -192,6 +192,61 @@ public class Dijkstra<T extends Dijkstra.MatrixType> {
         traverseLowestCostPath(bestPath, next, current, target);
     }
 
+    public List<List<Coordinate>> getAllLowestCostPaths() {
+        List<List<Coordinate>> allPaths = new ArrayList<>();
+
+        Node traverseStart = visitedNodes.get(target);
+        Node traverseTarget = visitedNodes.get(start);
+        traverseAllLowestCostPaths(allPaths, new LinkedHashSet<>(), traverseStart, null, traverseTarget);
+
+        return List.copyOf(allPaths);
+    }
+
+    private void traverseAllLowestCostPaths(List<List<Coordinate>> allPaths, Set<Coordinate> bestPath, Node current, @Nullable Node previous, Node target) {
+        bestPath.add(current.coordinate);
+
+        if (current.equals(target)) {
+            List<Coordinate> copy = new ArrayList<>(bestPath);
+            allPaths.add(List.copyOf(copy.reversed()));
+            return;
+        }
+
+        List<Node> allPreviousOfSameCost;
+        if (current instanceof BestPathNode) {
+            allPreviousOfSameCost = new ArrayList<>(current.previous.values());
+        } else {
+            allPreviousOfSameCost = new ArrayList<>();
+            int lowestCost = current.lowestCost().orElseThrow();
+            for (var entry : current.previous.entrySet()) {
+                Direction inDirection = entry.getKey();
+                Node node = entry.getValue();
+
+                if (current.cost(inDirection) == lowestCost) {
+                    allPreviousOfSameCost.add(node);
+                }
+            }
+        }
+
+        Node next = allPreviousOfSameCost.removeFirst();
+
+        for (Node node : allPreviousOfSameCost) {
+            if (!bestPath.contains(node.coordinate) && visitedNodes.containsKey(node.coordinate)) {
+                Set<Coordinate> newPath = new LinkedHashSet<>(bestPath);
+                traverseAllLowestCostPaths(allPaths, newPath, node, current, target);
+            }
+        }
+
+        if (bestPath.contains(next.coordinate)) {
+            return;
+        }
+
+        if (!visitedNodes.containsKey(next.coordinate)) {
+            return;
+        }
+
+        traverseAllLowestCostPaths(allPaths, bestPath, next, current, target);
+    }
+
     public void visualizeLowestCostPath(char pathCharacter) {
         char[][] m = matrix.toCharArray();
 
@@ -368,6 +423,18 @@ public class Dijkstra<T extends Dijkstra.MatrixType> {
             }
 
             return currentCost;
+        }
+
+        OptionalInt costFrom(Node node) {
+            for (var entry : previous.entrySet()) {
+                Node n = entry.getValue();
+                if (n.equals(node)) {
+                    Direction inDirection = entry.getKey();
+                    return OptionalInt.of(cost.get(inDirection));
+                }
+            }
+
+            return OptionalInt.empty();
         }
 
         @Override
