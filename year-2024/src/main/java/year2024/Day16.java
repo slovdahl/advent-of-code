@@ -43,6 +43,6 @@ public class Day16 extends Day {
                 }
         );
 
-        return dijkstra.traverse(); // Your puzzle answer was 83444
+        return dijkstra.findShortestPath().orElseThrow(); // Your puzzle answer was 83444
     }
 }

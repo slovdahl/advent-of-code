@@ -6,7 +6,6 @@ import org.jspecify.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -140,8 +139,13 @@ public class Dijkstra<T extends Dijkstra.MatrixType> {
     public List<Coordinate> getLowestCostPath() {
         Set<Coordinate> bestPath = new LinkedHashSet<>();
 
-        Node targetNode = visitedNodes.get(target);
-        traverseLowestCostPath(bestPath, targetNode, null, visitedNodes.get(this.start));
+        Node traverseStart = visitedNodes.get(target);
+        Node traverseTarget = visitedNodes.get(start);
+        traverseLowestCostPath(bestPath, traverseStart, null, traverseTarget);
+
+        if (!bestPath.contains(traverseTarget.coordinate) || !bestPath.contains(traverseStart.coordinate)) {
+            throw new IllegalStateException("Failed to traverse the full path");
+        }
 
         List<Coordinate> list = new ArrayList<>(bestPath);
         return List.copyOf(list.reversed());
@@ -154,19 +158,17 @@ public class Dijkstra<T extends Dijkstra.MatrixType> {
             return;
         }
 
-        // Prefer paths that continue in the same direction as far as possible
         Node next = null;
-        if (previous != null) {
+
+        if (current instanceof BestPathNode && previous != null) {
+            // Prefer paths that continue in the same direction as far as possible
             next = current.previous.get(previous.coordinate.directionTo(current.coordinate).opposite());
         }
 
         if (next == null) {
-            Iterator<Node> iterator = current.previous.values().iterator();
-            if (!iterator.hasNext()) {
-                throw new IllegalStateException();
-            }
-
-            next = iterator.next();
+            next = current.previous.values().stream()
+                    .min(Node::compareTo)
+                    .orElseThrow();
         }
 
         if (bestPath.contains(next.coordinate)) {
@@ -178,6 +180,16 @@ public class Dijkstra<T extends Dijkstra.MatrixType> {
         }
 
         traverseLowestCostPath(bestPath, next, current, target);
+    }
+
+    public void visualizeLowestCostPath(char pathCharacter) {
+        char[][] m = matrix.toCharArray();
+
+        for (Coordinate coordinate : getLowestCostPath()) {
+            m[coordinate.row()][coordinate.column()] = pathCharacter;
+        }
+
+        Matrix.print(System.out, m);
     }
 
     public int[][] costMatrix() {
@@ -194,14 +206,14 @@ public class Dijkstra<T extends Dijkstra.MatrixType> {
 
         static Node start(TraverseMode mode, Coordinate coordinate) {
             return switch (mode) {
-                case BEST_PATH -> new BestPathNode(coordinate, null, null);
+                case BEST_PATH -> new BestPathNode(coordinate, null, null, true);
                 case ALL_BEST_PATHS -> new AllPathsNode(coordinate, null, null, true);
             };
         }
 
         static Node of(Coordinate coordinate, Node from, Direction inDirection) {
             return switch (from) {
-                case BestPathNode _ -> new BestPathNode(coordinate, from, inDirection);
+                case BestPathNode _ -> new BestPathNode(coordinate, from, inDirection, false);
                 case AllPathsNode _ -> new AllPathsNode(coordinate, from, inDirection, false);
             };
         }
@@ -245,10 +257,14 @@ public class Dijkstra<T extends Dijkstra.MatrixType> {
 
         private int cost;
 
-        private BestPathNode(Coordinate coordinate, @Nullable Node from, @Nullable Direction inDirection) {
+        private BestPathNode(Coordinate coordinate, @Nullable Node from, @Nullable Direction inDirection, boolean startNode) {
             super(coordinate, from, inDirection);
 
-            cost = 0;
+            if (startNode) {
+                cost = 0;
+            } else {
+                cost = Integer.MAX_VALUE;
+            }
         }
 
         @Override
