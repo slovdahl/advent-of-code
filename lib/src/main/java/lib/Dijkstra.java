@@ -6,6 +6,7 @@ import org.jspecify.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -160,12 +161,21 @@ public class Dijkstra<T extends Dijkstra.MatrixType> {
 
         Node next = null;
 
-        if (current instanceof BestPathNode && previous != null) {
-            // Prefer paths that continue in the same direction as far as possible
-            next = current.previous.get(previous.coordinate.directionTo(current.coordinate).opposite());
-        }
+        if (current instanceof BestPathNode) {
+            if (previous != null) {
+                // Prefer paths that continue in the same direction as far as possible
+                next = current.previous.get(previous.coordinate.directionTo(current.coordinate).opposite());
+            }
 
-        if (next == null) {
+            if (next == null) {
+                Iterator<Node> iterator = current.previous.values().iterator();
+                if (!iterator.hasNext()) {
+                    throw new IllegalStateException();
+                }
+
+                next = iterator.next();
+            }
+        } else {
             next = current.previous.values().stream()
                     .min(Node::compareTo)
                     .orElseThrow();
