@@ -1,5 +1,7 @@
 package year2024;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import lib.Coordinate;
 import lib.Day;
 import lib.Dijkstra;
@@ -8,13 +10,12 @@ import lib.Direction;
 import lib.Matrix;
 import lib.Pair;
 import lib.QuadFunction;
+import lib.Triple;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -30,7 +31,7 @@ public class Day21 extends Day {
     private Coordinate directionalStart;
     private Map<String, List<Character>> numericKeypadMovesPerCode;
     private QuadFunction<CharMatrix, Direction, Coordinate, Coordinate, Integer> costFunction;
-    private Map<Pair<Coordinate, Character>, Pair<Coordinate, List<Character>>> movesCache;
+    private Cache<Triple<Integer, Character, List<Coordinate>>, Pair<Long, List<Coordinate>>> cache;
 
     @Override
     protected Mode mode() {
@@ -113,7 +114,8 @@ public class Day21 extends Day {
             numericKeypadMovesPerCode.put(code, List.copyOf(numericKeypadMoves));
         }
 
-        movesCache = new HashMap<>();
+        cache = Caffeine.newBuilder()
+                .build();
     }
 
     @Override
@@ -124,37 +126,14 @@ public class Day21 extends Day {
                 .mapToObj(_ -> directionalStart)
                 .collect(toList());
 
-        // Moves after an A press on the numeric keypad will always be the same,
-        // because the directional keypads are all lined up on A.
-        Map<Character, Pair<Long, List<Coordinate>>> firstMoveCache = new HashMap<>();
-
         Map<String, Long> result = new HashMap<>();
 
         for (String code : codes) {
             long steps = 0;
-            char previous = 'X';
             for (Character numericKeypadMove : numericKeypadMovesPerCode.get(code)) {
-                Pair<Long, List<Coordinate>> cachedSteps = null;
-                if (previous == 'A') {
-                    cachedSteps = firstMoveCache.get(numericKeypadMove);
-                }
-
-                long moveSteps;
-                if (cachedSteps != null) {
-                    moveSteps = cachedSteps.first();
-                    robotPositions.clear();
-                    robotPositions.addAll(cachedSteps.second());
-                } else {
-                    moveSteps = recurse(keypadsUsedByRobots, numericKeypadMove, robotPositions);
-                }
+                long moveSteps = doRecurse(keypadsUsedByRobots, numericKeypadMove, robotPositions);
 
                 steps += moveSteps;
-                //System.out.println("Code: " + code + " move " + numericKeypadMove + " steps " + moveSteps + " total " + steps);
-                if (cachedSteps == null && (previous == 'A' || previous == 'X')) {
-                    firstMoveCache.put(numericKeypadMove, Pair.of(moveSteps, List.copyOf(robotPositions)));
-                }
-
-                previous = numericKeypadMove;
             }
 
             System.out.println("Code: " + code + ", steps: " + steps);
@@ -170,40 +149,18 @@ public class Day21 extends Day {
     protected Object part2(Stream<String> input) throws Exception {
         int keypadsUsedByRobots = 25;
 
-        // Moves after an A press on the numeric keypad will always be the same,
-        // because the directional keypads are all lined up on A.
-        ConcurrentMap<Character, Pair<Long, List<Coordinate>>> firstMoveCache = new ConcurrentHashMap<>();
-
-        Map<String, Long> result = codes.parallelStream()
+        Map<String, Long> result = codes.stream()
                 .map(code -> {
                     List<Coordinate> robotPositions = IntStream.range(0, keypadsUsedByRobots)
                             .mapToObj(_ -> directionalStart)
                             .collect(toList());
 
                     long steps = 0;
-                    char previous = 'X';
                     for (Character numericKeypadMove : numericKeypadMovesPerCode.get(code)) {
-                        Pair<Long, List<Coordinate>> cachedSteps = null;
-                        if (previous == 'A') {
-                            cachedSteps = firstMoveCache.get(numericKeypadMove);
-                        }
-
-                        long moveSteps;
-                        if (cachedSteps != null) {
-                            moveSteps = cachedSteps.first();
-                            robotPositions.clear();
-                            robotPositions.addAll(cachedSteps.second());
-                        } else {
-                            moveSteps = recurse(keypadsUsedByRobots, numericKeypadMove, robotPositions);
-                        }
+                        long moveSteps = recurse(keypadsUsedByRobots, numericKeypadMove, robotPositions);
 
                         steps += moveSteps;
                         System.out.println("Code: " + code + " move " + numericKeypadMove + " steps " + moveSteps + " total " + steps);
-                        if (cachedSteps == null && (previous == 'A' || previous == 'X')) {
-                            firstMoveCache.put(numericKeypadMove, Pair.of(moveSteps, List.copyOf(robotPositions)));
-                        }
-
-                        previous = numericKeypadMove;
                     }
 
                     System.out.println("Code: " + code + ", steps: " + steps);
@@ -385,6 +342,31 @@ public class Day21 extends Day {
     }
 
     private long recurse(int n, Character move, List<Coordinate> positions) {
+        // Cannot use LoadingCache or cache.get(key, function) because of the recursive nature
+        // of the algorithm.
+        List<Coordinate> positionsForN = List.copyOf(positions.subList(0, n));
+        Triple<Integer, Character, List<Coordinate>> cacheKey = Triple.of(n, move, positionsForN);
+        Pair<Long, List<Coordinate>> result = cache.getIfPresent(cacheKey);
+
+        long steps;
+        List<Coordinate> updatedPositions;
+        if (result != null) {
+            steps = result.first();
+            updatedPositions = result.second();
+        } else {
+            updatedPositions = new ArrayList<>(positionsForN);
+            steps = doRecurse(n, move, updatedPositions);
+            cache.put(cacheKey, Pair.of(steps, List.copyOf(updatedPositions)));
+        }
+
+        for (int i = 0; i < updatedPositions.size(); i++) {
+            positions.set(i, updatedPositions.get(i));
+        }
+
+        return steps;
+    }
+
+    private long doRecurse(int n, Character move, List<Coordinate> positions) {
         if (move == null) {
             throw new IllegalArgumentException("Move must not be null");
         }
@@ -398,29 +380,25 @@ public class Day21 extends Day {
             return recurse(n - 1, 'A', positions);
         }
 
-        Pair<Coordinate, Character> cacheKey = Pair.of(position, move);
-        Pair<Coordinate, List<Character>> r = movesCache.computeIfAbsent(cacheKey, k -> {
-            Coordinate targetDirectionChar = Matrix.findChar(directionalKeypad, move);
-            var dijkstra = new Dijkstra<>(
-                    new CharMatrix(directionalKeypad, coordinate -> !coordinate.equals(directionalInvalidPoint)),
-                    position,
-                    targetDirectionChar,
-                    costFunction
-            );
+        Coordinate targetDirectionChar = Matrix.findChar(directionalKeypad, move);
+        var dijkstra = new Dijkstra<>(
+                new CharMatrix(directionalKeypad, coordinate -> !coordinate.equals(directionalInvalidPoint)),
+                position,
+                targetDirectionChar,
+                costFunction
+        );
 
-            dijkstra.findShortestPath().orElseThrow();
-            List<Coordinate> lowestCostPath = dijkstra.getLowestCostPath();
+        dijkstra.findShortestPath().orElseThrow();
+        List<Coordinate> lowestCostPath = dijkstra.getLowestCostPath();
 
-            List<Character> directionChars = toDirectionChars(Coordinate.toDirections(lowestCostPath));
-            directionChars.add('A');
+        List<Character> directionChars = toDirectionChars(Coordinate.toDirections(lowestCostPath));
+        directionChars.add('A');
 
-            return Pair.of(targetDirectionChar, List.copyOf(directionChars));
-        });
 
-        positions.set(n - 1, r.first());
+        positions.set(n - 1, targetDirectionChar);
 
         long steps = 0;
-        for (Character ch : r.second()) {
+        for (Character ch : directionChars) {
             steps += recurse(n - 1, ch, positions);
         }
 
