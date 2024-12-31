@@ -244,30 +244,35 @@ public class Day17 extends Day {
         // with working algorithm
         // until 91400000000
 
-        // also from 8^(16-1)
+        // also from 8^(16-1) with (int) (((6 ^ (a / 8))) % 8) == 2 filter
         // until 35313700000000
         // until 35403000000032
         // until 35638000000032
+        // until 35720000000032
+        // until 35861000000032
 
-        //        long res = LongStream.iterate(0L, i -> i + 64)
-        //                .mapMulti((i, lc) -> {
-        //                    lc.accept(i);
-        //                    for (int j = 1; j <= 7; j++) {
-        //                        lc.accept(i + j);
-        //                    }
-        //                })
-        //
-        //long res = LongStream.iterate((long) Math.pow(8, 16 - 1), i -> i + 1)
-        long res = LongStream.iterate(35638000000032L, i -> i + 1)
-                .mapMulti((a, lc) -> {
-                    int result = (int) (((6 ^ (a / 8))) % 8);
-                    if (result == 2) {
-                        lc.accept(a);
-                    }
-                })
+        // with (int) (((6 ^ (a / 8))) % 8) == 2 && (int) (((6 ^ (a / 8 / 8))) % 8) == 4
+        // until 35997000000679
+
+        // from 58548994179072L (6816 * 8^11)
+        // tested until 58609000000000
+        // tested until 58612000000000
+        // tested until 58619000000000
+
+        long res = LongStream.iterate(58619000000000L, i -> i + 1)
                 .parallel()
+//                .filter(a -> {
+//                    // TODO: not working as intended
+//                    long aModulo8 = a % 8;
+//                    long denominator = (long) Math.pow(2, aModulo8 ^ 3);
+//                    if (denominator == 0) {
+//                        return false;
+//                    }
+//
+//                    return (((aModulo8 ^ 3) ^ 5) ^ ((a / denominator))) % 8 == 2;
+//                })
                 .map(i -> {
-                    if (i % 1_000_000_000L <= 32) {
+                    if (i % 1_000_000_000L == 0) {
                         System.out.println("A: " + i);
                     }
 
@@ -275,16 +280,15 @@ public class Day17 extends Day {
 
                     List<Integer> out = new ArrayList<>(program.size());
                     while (registerA != 0L) {
-                        // new attempt
                         int instruction1 = (int) (registerA % 8);
                         int instruction2 = instruction1 ^ 3;
-                        int instruction3 = Ints.saturatedCast(registerA / (long) Math.pow(2, Math.min(63, instruction2)));
+                        long instruction3 = registerA / (1L << instruction2);
                         int instruction4 = instruction2 ^ 5;
                         long instruction5 = registerA / 8;
-                        int instruction6 = instruction4 ^ instruction3;
+                        long instruction6 = instruction4 ^ instruction3;
 
                         registerA = instruction5;
-                        out.add(instruction6 % 8);
+                        out.add((int) instruction6 % 8);
 
                         if (!program.subList(0, out.size()).equals(out)) {
                             // We can fail fast, this output will never match the wanted program
@@ -296,8 +300,9 @@ public class Day17 extends Day {
                             return i;
                         } else if (out.size() >= program.size()) {
                             // We can fail fast, this output will never match the wanted program
+                            System.out.println("Output longer than expected: " + out);
                             return -1;
-                        } else if (out.size() > 9) {
+                        } else if (out.size() > 10) {
                             System.out.println(i + " output : " + out);
                         }
                     }
@@ -314,7 +319,6 @@ public class Day17 extends Day {
 
         // from 1000000000000000
         // to 1000095500000000
-
 
         // with fixed division (truncate to int)
         // until 39200000000
@@ -419,6 +423,10 @@ public class Day17 extends Day {
                 .filter(i -> i >= 0)
                 .findFirst()
                 .orElseThrow();
+
+        // 35313700000000 too low
+        // 58548994179072 too low
+        // 502932030425617215258624 too high
     }
 
     private static long comboOperand(int operand, long registerA, long registerB, long registerC) {
@@ -431,12 +439,12 @@ public class Day17 extends Day {
         };
     }
 
-    private static int division(int operand, long registerA, long registerB, long registerC) {
+    private static long division(int operand, long registerA, long registerB, long registerC) {
         long comboOperand = comboOperand(operand, registerA, registerB, registerC);
         if (comboOperand >= 63) {
-            return 0;
+            return 0L;
         }
 
-        return Ints.saturatedCast(registerA / (long) Math.pow(2, comboOperand));
+        return registerA / (1L << comboOperand);
     }
 }
