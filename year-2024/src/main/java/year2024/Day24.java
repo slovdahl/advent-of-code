@@ -1,17 +1,19 @@
 package year2024;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.SetMultimap;
 import lib.Day;
 import lib.Parse;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static com.google.common.base.Preconditions.checkState;
@@ -25,7 +27,6 @@ public class Day24 extends Day {
 
     private Map<String, Gate> outputToGate;
     private Map<String, Integer> wireValues;
-    private List<Integer> zOutputs;
 
     @Override
     protected Mode mode() {
@@ -66,15 +67,7 @@ public class Day24 extends Day {
 
     @Override
     protected Object part1(Stream<String> input) {
-        zOutputs = new ArrayList<>();
-        for (int i = 0; i < 64; i++) {
-            Gate gate = outputToGate.get("z%02d".formatted(i));
-            if (gate == null) {
-                break;
-            }
-
-            zOutputs.add(invokeRecursively(gate));
-        }
+        List<Integer> zOutputs = getFinalOutputs(wireValues, outputToGate);
 
         return littleEndianBitsToLong(zOutputs); // Your puzzle answer was 69201640933606
     }
@@ -83,24 +76,24 @@ public class Day24 extends Day {
     protected Object part2(Stream<String> input) throws Exception {
         long expectedZ = initialValue("x") + initialValue("y");
 
-        // TODO: compare with zOutputs
-        List<Integer> reversedZ = zOutputs.reversed();
-        char[] expectedZBinary = Long.toBinaryString(expectedZ).toCharArray();
-        List<Integer> differingBits = new ArrayList<>();
-        for (int i = 0; i < reversedZ.size(); i++) {
-            if (reversedZ.get(i) != Character.digit(expectedZBinary[i], 10)) {
-                differingBits.add(i);
-            }
-        }
+        List<Integer> differingBits = getBitsDifferingFrom(expectedZ);
 
-        Set<Gate> candidateGates = new LinkedHashSet<>();
+        SetMultimap<Integer, Gate> candidateGates = HashMultimap.create();
         for (Integer differingBit : differingBits) {
             Gate gate = outputToGate.get("z%02d".formatted(differingBit));
 
-            findConnectionsRecursively(gate, candidateGates);
+            findConnectionsRecursively(differingBit, gate, candidateGates);
         }
 
         return 0;
+    }
+
+    private static List<Integer> getFinalOutputs(Map<String, Integer> wireValues, Map<String, Gate> outputToGate) {
+        return IntStream.range(0, 64)
+                .mapToObj(i -> outputToGate.get("z%02d".formatted(i)))
+                .filter(Objects::nonNull)
+                .map((Gate gate) -> invokeRecursively(gate, wireValues, outputToGate))
+                .toList();
     }
 
     private long initialValue(String inputVariable) {
@@ -117,7 +110,7 @@ public class Day24 extends Day {
         return littleEndianBitsToLong(outputs);
     }
 
-    private int invokeRecursively(Gate gate) {
+    private static int invokeRecursively(Gate gate, Map<String, Integer> wireValues, Map<String, Gate> outputToGate) {
         Integer input1 = wireValues.get(gate.input1);
         Integer input2 = wireValues.get(gate.input2);
         if (input1 != null && input2 != null) {
@@ -127,10 +120,10 @@ public class Day24 extends Day {
         }
 
         if (input1 == null) {
-            input1 = invokeRecursively(outputToGate.get(gate.input1));
+            input1 = invokeRecursively(outputToGate.get(gate.input1), wireValues, outputToGate);
         }
         if (input2 == null) {
-            input2 = invokeRecursively(outputToGate.get(gate.input2));
+            input2 = invokeRecursively(outputToGate.get(gate.input2), wireValues, outputToGate);
         }
 
         int result = gate.op.invoke(input1, input2);
@@ -138,15 +131,27 @@ public class Day24 extends Day {
         return result;
     }
 
-    private void findConnectionsRecursively(@Nullable Gate gate, Set<Gate> gates) {
+    private List<Integer> getBitsDifferingFrom(long expectedZ) {
+        List<Integer> reversedZ = getFinalOutputs(wireValues, outputToGate).reversed();
+        char[] expectedZBinary = Long.toBinaryString(expectedZ).toCharArray();
+        List<Integer> differingBits = new ArrayList<>();
+        for (int i = 0; i < reversedZ.size(); i++) {
+            if (reversedZ.get(i) != Character.digit(expectedZBinary[i], 10)) {
+                differingBits.add(i);
+            }
+        }
+        return differingBits;
+    }
+
+    private void findConnectionsRecursively(int bit, @Nullable Gate gate, SetMultimap<Integer, Gate> gates) {
         if (gate == null) {
             return;
         }
 
-        gates.add(gate);
+        gates.put(bit, gate);
 
-        findConnectionsRecursively(outputToGate.get(gate.input1), gates);
-        findConnectionsRecursively(outputToGate.get(gate.input2), gates);
+        findConnectionsRecursively(bit, outputToGate.get(gate.input1), gates);
+        findConnectionsRecursively(bit, outputToGate.get(gate.input2), gates);
     }
 
     private static long littleEndianBitsToLong(List<Integer> bits) {
