@@ -258,6 +258,7 @@ public class Day17 extends Day {
         // tested until 58609000000000
         // tested until 58612000000000
         // tested until 58619000000000
+        // tested until 59611000000000
 
         long res = LongStream.iterate(58619000000000L, i -> i + 1)
                 .parallel()
