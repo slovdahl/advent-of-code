@@ -2,21 +2,26 @@ package year2024;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
+import com.google.common.collect.Sets;
+import lib.Common;
 import lib.Day;
 import lib.Parse;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static com.google.common.base.Preconditions.checkState;
+import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.joining;
 
 @SuppressWarnings("unused")
@@ -76,7 +81,7 @@ public class Day24 extends Day {
     protected Object part2(Stream<String> input) throws Exception {
         long expectedZ = initialValue("x") + initialValue("y");
 
-        List<Integer> differingBits = getBitsDifferingFrom(expectedZ);
+        List<Integer> differingBits = getBitsDifferingFrom(expectedZ, outputToGate);
 
         SetMultimap<Integer, Gate> candidateGates = HashMultimap.create();
         for (Integer differingBit : differingBits) {
@@ -84,6 +89,28 @@ public class Day24 extends Day {
 
             findConnectionsRecursively(differingBit, gate, candidateGates);
         }
+
+        Map<String, Gate> outputToGateCopy = new HashMap<>(outputToGate);
+        List<Gate> gatesToSwap = List.copyOf(candidateGates.values()).subList(0, 4);
+
+        Set<Set<Gate>> combinations = Sets.combinations(Set.copyOf(gatesToSwap), 2);
+
+        Gate newGate1 = gatesToSwap.get(0).withOutput(gatesToSwap.get(1).output());
+        Gate newGate2 = gatesToSwap.get(1).withOutput(gatesToSwap.get(0).output());
+        Gate newGate3 = gatesToSwap.get(2).withOutput(gatesToSwap.get(3).output());
+        Gate newGate4 = gatesToSwap.get(3).withOutput(gatesToSwap.get(2).output());
+        outputToGateCopy.put(newGate1.output(), newGate1);
+        outputToGateCopy.put(newGate2.output(), newGate2);
+        outputToGateCopy.put(newGate3.output(), newGate3);
+        outputToGateCopy.put(newGate4.output(), newGate4);
+
+        List<Integer> newBitsDifferingFrom = getBitsDifferingFrom(expectedZ, outputToGateCopy);
+
+        Map.Entry<Integer, Collection<Gate>> integerCollectionEntry = candidateGates.asMap()
+                .entrySet()
+                .stream()
+                .min(comparing(e -> e.getValue().size()))
+                .orElseThrow();
 
         return 0;
     }
@@ -131,7 +158,7 @@ public class Day24 extends Day {
         return result;
     }
 
-    private List<Integer> getBitsDifferingFrom(long expectedZ) {
+    private List<Integer> getBitsDifferingFrom(long expectedZ, Map<String, Gate> outputToGate) {
         List<Integer> reversedZ = getFinalOutputs(wireValues, outputToGate).reversed();
         char[] expectedZBinary = Long.toBinaryString(expectedZ).toCharArray();
         List<Integer> differingBits = new ArrayList<>();
@@ -166,6 +193,10 @@ public class Day24 extends Day {
     }
 
     private record Gate(String input1, Op op, String input2, String output) {
+
+        Gate withOutput(String newOutput) {
+            return new Gate(input1, op, input2, newOutput);
+        }
     }
 
     private enum Op {
