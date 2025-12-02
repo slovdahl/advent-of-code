@@ -3,14 +3,8 @@ plugins {
     id 'application'
 }
 
-sourceSets {
-    main.java.srcDirs = ['java/src']
-    main.resources.srcDirs = ['java/resources']
-}
-
 dependencies {
     implementation project(':lib')
-    implementation 'org.jetbrains:annotations:24.1.0'
 }
 
 java {
@@ -20,14 +14,10 @@ java {
 }
 
 application {
-    mainClass = 'year2023.App'
-
+    mainClass = 'year2025.App'
     applicationDefaultJvmArgs = [
-            // Working jansi colors/progress bars through `gw run`
             '-Djansi.passthrough=true',
-
-            // For day 23 ForkJoinPool
-            '-Xss2m',
+            '-Xss8m',
     ]
 }
 
