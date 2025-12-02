@@ -3,6 +3,7 @@ package year2025;
 import lib.Day;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 @SuppressWarnings("unused")
@@ -41,5 +42,67 @@ public class Day1 extends Day {
         }
 
         return password; // Your puzzle answer was 1018.
+    }
+
+    @Override
+    protected Object part2(Stream<String> input) {
+        int startingPosition = 50;
+
+        return input
+                .map(line -> {
+                    int number = Integer.parseInt(line.substring(1));
+                    return switch (line.charAt(0)) {
+                        case 'L' -> number * -1;
+                        case 'R' -> number;
+                        default -> throw new IllegalStateException("Unexpected value: " + line);
+                    };
+                })
+                .collect(
+                        () -> new State(startingPosition),
+                        State::move,
+                        (p1, p2) -> p1.password().addAndGet(p2.password().get())
+                )
+                .password()
+                .get(); // Your puzzle answer was 5815.
+    }
+
+    private record State(AtomicInteger position, AtomicInteger password) {
+        private State(int initialPosition) {
+            this(
+                    new AtomicInteger(initialPosition),
+                    new AtomicInteger(0)
+            );
+        }
+
+        void move(int move) {
+            int currentPosition = position.get();
+
+            int fullRotations = Math.abs(move) / 100;
+            password().addAndGet(fullRotations);
+
+            int newPosition;
+            if (move > 0) {
+                newPosition = (currentPosition + move) % 100;
+                if (newPosition != 0 && newPosition < currentPosition) {
+                    password().incrementAndGet();
+                }
+            } else {
+                newPosition = (currentPosition + move) % 100;
+                if (newPosition < 0) {
+                    newPosition += 100;
+                    if (currentPosition != 0 && newPosition > currentPosition) {
+                        password().incrementAndGet();
+                    }
+                }
+            }
+
+            assert newPosition >= 0 && newPosition <= 99;
+
+            position().set(newPosition);
+
+            if (newPosition == 0) {
+                password().incrementAndGet();
+            }
+        }
     }
 }
