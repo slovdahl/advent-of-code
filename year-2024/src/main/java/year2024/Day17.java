@@ -1,12 +1,12 @@
 package year2024;
 
-import com.google.common.primitives.Ints;
 import lib.Day;
 import lib.Parse;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.LongStream;
@@ -260,8 +260,29 @@ public class Day17 extends Day {
         // tested until 58619000000000
         // tested until 59611000000000
 
-        long res = LongStream.iterate(58619000000000L, i -> i + 1)
-                .parallel()
+        /*
+        4 output : [2]
+        703 output : [2, 4]
+        703 output : [2, 4, 1]
+        2751 output : [2, 4, 1, 3]
+        6816 output : [2, 4, 1, 3, 7]
+        793248 output : [2, 4, 1, 3, 7, 5]
+        2707053 output : [2, 4, 1, 3, 7, 5, 1]
+        19484269 output : [2, 4, 1, 3, 7, 5, 1, 5]
+        105995885 output : [2, 4, 1, 3, 7, 5, 1, 5, 0]
+        3978907245 output : [2, 4, 1, 3, 7, 5, 1, 5, 0, 3]
+        153287741119 output : [2, 4, 1, 3, 7, 5, 1, 5, 0, 3, 4]
+        */
+
+        // to 434000000032 with modulo 64 in (32, 45, 63)
+        ConcurrentHashMap<List<Integer>, Boolean> seenOutputs = new ConcurrentHashMap<>();
+
+        long res = LongStream.iterate(1L, i -> i + 1)
+                //.parallel()
+                .filter(a -> {
+                    long modulo = a % 32;
+                    return modulo == 0 || modulo == 13 || modulo == 31;
+                })
 //                .filter(a -> {
 //                    // TODO: not working as intended
 //                    long aModulo8 = a % 8;
@@ -273,7 +294,7 @@ public class Day17 extends Day {
 //                    return (((aModulo8 ^ 3) ^ 5) ^ ((a / denominator))) % 8 == 2;
 //                })
                 .map(i -> {
-                    if (i % 1_000_000_000L == 0) {
+                    if (i % 1_000_000_000L < 33) {
                         System.out.println("A: " + i);
                     }
 
@@ -303,8 +324,11 @@ public class Day17 extends Day {
                             // We can fail fast, this output will never match the wanted program
                             System.out.println("Output longer than expected: " + out);
                             return -1;
-                        } else if (out.size() > 10) {
-                            System.out.println(i + " output : " + out);
+                        } else {
+                            Boolean result = seenOutputs.putIfAbsent(List.copyOf(out), true);
+                            if (result == null) {
+                                System.out.println(i + " output : " + out);
+                            }
                         }
                     }
 
