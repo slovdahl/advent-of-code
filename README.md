@@ -7,6 +7,20 @@ Advent of Code - https://adventofcode.com
 Log in using the browser, open developer tools, find a request and its response headers, look for
 the `Cookie` header and take the token after `session=` and paste it in `.aoc-token`.
 
+# Running
+
+The latest day's solution:
+
+```bash session
+gw :year-2025:run
+```
+
+A specific day's solution:
+
+```bash session
+gw :year-2025:run --args="3"
+```
+
 ## Initiating component for new year
 
 ```bash session
