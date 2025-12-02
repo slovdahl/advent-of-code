@@ -18,6 +18,7 @@ cp year-$PREVIOUS_YEAR/build.gradle year-$THIS_YEAR/build.gradle
 cp year-$PREVIOUS_YEAR/src/main/java/year$PREVIOUS_YEAR/App.java \
   year-$THIS_YEAR/src/main/java/year$THIS_YEAR/App.java
 
+sed -i "s/$PREVIOUS_YEAR/$THIS_YEAR/g" year-$THIS_YEAR/build.gradle
 sed -i "s/$PREVIOUS_YEAR/$THIS_YEAR/g" year-$THIS_YEAR/src/main/java/year$THIS_YEAR/App.java
 ```
 
