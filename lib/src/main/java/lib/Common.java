@@ -59,6 +59,16 @@ public class Common {
         return Pair.of(leftHalf, rightHalf);
     }
 
+    public static Triple<String, String, String> splitInThree(String s) {
+        checkState(s.length() % 3 == 0);
+
+        return Triple.of(
+                s.substring(0, s.length() / 3),
+                s.substring(s.length() / 3, (s.length() / 3) * 2),
+                s.substring((s.length() / 3) * 2, (s.length() / 3) * 3)
+        );
+    }
+
     public static <T> List<List<T>> permutations(List<List<T>> input) {
         List<List<T>> permutations = new ArrayList<>();
         int length = input.size();
