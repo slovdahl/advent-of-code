@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Stream;
 
+import static com.google.common.base.Preconditions.checkState;
 import static java.util.stream.Collectors.joining;
 
 public class Common {
@@ -45,6 +46,17 @@ public class Common {
             return 1;
         }
         return (int) (Math.log10(n) + 1);
+    }
+
+    public static Pair<Long, Long> splitInTwo(long number) {
+        int numberOfDigits = Common.numberOfDigits(number);
+        checkState(numberOfDigits % 2 == 0);
+
+        long pow = (long) Math.pow(10, numberOfDigits / 2.0);
+        long leftHalf = number / pow;
+        long rightHalf = number - (leftHalf * pow);
+
+        return Pair.of(leftHalf, rightHalf);
     }
 
     public static <T> List<List<T>> permutations(List<List<T>> input) {

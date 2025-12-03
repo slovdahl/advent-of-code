@@ -1,0 +1,22 @@
+[*]
+charset = utf-8
+end_of_line = lf
+indent_size = 4
+indent_style = space
+insert_final_newline = true
+max_line_length = 500
+ij_continuation_indent_size = 8
+ij_smart_tabs = false
+ij_wrap_on_typing = false
+
+[*.java]
+tab_width = 4
+ij_java_line_comment_add_space = true
+ij_java_line_comment_add_space_on_reformat = false
+ij_java_line_comment_at_first_column = false
+
+[*.gradle]
+tab_width = 4
+ij_groovy_line_comment_add_space = false
+ij_groovy_line_comment_add_space_on_reformat = false
+ij_groovy_line_comment_at_first_column = true
