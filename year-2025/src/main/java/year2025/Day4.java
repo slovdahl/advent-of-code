@@ -5,6 +5,8 @@ import lib.Coordinate;
 import lib.Day;
 import lib.Matrix;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.stream.Stream;
 
 @SuppressWarnings("unused")
@@ -47,5 +49,53 @@ public class Day4 extends Day {
         }
 
         return forkliftCanAccess; // Your puzzle answer was 1393.
+    }
+
+    @Override
+    protected Object part2(Stream<String> input) {
+        char[][] matrix = Matrix.matrix(input.toList());
+
+        int forkliftCanAccess = 0;
+        while (true) {
+            int forkliftCanAccessThisRound = 0;
+
+            char[][] matrixCopy = Matrix.deepClone(matrix);
+            Set<Coordinate> moved = new HashSet<>();
+            for (int i = 0; i < matrix.length; i++) {
+                for (int j = 0; j < matrix[i].length; j++) {
+                    if (matrix[i][j] != '@') {
+                        continue;
+                    }
+
+                    Coordinate position = new Coordinate(i, j);
+                    int adjacentRolls = 0;
+
+                    for (AnyDirection direction : AnyDirection.ALL) {
+                        if (adjacentRolls >= 4) {
+                            break;
+                        }
+                        if (position.atDirection(matrix, direction, '.') == '@') {
+                            adjacentRolls++;
+                        }
+                    }
+
+                    if (adjacentRolls < 4) {
+                        forkliftCanAccessThisRound++;
+                        moved.add(position);
+                    }
+                }
+            }
+
+            if (forkliftCanAccessThisRound > 0) {
+                forkliftCanAccess += forkliftCanAccessThisRound;
+                for (Coordinate coordinate : moved) {
+                    matrix[coordinate.row()][coordinate.column()] = '.';
+                }
+            } else {
+                break;
+            }
+        }
+
+        return forkliftCanAccess; // Your puzzle answer was 8643.
     }
 }
