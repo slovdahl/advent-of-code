@@ -9,8 +9,8 @@ import java.util.NoSuchElementException;
 
 public record Coordinate(int row, int column) {
 
-    public Coordinate(String rows, String columns) {
-        this(Integer.parseInt(rows), Integer.parseInt(columns));
+    public Coordinate(String row, String column) {
+        this(Integer.parseInt(row), Integer.parseInt(column));
     }
 
     public char at(char[][] matrix) {
@@ -52,6 +52,19 @@ public record Coordinate(int row, int column) {
         };
     }
 
+    public char atDirection(char[][] matrix, AnyDirection direction, char fallback) {
+        return switch (direction) {
+            case UP -> upOr(matrix, fallback);
+            case UP_LEFT -> upLeftOr(matrix, fallback);
+            case UP_RIGHT -> upRightOr(matrix, fallback);
+            case RIGHT -> rightOr(matrix, fallback);
+            case DOWN -> downOr(matrix, fallback);
+            case DOWN_LEFT -> downLeftOr(matrix, fallback);
+            case DOWN_RIGHT -> downRightOr(matrix, fallback);
+            case LEFT -> leftOr(matrix, fallback);
+        };
+    }
+
     public int atDirection(int[][] matrix, Direction direction, int fallback) {
         return switch (direction) {
             case UP -> upOr(matrix, fallback);
@@ -83,6 +96,22 @@ public record Coordinate(int row, int column) {
     public int upOr(int[][] matrix, int fallback) {
         if (row >= 1) {
             return matrix[row - 1][column];
+        } else {
+            return fallback;
+        }
+    }
+
+    public char upLeftOr(char[][] matrix, char fallback) {
+        if (row >= 1 && column >= 1) {
+            return matrix[row - 1][column - 1];
+        } else {
+            return fallback;
+        }
+    }
+
+    public char upRightOr(char[][] matrix, char fallback) {
+        if (row >= 1 && column + 1 < matrix[row - 1].length) {
+            return matrix[row - 1][column + 1];
         } else {
             return fallback;
         }
@@ -123,6 +152,22 @@ public record Coordinate(int row, int column) {
     public int downOr(int[][] matrix, int fallback) {
         if (row + 1 < matrix.length) {
             return matrix[row + 1][column];
+        } else {
+            return fallback;
+        }
+    }
+
+    public char downLeftOr(char[][] matrix, char fallback) {
+        if (row + 1 < matrix.length && column >= 1) {
+            return matrix[row + 1][column - 1];
+        } else {
+            return fallback;
+        }
+    }
+
+    public char downRightOr(char[][] matrix, char fallback) {
+        if (row + 1 < matrix.length && column + 1 < matrix[row + 1].length) {
+            return matrix[row + 1][column + 1];
         } else {
             return fallback;
         }
