@@ -16,10 +16,10 @@ public class Parse {
     }
 
     /**
-     * Parses the input as space-separated integers.
+     * Parses the input as space-separated integers. Values can be separated by multiple spaces.
      */
     public static List<Integer> ints(String input) {
-        String[] s = input.trim().split(" ");
+        String[] s = input.trim().split(" +");
         List<Integer> result = new ArrayList<>(s.length);
         for (String str : s) {
             result.add(Integer.parseInt(str.trim()));
@@ -40,13 +40,25 @@ public class Parse {
     }
 
     /**
-     * Parses the input as space-separated longs.
+     * Parses the input as space-separated longs. Values can be separated by multiple spaces.
      */
     public static List<Long> longs(String input) {
-        String[] s = input.trim().split(" ");
+        String[] s = input.trim().split(" +");
         List<Long> result = new ArrayList<>(s.length);
         for (String str : s) {
             result.add(Long.parseLong(str.trim()));
+        }
+        return result;
+    }
+
+    /**
+     * Parses the input as space-separated strings. Strings can be separated by multiple spaces.
+     */
+    public static List<String> strings(String input) {
+        String[] s = input.trim().split(" +");
+        List<String> result = new ArrayList<>(s.length);
+        for (String str : s) {
+            result.add(str.trim());
         }
         return result;
     }
