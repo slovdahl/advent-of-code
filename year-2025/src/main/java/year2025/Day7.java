@@ -5,7 +5,9 @@ import lib.Day;
 import lib.Direction;
 import lib.Matrix;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -66,5 +68,60 @@ public class Day7 extends Day {
         }
 
         return splits; // Your puzzle answer was 1541.
+    }
+
+    @Override
+    protected Object part2(Stream<String> input) {
+        char[][] manifold = Matrix.matrix(input.toList());
+
+        Coordinate start = new Coordinate(0, Matrix.findChar(manifold[0], 'S'));
+
+        return countTimelinesFrom(
+                start.moveDown(),
+                manifold,
+                0,
+                new HashMap<>()); // Your puzzle answer was 80158285728929.
+    }
+
+    private static long countTimelinesFrom(Coordinate c, char[][] manifold, long timelines, Map<Coordinate, Long> cache) {
+        if (c.at(manifold) == '.') {
+            Coordinate down = c.tryMove(manifold, Direction.DOWN);
+            if (down != null) {
+                return countTimelinesFrom(down, manifold, timelines, cache);
+            } else {
+                return 1;
+            }
+        } else if (c.at(manifold) == '^') {
+            Long cachedValue = cache.get(c);
+            if (cachedValue != null) {
+                return cachedValue;
+            }
+
+            long thisTimelines = 0;
+
+            Coordinate left = c.tryMove(manifold, Direction.LEFT);
+            if (left != null) {
+                Coordinate down = left.tryMove(manifold, Direction.DOWN);
+                if (down != null) {
+                    thisTimelines += countTimelinesFrom(down, manifold, thisTimelines, cache);
+                }
+            }
+
+            Coordinate right = c.tryMove(manifold, Direction.RIGHT);
+            if (right != null) {
+                Coordinate down = right.tryMove(manifold, Direction.DOWN);
+                if (down != null) {
+                    thisTimelines += countTimelinesFrom(down, manifold, thisTimelines, cache);
+                }
+            }
+
+            if (cache.put(c, thisTimelines) != null) {
+                throw new IllegalStateException();
+            }
+
+            return thisTimelines;
+        } else {
+            throw new IllegalStateException();
+        }
     }
 }
