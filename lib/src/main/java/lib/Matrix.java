@@ -403,4 +403,22 @@ public class Matrix {
         return Math.abs(coordinate1.row() - coordinate2.row()) +
                 Math.abs(coordinate1.column() - coordinate2.column());
     }
+
+    public static long area(Coordinate coordinate1, Coordinate coordinate2) {
+        long width;
+        if (coordinate1.column() > coordinate2.column()) {
+            width = coordinate1.column() - coordinate2.column() + 1;
+        } else {
+            width = coordinate2.column() - coordinate1.column() + 1;
+        }
+
+        long height;
+        if (coordinate1.row() > coordinate2.row()) {
+            height = coordinate1.row() - coordinate2.row() + 1;
+        } else {
+            height = coordinate2.row() - coordinate1.row() + 1;
+        }
+
+        return width * height;
+    }
 }
